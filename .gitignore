@@ -1,3 +1,5 @@
 /versions
 /superr_*
-/logs/*.log
+/tools/logs/*.log
+/tools/devices/*
+!/tools/devices/placeholder

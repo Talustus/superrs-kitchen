@@ -14,24 +14,12 @@ banner() {
 }
 
 cd $tools
-if [[ $insecurestatus = "No" ]]; then
-	sed -i 's/ro\.secure=1/ro\.secure=0\
-	ro\.adb\.secure=0/' $romdir/bootimg/ramdisk/default.prop
-	clear
-	banner
-	echo "The boot.img is now insecure"
-	echo ""
-	read -p "Press ENTER to return to boot menu"
-	clear
-	./boot_tools
-	exit
-else
-	clear
-	banner
-	echo "The boot.img is already insecure"
-	echo ""
-	read -p "Press ENTER to return to boot menu"
-	clear
-	./boot_tools
-	exit
-fi
+( exec mkbootimg/mkboot $romdir/bootimg $romdir/boot.img >> $logs/boot.log )
+banner
+echo "boot.img packed, ramdisk remains"
+echo ""
+read -p "Press ENTER to return to the boot menu"
+clear
+cd $scripts
+exec ./boot_tools
+exit

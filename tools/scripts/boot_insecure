@@ -13,24 +13,26 @@ banner() {
 	echo ""
 }
 
-cd $tools
-if [[ $initdstatus = "No" ]]; then
-	cp -r ./initd/* $romdir
-	sed -i '1iimport /init.d_support.sh' $romdir/bootimg/ramdisk/init.rc
+if [[ $insecurestatus = "No" ]]; then
+	sed -i 's/ro\.secure=1/ro\.secure=0\
+	ro\.adb\.secure=0/' $romdir/bootimg/ramdisk/default.prop
+	clear
 	banner
-	echo "init.d support has been added"
+	echo "The boot.img is now insecure"
 	echo ""
 	read -p "Press ENTER to return to boot menu"
 	clear
-	./boot_tools
+	cd $scripts
+	exec ./boot_tools
 	exit
 else
 	clear
 	banner
-	echo "You already have init.d support"
+	echo "The boot.img is already insecure"
 	echo ""
 	read -p "Press ENTER to return to boot menu"
 	clear
-	./boot_tools
+	cd $scripts
+	exec ./boot_tools
 	exit
 fi

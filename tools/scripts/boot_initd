@@ -13,11 +13,26 @@ banner() {
 	echo ""
 }
 
-( exec mkbootimg/mkboot $romdir/bootimg $romdir/boot.img >> $logs/boot.log )
-cd $tools
-banner
-echo "boot.img packed, ramdisk remains"
-echo ""
-read -p "Press ENTER to return to the boot menu"
-clear
-./boot_tools
+if [[ $initdstatus = "No" ]]; then
+	cd $tools
+	cp -r ./initd/* $romdir
+	sed -i '1iimport /init.d_support.sh' $romdir/bootimg/ramdisk/init.rc
+	banner
+	echo "init.d support has been added"
+	echo ""
+	read -p "Press ENTER to return to boot menu"
+	clear
+	cd $scripts
+	exec ./boot_tools
+	exit
+else
+	clear
+	banner
+	echo "You already have init.d support"
+	echo ""
+	read -p "Press ENTER to return to boot menu"
+	clear
+	cd $scripts
+	exec ./boot_tools
+	exit
+fi

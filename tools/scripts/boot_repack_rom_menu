@@ -13,15 +13,14 @@ banner() {
 	echo ""
 }
 
-cd $base
-
-clear
+cd $tools
+( exec mkbootimg/mkboot $romdir/bootimg $romdir/boot.img >> $logs/boot.log )
+rm -rf $romdir/bootimg
 banner
-romname=""
-echo "Enter new project name:"
-read romname
-mkdir superr_$romname
-export romname="$romname"
+echo "boot.img packed, ramdisk deleted"
+echo ""
+read -p "Press ENTER to continue building your ROM zip"
 clear
-./superr
+cd $scripts
+exec ./build_rom_zip
 exit

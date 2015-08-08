@@ -13,12 +13,20 @@ banner() {
 	echo ""
 }
 
-( exec mkbootimg/mkboot $romdir/bootimg $romdir/boot.img >> $logs/boot.log )
-rm -rf $romdir/bootimg
-cd $tools
-banner
-echo "boot.img packed, ramdisk deleted"
-echo ""
-read -p "Press ENTER to continue building your ROM zip"
+cd $base
+romname=""
+findproject=$(ls | grep 'superr_' | sed 's/superr_//')
+until [[ $(echo "$findproject" | grep "$romname") = "$romname" ]]; do
+	clear
+	banner
+	echo "Existing Projects:"
+	echo "$findproject"
+	echo ""
+	echo "Write a name from the projects listed above"
+	read romname
+	clear
+done
+export romname="$romname"
 clear
-./build_rom_zip
+exec ./superr
+exit

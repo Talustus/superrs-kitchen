@@ -13,12 +13,15 @@ banner() {
 	echo ""
 }
 
-( exec mkbootimg/mkboot $romdir/bootimg $romdir/boot.img >> $logs/boot.log )
-rm -rf $romdir/bootimg
-cd $tools
-banner
-echo "boot.img packed, ramdisk deleted"
-echo ""
-read -p "Press ENTER to return to the boot menu"
+cd $base
+
 clear
-./boot_tools
+banner
+romname=""
+echo "Enter new project name without spaces:"
+read romname
+mkdir superr_$romname
+export romname="$romname"
+clear
+exec ./superr
+exit
