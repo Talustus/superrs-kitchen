@@ -13,28 +13,12 @@ banner() {
 	echo ""
 }
 
-cd $romdir
-clear
+( exec mkbootimg/mkboot $romdir/bootimg $romdir/boot.img >> $logs/boot.log )
+rm -rf $romdir/bootimg
+cd $tools
 banner
-
-if [ -f *.zip ]; then
-	echo "Extracting zip in superr_$romname"
-	7za x *.zip >> $logs/zip.log
-	rm -rf *.zip
-elif [ -f *.tar ]; then
-	echo "Extracting tar in superr_$romname"
-	tar -xf *.tar >> $logs/zip.log
-	rm -rf *.tar
-	cd $tools
-	cp -r ./META-INF $romdir
-else
-	clear
-	banner
-	echo "There is no zip or tar to extract in superr_$romname"
-	echo ""
-	read -p "Press ENTER to return to main menu"
-fi
-cd $base
+echo "boot.img packed, ramdisk deleted"
+echo ""
+read -p "Press ENTER to continue building your ROM zip"
 clear
-./superr
-exit
+./build_rom_zip
