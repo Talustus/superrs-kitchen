@@ -1,0 +1,2 @@
+ro.secure=0
+ro.adb.secure=0

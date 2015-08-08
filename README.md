@@ -1,4 +1,4 @@
-# SuperR Kitchen v0.4
+# SuperR Kitchen v0.5
 # by SuperR
 
 This tool is intended to unpack, modify, repack existing roms and boot.img's or create new roms from nandroid backups.

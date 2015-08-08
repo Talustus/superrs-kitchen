@@ -1,0 +1,17 @@
+# ROOT START
+set_perm(0, 2000, 0755, "/system/bin/app_process_original");
+set_perm(0, 2000, 0755, "/system/bin/app_process_init");
+set_perm(0, 1000, 0755, "/system/xbin/busybox");
+set_perm(0, 0, 0777, "/system/bin/.ext");
+set_perm(0, 0, 0755, "/system/bin/.ext/.su");
+set_perm(0, 0, 0755, "/system/xbin/su");
+set_perm(0, 0, 0755, "/system/xbin/daemonsu");
+set_perm(0, 0, 0755, "/system/xbin/sugote");
+set_perm(0, 0, 0755, "/system/xbin/sugote-mksh");
+set_perm(0, 0, 0755, "/system/xbin/supolicy");
+set_perm(0, 0, 0755, "/system/etc/install-recovery.sh");
+set_perm(0, 0, 0644, "/system/etc/.installed_su_daemon");
+symlink("/system/etc/install-recovery.sh", "/system/bin/install-recovery.sh");
+symlink("/system/xbin/daemonsu", "/system/bin/app_process");
+run_program("/system/xbin/busybox", "--install", "-s", "/system/xbin");
+# ROOT END
