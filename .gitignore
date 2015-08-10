@@ -3,3 +3,4 @@
 /tools/logs/*.log
 /tools/devices/*
 !/tools/devices/placeholder
+/tools/*.zip

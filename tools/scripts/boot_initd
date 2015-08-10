@@ -14,7 +14,7 @@ banner() {
 }
 
 if [[ $initdstatus = "No" ]]; then
-	cd $tools
+	cd $tools/boot
 	cp -r ./initd/* $romdir
 	sed -i '1iimport /init.d_support.sh' $romdir/bootimg/ramdisk/init.rc
 	banner

@@ -13,7 +13,7 @@ banner() {
 	echo ""
 }
 
-cd $tools
+cd $tools/boot
 ( exec mkbootimg/mkboot $romdir/bootimg $romdir/boot.img >> $logs/boot.log )
 rm -rf $romdir/bootimg
 banner
