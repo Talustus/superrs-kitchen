@@ -14,19 +14,26 @@ banner() {
 }
 
 cd $base
-romname=""
-findproject=$(ls | grep 'superr_' | sed 's/superr_//')
-until [[ $(echo "$findproject" | grep "$romname") = "$romname" ]]; do
-	clear
-	banner
-	echo "Existing Projects:"
-	echo "$findproject"
-	echo ""
-	echo "Write a name from the projects listed above"
-	read romname
-	clear
-done
-export romname="$romname"
 clear
+banner
+echo "Existing Projects:"
+echo ""
+PS3="
+Choose an existing project and press ENTER: "
+findproject=( $(ls -d */ | grep 'superr_' | sed 's/superr_//' | sed 's/\///') )
+select project in "${findproject[@]}" "Main Menu" ; do
+	if (( REPLY == 1 + ${#findproject[@]} )) ; then
+		clear
+		cd $base
+		exec ./superr
+		exit
+	elif (( REPLY > 0 && REPLY <= ${#findproject[@]} )) ; then
+		romname=""
+		export romname="$project"
+		break
+	else
+		echo "Invalid option. Please try again."
+	fi
+done
 exec ./superr
 exit
