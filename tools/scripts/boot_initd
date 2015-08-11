@@ -17,11 +17,11 @@ if [[ $initdstatus = "No" ]]; then
 	cd $tools/boot
 	cp -r ./initd/* $romdir
 	sed -i '1iimport /init.d_support.sh' $romdir/bootimg/ramdisk/init.rc
+	clear
 	banner
 	echo "init.d support has been added"
 	echo ""
 	read -p "Press ENTER to return to boot menu"
-	clear
 	cd $scripts
 	exec ./boot_tools
 	exit
@@ -31,7 +31,6 @@ else
 	echo "You already have init.d support"
 	echo ""
 	read -p "Press ENTER to return to boot menu"
-	clear
 	cd $scripts
 	exec ./boot_tools
 	exit

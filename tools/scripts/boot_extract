@@ -5,5 +5,4 @@
 cd $tools/boot
 ( exec mkbootimg/mkboot $romdir/boot.img $romdir/bootimg >> $logs/boot.log )
 cd $scripts
-clear
 exec ./boot_tools

@@ -22,6 +22,5 @@ echo "Enter new project name without spaces:"
 read romname
 mkdir superr_$romname
 export romname="$romname"
-clear
 exec ./superr
 exit

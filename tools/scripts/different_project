@@ -23,7 +23,6 @@ Choose an existing project and press ENTER: "
 findproject=( $(ls -d */ | grep 'superr_' | sed 's/superr_//' | sed 's/\///') )
 select project in "${findproject[@]}" "Main Menu" ; do
 	if (( REPLY == 1 + ${#findproject[@]} )) ; then
-		clear
 		cd $base
 		exec ./superr
 		exit
@@ -35,5 +34,6 @@ select project in "${findproject[@]}" "Main Menu" ; do
 		echo "Invalid option. Please try again."
 	fi
 done
+cd $base
 exec ./superr
 exit

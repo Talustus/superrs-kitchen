@@ -15,11 +15,11 @@ banner() {
 
 cd $tools/boot
 ( exec mkbootimg/mkboot $romdir/bootimg $romdir/boot.img >> $logs/boot.log )
+clear
 banner
 echo "boot.img packed, ramdisk remains"
 echo ""
 read -p "Press ENTER to return to the boot menu"
-clear
 cd $scripts
 exec ./boot_tools
 exit

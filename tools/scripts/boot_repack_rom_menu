@@ -16,11 +16,11 @@ banner() {
 cd $tools/boot
 ( exec mkbootimg/mkboot $romdir/bootimg $romdir/boot.img >> $logs/boot.log )
 rm -rf $romdir/bootimg
+clear
 banner
 echo "boot.img packed, ramdisk deleted"
 echo ""
 read -p "Press ENTER to continue building your ROM zip"
-clear
 cd $scripts
 exec ./build_rom_zip
 exit

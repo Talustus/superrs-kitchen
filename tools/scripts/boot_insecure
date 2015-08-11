@@ -20,7 +20,6 @@ if [[ $insecurestatus = "No" ]]; then
 	echo "The boot.img is now insecure"
 	echo ""
 	read -p "Press ENTER to return to boot menu"
-	clear
 	cd $scripts
 	exec ./boot_tools
 	exit
@@ -30,7 +29,6 @@ else
 	echo "The boot.img is already insecure"
 	echo ""
 	read -p "Press ENTER to return to boot menu"
-	clear
 	cd $scripts
 	exec ./boot_tools
 	exit
