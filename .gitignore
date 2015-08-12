@@ -1,6 +1,6 @@
 /versions
 /superr_*
 /tools/logs/*.log
-/tools/devices/*
-!/tools/devices/placeholder
+/devices/*
+!/devices/placeholder
 /tools/boot/*.zip
