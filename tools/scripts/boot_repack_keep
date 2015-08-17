@@ -5,10 +5,8 @@
 banner() {
 	echo ""
 	echo "------------------------------------------------------"
-	echo "-                                                    -"
-	echo "-                 SuperR's Kitchen                   -"
-	echo "-                     by SuperR                      -"
-	echo "-                                                    -"
+	echo -e "-\e[1;107;30m                 SuperR's Kitchen                   \e[0m-"
+	echo -e "-\e[3;107;30m                     by SuperR                      \e[0m-"
 	echo "------------------------------------------------------"
 	echo ""
 }
