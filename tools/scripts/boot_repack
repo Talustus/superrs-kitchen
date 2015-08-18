@@ -18,7 +18,7 @@ clear
 banner
 echo "boot.img packed, ramdisk deleted"
 echo ""
-read -p "Press ENTER to return to the boot menu"
-cd $scripts
-exec ./boot_tools
+read -p "Press ENTER to return to the main menu"
+cd $base
+exec ./superr
 exit
