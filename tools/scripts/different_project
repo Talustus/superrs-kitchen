@@ -14,7 +14,7 @@ banner() {
 cd $base
 clear
 banner
-echo "Existing Projects:"
+echo "${greenb}Existing Projects:$normal"
 echo ""
 PS3="
 Choose an existing project and press ENTER: "
@@ -29,7 +29,7 @@ select project in "${findproject[@]}" "Main Menu" ; do
 		export romname="$project"
 		break
 	else
-		echo "Invalid option. Please try again."
+		echo "${redt}Invalid option. Please try again.$normal"
 	fi
 done
 cd $base

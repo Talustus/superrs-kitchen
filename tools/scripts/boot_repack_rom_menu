@@ -16,7 +16,7 @@ cd $tools/boot
 rm -rf $romdir/bootimg
 clear
 banner
-echo "boot.img packed, ramdisk deleted"
+echo "${greent}boot.img packed, ramdisk deleted$normal"
 echo ""
 read -p "Press ENTER to continue building your ROM zip"
 cd $scripts
