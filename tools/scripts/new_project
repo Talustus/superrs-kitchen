@@ -20,7 +20,7 @@ romname1=""
 echo "Enter new project name (spaces will be replcaed with _):"
 read romname1
 export romname=$(echo "$romname1" | sed 's/ /_/g')
-if [[ $(find . -type d | grep $romname$) = "" ]]; then
+if [[ $(find -type d | grep $romname$) = "" ]]; then
 	mkdir superr_$romname
 else
 	clear
