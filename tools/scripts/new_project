@@ -20,6 +20,18 @@ romname1=""
 echo "Enter new project name (spaces will be replcaed with _):"
 read romname1
 export romname=$(echo "$romname1" | sed 's/ /_/g')
-mkdir superr_$romname
+if [[ $(find . -type d | grep $romname$) = "" ]]; then
+	mkdir superr_$romname
+else
+	clear
+	banner
+	echo "${redb}${yellowt}${bold}ERROR:$normal"
+	echo "${redt}You already have a project with that name$normal"
+	echo ""
+	read -p "Press ENTER to try again"
+	cd $scripts
+	exec ./new_project
+	exit
+fi
 exec ./superr
 exit
