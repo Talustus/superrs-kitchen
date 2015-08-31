@@ -27,6 +27,4 @@ if [[ -d $romdir/.git ]]; then
 		fi
 	fi
 fi
-cd $base
-exec ./superr
 exit
