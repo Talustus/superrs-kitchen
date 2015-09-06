@@ -13,7 +13,11 @@ banner() {
 
 cd $tools/boot/mkbootimg
 ( exec ./repackimg.sh >> $logs/boot.log )
-rm -rf $romdir/bootimg
+cd $romdir
+if [[ -f image-new.img ]]; then
+	mv image-new.img boot.img
+fi
+rm -rf bootimg
 clear
 banner
 echo "${greent}boot.img packed, ramdisk deleted$normal"
