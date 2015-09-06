@@ -1,0 +1,14 @@
+assert(getprop("ro.product.device") == "#DEVICENAME" || getprop("ro.build.product") == "#DEVICENAME" || abort("This package is for \"#DEVICENAME\" devices; this is a \"" + getprop("ro.product.device") + "\"."););
+ui_print("");
+ui_print("");
+ui_print("#SIGNATURE Recovery Installer");
+ui_print("Built with SuperR's Kitchen");
+ui_print("");
+ui_print("");
+ui_print("");
+ui_print("");
+ui_print("Extracting recovery image...");
+ui_print("");
+package_extract_file("recovery.img", "#BYNAME/recovery");
+set_progress(1.000000);
+ui_print("#SIGNATURE Recovery Installed");
