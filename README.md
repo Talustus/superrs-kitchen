@@ -1,7 +1,7 @@
-# SuperR's Kitchen v0.8.5 #
+# SuperR's Kitchen v0.8.6 #
 ## by SuperR ##
 
-This tool is intended to unpack, modify, repack existing roms and boot.img's or create new roms from nandroid backups.
+This tool is intended to unpack, modify, repack existing roms and boot.img's or create new roms from nandroid backups or system.img. There are many other features as well. A feature list will be made eventually.
 
 **Usage:**
 
@@ -10,6 +10,8 @@ This tool is intended to unpack, modify, repack existing roms and boot.img's or 
 3. Copy ROM zip into the superr_NAME directory of this tool (NAME = the name of your new project).
    **OR**
    Copy system.ext4.tar and boot.img into the superr_NAME directory of this tool.
+   **OR**
+   Copy system.img and boot.img into the superr_NAME directory of this tool.
 4. Enjoy!
 
 **Example:**

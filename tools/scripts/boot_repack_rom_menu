@@ -11,8 +11,8 @@ banner() {
 	echo ""
 }
 
-cd $tools/boot
-( exec mkbootimg/mkboot $romdir/bootimg $romdir/boot.img >> $logs/boot.log )
+cd $tools/boot/mkbootimg
+( exec ./repackimg.sh >> $logs/boot.log )
 rm -rf $romdir/bootimg
 clear
 banner
