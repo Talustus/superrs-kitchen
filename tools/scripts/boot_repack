@@ -12,15 +12,27 @@ banner() {
 }
 
 cd $tools/boot/mkbootimg
-( exec ./repackimg.sh >> $logs/boot.log )
-cd $romdir
-if [[ -f image-new.img ]]; then
-	mv image-new.img boot.img
+if [[ -d $romdir/recoveryimg ]]; then
+	( exec ./repackimgr.sh >> $logs/boot.log )
+	cd $romdir
+	if [[ -f image-new.img ]]; then
+		mv image-new.img recovery.img
+	fi
+	rm -rf recoveryimg
+	clear
+	banner
+	echo "${greent}recovery.img packed, ramdisk deleted$normal"
+else
+	( exec ./repackimg.sh >> $logs/boot.log )
+	cd $romdir
+	if [[ -f image-new.img ]]; then
+		mv image-new.img boot.img
+	fi
+	rm -rf bootimg
+	clear
+	banner
+	echo "${greent}boot.img packed, ramdisk deleted$normal"
 fi
-rm -rf bootimg
-clear
-banner
-echo "${greent}boot.img packed, ramdisk deleted$normal"
 echo ""
 read -p "Press ENTER to return to the main menu"
 cd $base
