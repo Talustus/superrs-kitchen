@@ -18,16 +18,18 @@ if [[ -f image-new.img ]]; then
 	mv image-new.img boot.img
 fi
 rm -rf bootimg
-if [[ $islg = "lge" ]]; then
-	cd $romdir
-	echo ""
-	echo ""
-	$tools/open_bump.py boot.img
-	mv boot_bumped.img boot.img
-fi
 clear
 banner
 echo "${greent}boot.img packed, ramdisk deleted$normal"
+echo ""
+if [[ $islg = "lge" ]]; then
+	cd $romdir
+	$tools/open_bump.py boot.img
+	mv boot_bumped.img boot.img
+	echo ""
+	echo "${greent}renamed boot_bumped.img to boot.img$normal"
+	echo ""
+fi
 echo ""
 read -p "Press ENTER to continue building your ROM zip"
 cd $scripts
