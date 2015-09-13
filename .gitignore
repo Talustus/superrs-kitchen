@@ -5,3 +5,4 @@
 /devices/*
 !/devices/placeholder
 /tools/boot/*.zip
+/tools/open_bump.py
