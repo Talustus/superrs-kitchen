@@ -1,5 +1,6 @@
 /versions
 /superr_*
+/old_rom_files
 /tools/logs/*.log
 /devices/*
 !/devices/placeholder
