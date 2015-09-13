@@ -17,6 +17,13 @@ cd $romdir
 if [[ -f image-new.img ]]; then
 	mv image-new.img boot.img
 fi
+if [[ $islg = "lge" ]]; then
+	cd $romdir
+	echo ""
+	echo ""
+	$tools/open_bump.py boot.img
+	mv boot_bumped.img boot.img
+fi
 clear
 banner
 echo "${greent}boot.img packed, ramdisk remains$normal"
