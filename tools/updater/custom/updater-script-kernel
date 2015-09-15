@@ -11,7 +11,5 @@ ui_print("");
 ui_print("Extracting boot image...");
 ui_print("");
 package_extract_file("boot.img", "#BYNAME/boot");
-set_progress(0.900000);
-unmount("/system");
 set_progress(1.000000);
 ui_print("#SIGNATURE Installed");
