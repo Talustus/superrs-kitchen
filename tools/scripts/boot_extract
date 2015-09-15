@@ -4,9 +4,9 @@
 
 cd $tools/boot/mkbootimg
 if [[ -f $romdir/recovery.img ]]; then
-	( exec ./unpackimgr.sh $romdir/recovery.img >> $logs/boot.log )
+	( exec ./unpackimgr.sh $romdir/recovery.img 2>&1 ) >> $logs/boot.log
 else
-	( exec ./unpackimg.sh $romdir/boot.img >> $logs/boot.log )
+	( exec ./unpackimg.sh $romdir/boot.img 2>&1 ) >> $logs/boot.log
 fi
 cd $scripts
 exec ./boot_tools

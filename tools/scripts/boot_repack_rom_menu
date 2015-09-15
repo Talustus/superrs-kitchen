@@ -12,7 +12,7 @@ banner() {
 }
 
 cd $tools/boot/mkbootimg
-( exec ./repackimg.sh >> $logs/boot.log )
+( exec ./repackimg.sh 2>&1 ) >> $logs/boot.log
 cd $romdir
 if [[ -f image-new.img ]]; then
 	mv image-new.img boot.img

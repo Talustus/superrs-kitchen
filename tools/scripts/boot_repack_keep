@@ -12,7 +12,7 @@ banner() {
 }
 
 cd $tools/boot/mkbootimg
-( exec ./repackimg.sh >> $logs/boot.log )
+( exec ./repackimg.sh 2>&1 ) >> $logs/boot.log
 cd $romdir
 if [[ -f image-new.img ]]; then
 	mv image-new.img boot.img
@@ -30,7 +30,7 @@ if [[ $islg = "lge" ]]; then
 	echo ""
 fi
 echo ""
-read -p "Press ENTER to return to the boot menu"
+read -p "Press ENTER to return to the Boot Tools menu"
 cd $scripts
 exec ./boot_tools
 exit
