@@ -2,7 +2,7 @@
 /superr_*
 /old_rom_files
 /tools/logs/*.log
-/devices/*
+/devices/**/**
 !/devices/**/superr_byname
 !/devices/**/superr_mmc
 /tools/boot/*.zip
