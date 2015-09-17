@@ -1,0 +1,4 @@
+\/dev\/block\/mmcblk0p12 /boot
+\/dev\/block\/mmcblk0p13 /recovery
+\/dev\/block\/mmcblk0p15 /system
+\/dev\/block\/mmcblk0p18 /data
