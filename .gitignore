@@ -1,9 +1,8 @@
 /versions
-/superr_*
+/superr_*/
 /old_rom_files
 /tools/logs/*.log
-/devices/*
-!superr_byname
-!superr_mmc
+/devices
+
 /tools/boot/*.zip
 /tools/open_bump.py
