@@ -3,5 +3,6 @@
 /old_rom_files
 /tools/logs/*.log
 /devices/*/project_*
+/devices/*/superr_byname
 /tools/boot/*.zip
 /tools/open_bump.py
