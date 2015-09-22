@@ -4,6 +4,7 @@
 /tools/logs/*.log
 /devices/*/project_*
 /devices/*/superr_byname
+/devices/*/superr_capbyname
 /tools/boot/*.zip
 /tools/open_bump.py
 /tools/root/bloat_custom
