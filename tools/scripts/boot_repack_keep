@@ -29,7 +29,7 @@ if [[ $islg = "lge" ]]; then
 	echo ""
 fi
 echo ""
-read -p "Press ENTER to return to the Boot Tools menu"
+read -p "Press ENTER to return to the Boot/Recovery Tools menu"
 cd $scripts
 exec ./boot_tools
 exit
