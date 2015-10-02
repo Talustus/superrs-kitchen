@@ -8,8 +8,11 @@ gawk
 grep
 java
 ls
+mkdir
 mv
+paste
 pwd
 rm
 sed
+tar
 wc
