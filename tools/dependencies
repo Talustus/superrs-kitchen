@@ -2,6 +2,7 @@
 cat
 cp
 cut
+du
 echo
 find
 gawk
@@ -18,4 +19,5 @@ rm
 sed
 tar
 tr
+tune2fs
 wc
