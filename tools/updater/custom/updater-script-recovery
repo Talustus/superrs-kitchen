@@ -1,4 +1,4 @@
-assert(getprop("ro.product.device") == "#DEVICENAME" || getprop("ro.build.product") == "#DEVICENAME" || abort("This package is for \"#DEVICENAME\" devices; this is a \"" + getprop("ro.product.device") + "\"."););
+#ASSERT
 ui_print("");
 ui_print("");
 ui_print("#SIGNATURE Installer");

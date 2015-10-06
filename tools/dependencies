@@ -6,6 +6,7 @@ echo
 find
 gawk
 grep
+head
 java
 ln
 ls
@@ -16,4 +17,5 @@ pwd
 rm
 sed
 tar
+tr
 wc
