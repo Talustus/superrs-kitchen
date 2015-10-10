@@ -12,6 +12,7 @@ gawk
 grep
 head
 java
+ldd
 ln
 logname
 ls
