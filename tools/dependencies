@@ -24,6 +24,7 @@ pwd
 rev
 rm
 sed
+sort
 sudo
 tar
 touch
@@ -32,3 +33,4 @@ tr
 tune2fs
 umount
 wc
+xxd
