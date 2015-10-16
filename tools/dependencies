@@ -20,6 +20,7 @@ mkdir
 mount
 mv
 paste
+ping
 pwd
 rev
 rm
