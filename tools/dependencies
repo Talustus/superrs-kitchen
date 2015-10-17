@@ -2,6 +2,7 @@
 cat
 chown
 cp
+cpio
 cut
 date
 dd
@@ -14,7 +15,6 @@ head
 java
 ldd
 ln
-logname
 ls
 mkdir
 mount
@@ -34,4 +34,5 @@ tr
 tune2fs
 umount
 wc
+whoami
 xxd

@@ -5,6 +5,7 @@
 /devices/*/project_*
 /devices/*/superr_byname
 /devices/*/superr_capbyname
+/devices/*/superr_appbyname
 /devices/*/sysimgsize
 /tools/boot/*.zip
 /tools/open_bump.py
