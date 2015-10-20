@@ -21,7 +21,7 @@ echo "Enter new project name (spaces will be replcaed with _):"
 read romname1
 export romname=$(echo "$romname1" | sed 's/ /_/g')
 if [[ $(find -type d | grep $romname$) = "" ]]; then
-	mkdir superr_$romname
+	mkdir -p superr_$romname/00_project_files/logs
 else
 	clear
 	banner
