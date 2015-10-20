@@ -1,12 +1,8 @@
-/versions
 /superr_*
-/old_rom_files
-/tools/logs/*.log
-/devices/*/project_*
-/devices/*/superr_byname
-/devices/*/superr_capbyname
-/devices/*/superr_appbyname
-/devices/*/sysimgsize
+/tools/devices/*/superr_byname
+/tools/devices/*/superr_capbyname
+/tools/devices/*/superr_appbyname
+/tools/devices/*/sysimgsize
 /tools/boot/*.zip
 /tools/open_bump.py
 /tools/root/bloat_custom

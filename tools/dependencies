@@ -33,6 +33,7 @@ tput
 tr
 tune2fs
 umount
+uname
 wc
 whoami
 xxd

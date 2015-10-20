@@ -2,6 +2,7 @@ system/app/Bridge*
 system/app/ContainerAgent*
 system/app/ContainerEventsRelayManager*
 system/app/kioskdefault*
+system/app/KLMSAgent*
 system/app/Knox*
 system/app/KNOX*
 system/app/RCPComponents*
