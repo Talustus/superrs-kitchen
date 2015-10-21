@@ -19,10 +19,9 @@ cd $romdir
 rm -rf ${chosenimg}img
 clear
 banner
-echo "$greent$chosenimg.img packed, ramdisk deleted$normal"
+echo "$greent$chosenimg.img packed, ramdisk deleted.$normal"
 echo ""
 if [[ $islg = "lge" ]]; then
-	cd $romdir
 	$tools/open_bump.py $chosenimg.img
 	mv ${chosenimg}_bumped.img $chosenimg.img
 	echo "${greent}renamed ${chosenimg}_bumped.img to $chosenimg.img$normal"

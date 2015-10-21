@@ -15,12 +15,12 @@ if [[ -f $romdir/${chosenimg}img/MTK ]]; then
 else	
 	( exec $tools/boot/carliv/scripts/repack_img 2>&1 ) >> $logs/boot.log
 fi
+cd $romdir
 clear
 banner
-echo "$greent$chosenimg.img packed, ramdisk deleted$normal"
+echo "$greent$chosenimg.img packed, ramdisk remains.$normal"
 echo ""
 if [[ $islg = "lge" ]]; then
-	cd $romdir
 	$tools/open_bump.py $chosenimg.img
 	mv ${chosenimg}_bumped.img $chosenimg.img
 	echo "${greent}renamed ${chosenimg}_bumped.img to $chosenimg.img$normal"
