@@ -12,6 +12,7 @@ find
 gawk
 grep
 head
+ip
 java
 ldd
 ln
