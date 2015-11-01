@@ -4,3 +4,14 @@
 /tools/root/bloat_custom
 /tools/depmet
 /tools/32bit
+/tools/devices/*
+!/tools/devices/falcon_cdma
+!/tools/devices/flounder
+!/tools/devices/noblelte
+!/tools/devices/shamu
+!/tools/devices/surnia_cdma
+!/tools/devices/tre3g
+!/tools/devices/trelte
+!/tools/devices/warp2
+!/tools/devices/warp4
+!/tools/devices/warplte
