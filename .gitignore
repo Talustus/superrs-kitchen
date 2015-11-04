@@ -3,7 +3,9 @@
 /tools/open_bump.py
 /tools/root/bloat_custom
 /tools/depmet
-/tools/32bit
+/tools/boot/mtk-tools/mkbootimg
+/tools/mkbootimg
+/tools/unpackbootimg
 /tools/devices/*
 !/tools/devices/falcon_cdma
 !/tools/devices/flounder
