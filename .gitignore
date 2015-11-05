@@ -6,10 +6,13 @@
 /tools/boot/mtk-tools/mkbootimg
 /tools/mkbootimg
 /tools/unpackbootimg
+/tools/simg2img
+/tools/img2simg
 /tools/devices/*
 !/tools/devices/falcon_cdma
 !/tools/devices/flounder
 !/tools/devices/noblelte
+!/tools/devices/P175A20
 !/tools/devices/shamu
 !/tools/devices/surnia_cdma
 !/tools/devices/tre3g
