@@ -8,6 +8,7 @@
 /tools/unpackbootimg
 /tools/simg2img
 /tools/img2simg
+/tools/make_ext4fs
 /tools/devices/*
 !/tools/devices/falcon_cdma
 !/tools/devices/flounder
