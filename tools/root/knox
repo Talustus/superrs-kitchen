@@ -10,7 +10,6 @@ system/app/SwitchKnoxI*
 system/app/UniversalMDMClient*
 system/container*
 system/etc/secure_storage/com.sec.knox*
-system/lib/libknox*
 system/preloadedkiosk*
 system/preloadedsso*
 system/priv-app/KLMSAgent*
