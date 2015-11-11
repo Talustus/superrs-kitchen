@@ -9,6 +9,7 @@
 /tools/simg2img
 /tools/img2simg
 /tools/make_ext4fs
+/tools/sepolicy-inject
 /tools/devices/*
 !/tools/devices/falcon_cdma
 !/tools/devices/flounder
