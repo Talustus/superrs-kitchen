@@ -1,6 +1,5 @@
 #ASSERT
 unmount("/system");
-unmount("/data");
 show_progress(1.000000, 0);
 ui_print("");
 ui_print("");

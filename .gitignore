@@ -11,6 +11,9 @@
 /tools/make_ext4fs
 /tools/sepolicy-inject
 /tools/devices/*
+!/tools/devices/ada
+!/tools/devices/C6730
+!/tools/devices/cprimeltemtr
 !/tools/devices/falcon_cdma
 !/tools/devices/flounder
 !/tools/devices/noblelte
@@ -19,6 +22,7 @@
 !/tools/devices/surnia_cdma
 !/tools/devices/tre3g
 !/tools/devices/trelte
+!/tools/devices/w5c
 !/tools/devices/warp2
 !/tools/devices/warp4
 !/tools/devices/warplte
