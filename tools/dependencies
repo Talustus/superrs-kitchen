@@ -19,7 +19,6 @@ gunzip
 gzip
 head
 ip
-java
 ldd
 ln
 ls
@@ -32,7 +31,6 @@ mv
 paste
 perl
 ping
-pwd
 rev
 rm
 sed
