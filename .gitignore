@@ -3,6 +3,7 @@
 /tools/open_bump.py
 /tools/root/bloat_custom
 /tools/depmet
+/tools/depbuild
 /tools/boot/mtk-tools/mkbootimg
 /tools/mkbootimg
 /tools/unpackbootimg
