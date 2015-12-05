@@ -18,8 +18,11 @@
 !/tools/devices/cprimeltemtr
 !/tools/devices/falcon_cdma
 !/tools/devices/flounder
+!/tools/devices/msm8916_32
 !/tools/devices/noblelte
 !/tools/devices/P175A20
+!/tools/devices/pplus
+!/tools/devices/rainbow
 !/tools/devices/S3
 !/tools/devices/shamu
 !/tools/devices/surnia_cdma
