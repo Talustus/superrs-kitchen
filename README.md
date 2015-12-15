@@ -1,0 +1,86 @@
+#** SuperR's Kitchen v0.9.6.7 **#
+##by SuperR##
+
+##**FEATURES**##
+
+**Extract and create ROM from:**
+
+* Rooted Device  
+* Existing ROM zip  
+* system.img/boot.img (and cache.img on Samsung devices)
+* system.ext4.tar/boot.img  
+* system.ext4.win/boot.emmc.win (including multi-file *.win000, *.win001, etc)  
+* Sparse chunk files found in Moto and other factory firmware  
+* cm12 + roms with sparse dat files  
+
+**Create flashable zips of many varieties including:**
+
+* Full ROM  
+* Switch between set_perm, set_metadata, and sparse_dat (Lollipop and beyond)
+* Kernel (including init.d if you added it with the kitchen)  
+* Recovery  
+* Media  
+* app, priv-app, and framework  
+
+**Boot features:**
+
+* Unpack/repack boot/recovery img (Big Thanks to osm0sis for mkbootimg source!!!)  
+* Add/remove init.d support to boot.img  
+* Add/remove insecure boot.img  
+* open_bump.py compatible (download it and add to the tools directory)  
+
+**By-name auto-detection from:**
+
+* Device  
+* Existing ROM  
+* boot.img  
+* kernel.elf  
+* **OR**...manually enter it  
+
+**Root/unroot**  
+**Deodex Marshmallow ROMs**  
+**Deodex Lollipop ROMs**  
+**Deodex KitKat and earlier ROMs**  
+**Create system.img**  
+**Device database for mmcblk devices (currently very small, but will grow over time)**  
+**Add devices to the assert**  
+**Zipalign apks**  
+**Debloat ROM**  
+**Custom Debloat list support**  
+**Remove Knox**  
+**Add/remove user app support (/data/app)**  
+**Kitchen updater (git pull if cloned, wget zip and extract if not)**  
+
+##**USAGE:**##
+
+1. Run "superr" from it's location in terminal 
+2. Create new project using the menu
+3. Copy ROM zip into the superr_NAME directory of this tool (NAME = the name of your new project).  
+   **OR**  
+   Copy system.ext4.tar and boot.img into the superr_NAME directory of this tool.  
+   **OR**  
+   Copy system.ext4.win and boot.emmc.win into the superr_NAME directory of this tool.  
+   **OR**  
+   Copy system.img and boot.img into the superr_NAME directory of this tool.  
+   **OR**  
+   Leave superr_NAME directory empty to extract from rooted device
+4. Extract for new ROM from the Main menu.
+5. Enjoy!
+
+##**EXAMPLE:**##
+
+In your terminal, type the following where "/home/user/location/" is the directory where the script lives:
+
+```
+cd /home/user/location/
+./superr
+```
+
+**OR**
+
+Double-click the superr file and choose "Run in Terminal" if your OS supports it.
+
+##**DEPENDENCIES:**##
+
+* Java 7 (or higher)
+* p7zip-full (to run 7za commands)

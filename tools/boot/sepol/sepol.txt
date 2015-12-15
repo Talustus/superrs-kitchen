@@ -1,5 +1,0 @@
-
-service fix_cache_types /system/bin/sh /sbin/fix_cache_types.sh
-	class core
-	user root
-	oneshot

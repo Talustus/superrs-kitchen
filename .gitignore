@@ -14,7 +14,9 @@
 /tools/devices/*
 !/tools/devices/ada
 !/tools/devices/angler
+!/tools/devices/Aquaris_E5_HD
 !/tools/devices/C6730
+!/tools/devices/cm_osprey
 !/tools/devices/cprimeltemtr
 !/tools/devices/falcon_cdma
 !/tools/devices/flounder
