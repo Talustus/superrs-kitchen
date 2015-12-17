@@ -4871,11 +4871,7 @@ update_project() {
 				if [[ ! $api -ge "21" ]]; then
 					echo "${redt}3) Sparse dat (For Lollipop and beyond)$normal"
 				else
-					if [[ $(cat $romdir/system/build.prop | grep "ro.product.brand" | cut -d"=" -f2) = "samsung" ]]; then
-						echo "3) Sparse dat (not recommended for Samsung)"
-					else
-						echo "3) Sparse dat (recommended)"
-					fi
+					echo "3) Sparse dat (recommended)"
 				fi
 				echo ""
 				read -n 1 -p "Please enter your choice:" choice
@@ -5011,24 +5007,23 @@ update_project() {
 			if [[ -f $prfiles/vendorimg ]]; then
 				grep "^/vendor/" file_contexts >> file_contexts2
 			fi
-			sed -i 's/\\././g' file_contexts2
-			cat file_contexts2 | gawk '{ print $1, $2 }' | sort > file_contexts3
+			cat file_contexts2 | sed 's/\\././g; s/(\/\.\*)?//g' | gawk '{ print $1, $2 }' | sort > file_contexts3
 			mv file_contexts3 file_contexts2
 			line=""
-			cat file_contexts2 | gawk '{ print $1 }' | while read line; do
+			for line in $(cat file_contexts2 | gawk '{ print $1 }'); do
 				if [[ $(grep -m 1 "^$line$" all_files.txt) = "$line" ]]; then
-					grep -m 1 "^$line" file_contexts2 >> pre_metadata
+					grep -m 1 "^$line " file_contexts2 >> pre_metadata
 				fi
 			done
 			line=""
 			cat $tools/updater/set_metadata-data | while read line; do
 				line2=$(echo "$line" | gawk '{ print $1 }' | rev | cut -d'"' -f2 | rev)
-				if [[ $(cat pre_metadata | gawk '{ print $1 }' | grep -m 1 "$line2") = "$line2" ]]; then
-					context=$(grep -m 1 "$line2" pre_metadata | gawk '{ print $2 }')	
+				if [[ $(gawk '{ print $1 }' pre_metadata | grep -m 1 "^$line2$") = "$line2" ]]; then
+					context=$(grep -m 1 "^$line2 " pre_metadata | gawk '{ print $2 }')	
 					grep -m 1 "$line2" $tools/updater/set_metadata-data | sed "s/#CONTEXT/$context/" >> set_metadata
-				elif [[ $(grep -m 1 "^$line2" all_files.txt) = "$line2" && ! $(echo $line | grep "#CONTEXT") = "" ]]; then
+				elif [[ $(grep -m 1 "^$line2$" all_files.txt) = "$line2" && ! $(echo $line | grep "#CONTEXT") = "" ]]; then
 					grep -m 1 "$line2" $tools/updater/set_metadata-data | sed "s/#CONTEXT/u:object_r:system_file:s0/" >> set_metadata
-				elif [[ $(grep -m 1 "^$line2" all_files.txt) = "$line2" && $(echo $line | grep "#CONTEXT") = "" ]]; then
+				elif [[ $(grep -m 1 "^$line2$" all_files.txt) = "$line2" && $(echo $line | grep "#CONTEXT") = "" ]]; then
 					cat $tools/updater/set_metadata-data | grep -m 1 "$line2" >> set_metadata
 				fi
 			done
