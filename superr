@@ -3605,7 +3605,7 @@ extract_new() {
 			deviceloc=""
 			deviceloc=$base/tools/devices/$devicename
 			choice=""
-			if [[ $(grep "ro.build.version.sdk" $romdir/system/build.prop | cut -d"=" -f2) -ge "21" && ! $(grep "ro.product.brand" $romdir/system/build.prop | cut -d"=" -f2) = "samsung" ]]; then
+			if [[ $(grep "ro.build.version.sdk" $romdir/system/build.prop | cut -d"=" -f2) -ge "21" && $(getconf LONG_BIT) = "64" ]]; then
 				clear
 				banner
 				echo "${bluet}This ROM is Lollipop or beyond.$normal"
