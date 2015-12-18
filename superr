@@ -115,11 +115,11 @@ boot_initd() {
 			rm -rf $romdir/bootimg/ramdisk/sbin/sysinit.sh
 			rm -rf $romdir/bootimg/ramdisk/init.d_support.sh
 			rm -rf $romdir/system/etc/init.d
-			if [[ -f $romdir/system/bin/sysinit && ! $(cat $romdir/system/bin/sysinit | grep "init.d") = "" ]]; then
+			if [[ -f $romdir/system/bin/sysinit && ! $(grep "init.d" $romdir/system/bin/sysinit) = "" ]]; then
 				rm -rf $romdir/system/bin/sysinit
 			fi
 			cd $romdir/bootimg/ramdisk
-			cat init.rc | grep -v "init.d_support" > init.rc2
+			grep -v "init.d_support" init.rc > init.rc2
 			mv init.rc2 init.rc
 			sed -i "s/[[:blank:]]*$//" init.rc
 			gawk 'BEGIN{x=1} /init.d/{x=!x;next} x{print}' init.rc > init.rc2
@@ -179,7 +179,7 @@ boot_insecure() {
 		echo ""
 		if [[ $REPLY = "y" ]]; then
 			sed -i 's/ro\.secure=0/ro\.secure=1/' $romdir/bootimg/ramdisk/default.prop
-			cat $romdir/bootimg/ramdisk/default.prop | grep -v "ro.adb.secure=0" > $romdir/bootimg/ramdisk/default.prop2
+			grep -v "ro.adb.secure=0" $romdir/bootimg/ramdisk/default.prop > $romdir/bootimg/ramdisk/default.prop2
 			mv $romdir/bootimg/ramdisk/default.prop2 $romdir/bootimg/ramdisk/default.prop
 			clear
 			banner
@@ -365,9 +365,9 @@ boot_tools() {
 	islg=""
 	if [[ -f $tools/open_bump.py ]]; then
 		if [[ -f $romdir/system/build.prop ]]; then
-			islg=$(cat $romdir/system/build.prop | grep "ro.product.brand" | cut -d"=" -f2)
+			islg=$(grep "ro.product.brand" $romdir/system/build.prop | cut -d"=" -f2)
 		elif [[ -f $romdir/build.prop ]]; then
-			islg=$(cat $romdir/build.prop | grep "ro.product.brand" | cut -d"=" -f2)
+			islg=$(grep "ro.product.brand" $romdir/build.prop | cut -d"=" -f2)
 		fi
 		if [[ $islg = "lge" ]]; then
 			bumped=""
@@ -839,22 +839,22 @@ build_custom_zip() {
 			cd $prfiles
 			rm -rf symlinks
 			cp symlinks.orig symlinks
-			cat all_files.txt | grep "/system/app\|/system/priv-app" | cut -d"/" -f1-4 | grep -v "^/system/app$\|^/system/priv-app$" | sort -u >> appsym
+			grep "/system/app\|/system/priv-app" all_files.txt | cut -d"/" -f1-4 | grep -v "^/system/app$\|^/system/priv-app$" | sort -u >> appsym
 			line=""
-			cat symlinks | grep "/system/app" | cut -d"\"" -f4 | cut -d"/" -f1-4 | while read line; do
+			grep "/system/app" symlinks | cut -d"\"" -f4 | cut -d"/" -f1-4 | while read line; do
 				if [[ ! "$line" = $(grep "^$line$" appsym) ]]; then
 					grep -v "$line" symlinks > symlinks2
 					mv symlinks2 symlinks
 				fi
 			done
 			line=""
-			cat symlinks | grep "/system/priv-app" | cut -d"\"" -f4 | cut -d"/" -f1-4 | while read line; do
+			grep "/system/priv-app" symlinks | cut -d"\"" -f4 | cut -d"/" -f1-4 | while read line; do
 				if [[ ! "$line" = $(grep "^$line$" appsym) ]]; then
 					grep -v "$line" symlinks > symlinks2
 					mv symlinks2 symlinks
 				fi
 			done
-			cat symlinks | sort -u > symlinks2
+			sort -u symlinks > symlinks2
 			mv symlinks2 symlinks
 			rm -rf appsym		
 			grep "/system/app/\|/system/priv-app/" symlinks | sort >> symlinks_lib
@@ -1118,7 +1118,7 @@ build_rom_zip() {
 			dozipalign
 		fi
 	fi
-	bdisplay=$(cat $romdir/system/build.prop | grep "ro.build.display.id" | sed 's/\./\\./g; s:/:\\/:g; s/\,/\\,/g; s/\ /\\ /g')
+	bdisplay=$(grep "ro.build.display.id" $romdir/system/build.prop | sed 's/\./\\./g; s:/:\\/:g; s/\,/\\,/g; s/\ /\\ /g')
 	sed -i "s/$bdisplay/ro\.build\.display\.id=Built\.with\.SuperRs\.Kitchen/" $romdir/system/build.prop
 	update_project
 	cd $prfiles
@@ -1348,7 +1348,11 @@ change_permtype() {
 		if [[ $permtype = "set_metadata" ]]; then
 			echo "1) set_metadata (${bluet}CURRENT$normal)"
 		else
-			echo "1) set_metadata"
+			if [[ ! $api -ge "19" ]]; then
+				echo "${redt}1) set_metadata (For KitKat and beyond only)$normal"
+			else
+				echo "1) set_metadata (For KitKat and beyond)"
+			fi
 		fi
 		if [[ $permtype = "set_perm" ]]; then
 			echo "2) set_perm (${bluet}CURRENT$normal)"
@@ -1358,8 +1362,8 @@ change_permtype() {
 		if [[ $permtype = "sparse_dat" ]]; then
 			echo "3) Sparse dat (${bluet}CURRENT$normal)"
 		else
-			if [[ ! $api -ge "21" ]]; then
-				echo "${redt}3) Sparse dat (For Lollipop and beyond only)$normal"
+			if [[ ! $api -ge "21" || ! $(getconf LONG_BIT) = "64" ]]; then
+				echo "${redt}3) Sparse dat (For 64bit Linux and Lollipop+ only)$normal"
 			else
 				echo "3) Sparse dat (recommended)"
 			fi
@@ -1371,18 +1375,27 @@ change_permtype() {
 		read -n 1 -p "Please enter your choice:" choice
 	done
 	clear
-	banner
-	echo "${bluet}Changing perm type ...$normal"
-	if [[ ! $permtype = "sparse_dat" && -s $prfiles/$permtype ]]; then
-		cd $romdir/META-INF/com/google/android
-		permtest=$(gawk '/#PERM/,/set_progress/' updater-script | grep $permtype)
-		if [[ ! $permtest = "" ]]; then
-			grep -v "$permtest" updater-script > updater-script2
-			mv updater-script2 updater-script
-		fi
-	fi	
+	banner	
 	# set_metadata chosen
 	if [[ $choice == "1" ]]; then
+		if [[ ! $api -ge "19" ]]; then
+			clear
+			banner
+			echo "${redt}This ROM is NOT KitKat or beyond.$normal"
+			echo ""
+			read -p "Press ENTER to return to Change Perm menu"
+			change_permtype
+			return 1
+		fi
+		echo "${bluet}Changing perm type ...$normal"
+		if [[ -s $prfiles/$permtype ]]; then
+			cd $romdir/META-INF/com/google/android
+			permtest=$(gawk '/#PERM/,/set_progress/' updater-script | grep $permtype)
+			if [[ ! $permtest = "" ]]; then
+				grep -v "$permtest" updater-script > updater-script2
+				mv updater-script2 updater-script
+			fi
+		fi
 		if [[ $permtype = "sparse_dat" ]]; then
 			cd $romdir
 			rm -rf install system.patch.dat META-INF
@@ -1397,6 +1410,15 @@ change_permtype() {
 		echo "$permtype" > $prfiles/permtype
 	# set_perm chosen
 	elif [[ $choice == "2" ]]; then
+		echo "${bluet}Changing perm type ...$normal"
+		if [[ -s $prfiles/$permtype ]]; then
+			cd $romdir/META-INF/com/google/android
+			permtest=$(gawk '/#PERM/,/set_progress/' updater-script | grep $permtype)
+			if [[ ! $permtest = "" ]]; then
+				grep -v "$permtest" updater-script > updater-script2
+				mv updater-script2 updater-script
+			fi
+		fi
 		if [[ $permtype = "sparse_dat" ]]; then
 			cd $romdir
 			rm -rf install system.patch.dat META-INF
@@ -1411,10 +1433,10 @@ change_permtype() {
 		echo "$permtype" > $prfiles/permtype
 	# Sparse dat chosen
 	elif [[ $choice == "3" ]]; then
-		if [[ ! $api -ge "21" ]]; then
+		if [[ ! $api -ge "21" || ! $(getconf LONG_BIT) = "64" ]]; then
 			clear
 			banner
-			echo "${redt}This ROM is NOT Lollipop or beyond.$normal"
+			echo "${redt}This ROM is NOT Lollipop+ or you are running 32bit Linux.$normal"
 			echo ""
 			read -p "Press ENTER to return to Change Perm menu"
 			change_permtype
@@ -2432,11 +2454,11 @@ deodex_m() {
 				echo "... Deodexing $app"
 				echo ""
 				( java -jar $baksmali -x -d $framedir/$arch -c boot.oat:$app.odex -d $appdir/$app/oat/$arch/ $appdir/$app/oat/$arch/$app.odex -o $appdir/$app/oat/$arch/smali 2>&1 ) >> $appdir/$app/oat/$arch/classes.log
-				if [[ $(cat $appdir/$app/oat/$arch/classes.log | grep classes2) = "" ]]; then
+				if [[ $(grep classes2 $appdir/$app/oat/$arch/classes.log) = "" ]]; then
 					java -jar $smali -a $api $appdir/$app/oat/$arch/smali -o $appdir/$app/oat/$arch/classes.dex >> $logs/main.log
 					rm -rf $appdir/$app/oat/$arch/smali
 				else
-					cat $appdir/$app/oat/$arch/classes.log | grep "/system/app" | sed "s/\/system\/app\/$app\///g" >> $appdir/$app/oat/$arch/classes2.log
+					grep "/system/app" $appdir/$app/oat/$arch/classes.log | sed "s/\/system\/app\/$app\///g" >> $appdir/$app/oat/$arch/classes2.log
 					mv $appdir/$app/oat/$arch/classes2.log $appdir/$app/oat/$arch/classes.log
 					line=""
 					for line in $(cat $appdir/$app/oat/$arch/classes.log); do
@@ -2477,11 +2499,11 @@ deodex_m() {
 					echo "... Deodexing $app"
 					echo ""
 					( java -jar $baksmali -x -d $framedir/$arch2 -c boot.oat:$app.odex -d $appdir/$app/oat/$arch2/ $appdir/$app/oat/$arch2/$app.odex -o $appdir/$app/oat/$arch2/smali 2>&1 ) >> $appdir/$app/oat/$arch2/classes.log
-					if [[ $(cat $appdir/$app/oat/$arch2/classes.log | grep classes2) = "" ]]; then
+					if [[ $(grep classes2 $appdir/$app/oat/$arch2/classes.log) = "" ]]; then
 						java -jar $smali -a $api $appdir/$app/oat/$arch2/smali -o $appdir/$app/oat/$arch2/classes.dex >> $logs/main.log
 						rm -rf $appdir/$app/oat/$arch2/smali
 					else
-						cat $appdir/$app/oat/$arch2/classes.log | grep "/system/app" | sed "s/\/system\/app\/$app\///g" >> $appdir/$app/oat/$arch2/classes2.log
+						grep "/system/app" $appdir/$app/oat/$arch2/classes.log | sed "s/\/system\/app\/$app\///g" >> $appdir/$app/oat/$arch2/classes2.log
 						mv $appdir/$app/oat/$arch2/classes2.log $appdir/$app/oat/$arch2/classes.log
 						line=""
 						for line in $(cat $appdir/$app/oat/$arch2/classes.log); do
@@ -2574,11 +2596,11 @@ deodex_m() {
 				echo "... Deodexing $privapp"
 				echo ""
 				( java -jar $baksmali -x -d $framedir/$arch -c boot.oat:$privapp.odex -d $privdir/$privapp/oat/$arch/ $privdir/$privapp/oat/$arch/$privapp.odex -o $privdir/$privapp/oat/$arch/smali 2>&1 ) >> $privdir/$privapp/oat/$arch/classes.log
-				if [[ $(cat $privdir/$privapp/oat/$arch/classes.log | grep classes2) = "" ]]; then
+				if [[ $(grep classes2 $privdir/$privapp/oat/$arch/classes.log) = "" ]]; then
 					java -jar $smali -a $api $privdir/$privapp/oat/$arch/smali -o $privdir/$privapp/oat/$arch/classes.dex >> $logs/main.log
 					rm -rf $privdir/$privapp/oat/$arch/smali
 				else
-					cat $privdir/$privapp/oat/$arch/classes.log | grep "/system/priv-app" | sed "s/\/system\/priv-app\/$privapp\///g" >> $privdir/$privapp/oat/$arch/classes2.log
+					grep "/system/priv-app" $privdir/$privapp/oat/$arch/classes.log | sed "s/\/system\/priv-app\/$privapp\///g" >> $privdir/$privapp/oat/$arch/classes2.log
 					mv $privdir/$privapp/oat/$arch/classes2.log $privdir/$privapp/oat/$arch/classes.log
 					line=""
 					for line in $(cat $privdir/$privapp/oat/$arch/classes.log); do
@@ -2618,11 +2640,11 @@ deodex_m() {
 					echo "... Deodexing $privapp"
 					echo ""
 					( java -jar $baksmali -x -d $framedir/$arch2 -c boot.oat:$privapp.odex -d $privdir/$privapp/oat/$arch2/ $privdir/$privapp/oat/$arch2/$privapp.odex -o $privdir/$privapp/oat/$arch2/smali 2>&1 ) >> $privdir/$privapp/oat/$arch2/classes.log
-					if [[ $(cat $privdir/$privapp/oat/$arch2/classes.log | grep classes2) = "" ]]; then
+					if [[ $(grep classes2 $privdir/$privapp/oat/$arch2/classes.log) = "" ]]; then
 						java -jar $smali -a $api $privdir/$privapp/oat/$arch2/smali -o $privdir/$privapp/oat/$arch2/classes.dex >> $logs/main.log
 						rm -rf $privdir/$privapp/oat/$arch2/smali
 					else
-						cat $privdir/$privapp/oat/$arch2/classes.log | grep "/system/priv-app" | sed "s/\/system\/priv-app\/$privapp\///g" >> $privdir/$privapp/oat/$arch2/classes2.log
+						grep "/system/priv-app" $privdir/$privapp/oat/$arch2/classes.log | sed "s/\/system\/priv-app\/$privapp\///g" >> $privdir/$privapp/oat/$arch2/classes2.log
 						mv $privdir/$privapp/oat/$arch2/classes2.log $privdir/$privapp/oat/$arch2/classes.log
 						line=""
 						for line in $(cat $privdir/$privapp/oat/$arch2/classes.log); do
@@ -2684,7 +2706,7 @@ deodex_m() {
 	cd $framedir
 	mkdir temp
 	line=""
-	for line in $(cat $framedir/$arch/classes.log | grep -v dex); do
+	for line in $(grep -v dex $framedir/$arch/classes.log); do
 		mv $line temp/
 	done
 	cd $tools
@@ -2696,11 +2718,11 @@ deodex_m() {
 				echo "... Deodexing $frame"
 				echo ""
 				( java -jar $baksmali -x -d $framedir/$arch -c boot.oat:$frame.odex -d $framedir/oat/$arch/ $framedir/oat/$arch/$frame.odex -o $framedir/oat/$arch/smali 2>&1 ) > $framedir/oat/$arch/classes2.log
-				if [[ $(cat $framedir/oat/$arch/classes2.log | grep classes2) = "" ]]; then
+				if [[ $(grep classes2 $framedir/oat/$arch/classes2.log) = "" ]]; then
 					java -jar $smali -a $api $framedir/oat/$arch/smali -o $framedir/oat/$arch/classes.dex >> $logs/main.log
 					rm -rf $framedir/oat/$arch/smali				
 				else
-					cat $framedir/oat/$arch/classes2.log | grep "/system/framework" | sed "s/\/system\/framework\///" >> $framedir/oat/$arch/classes3.log
+					grep "/system/framework" $framedir/oat/$arch/classes2.log | sed "s/\/system\/framework\///" >> $framedir/oat/$arch/classes3.log
 					mv $framedir/oat/$arch/classes3.log $framedir/oat/$arch/classes2.log
 					line=""
 					for line in $(cat $framedir/oat/$arch/classes2.log); do
@@ -2766,7 +2788,7 @@ deodex_m() {
 		done
 		cd $framedir/temp
 		line=""
-		for line in $(cat $framedir/$arch/classes.log | grep -v dex); do
+		for line in $(grep -v dex $framedir/$arch/classes.log); do
 			mv $line $framedir/
 		done
 	fi
@@ -3123,17 +3145,17 @@ extract_new() {
 	ls | grep .img | grep -v "boot\|recovery\|chunk" >> $prfiles/findextract
 	ls | grep system.ext4$ >> $prfiles/findextract
 	if [[ ! $(cat $prfiles/findextract | wc -l) -gt "1" ]]; then
-		if [[ ! $(cat $prfiles/findextract | grep .zip) = "" ]]; then
+		if [[ ! $(grep .zip $prfiles/findextract) = "" ]]; then
 			romzip=$(cat $prfiles/findextract)
-		elif [[ ! $(cat $prfiles/findextract | grep .tar) = "" ]]; then
+		elif [[ ! $(grep .tar $prfiles/findextract) = "" ]]; then
 			romtar=$(cat $prfiles/findextract)
-		elif [[ ! $(cat $prfiles/findextract | grep .win) = "" ]]; then
+		elif [[ ! $(grep .win $prfiles/findextract) = "" ]]; then
 			romwin=$(cat $prfiles/findextract)
-		elif [[ ! $(cat $prfiles/findextract | grep chunk) = "" ]]; then
+		elif [[ ! $(grep chunk $prfiles/findextract) = "" ]]; then
 			romchunk=$(cat $prfiles/findextract)
-		elif [[ ! $(cat $prfiles/findextract | grep .img) = "" ]]; then
+		elif [[ ! $(grep .img $prfiles/findextract) = "" ]]; then
 			romimg=$(cat $prfiles/findextract)
-		elif [[ ! $(cat $prfiles/findextract | grep system.ext4$) = "" ]]; then
+		elif [[ ! $(grep system.ext4$ $prfiles/findextract) = "" ]]; then
 			mv system.ext4 system.img
 			romimg="system.img"
 		fi
@@ -3379,10 +3401,10 @@ extract_new() {
 				deviceloc=$base/tools/devices/$devicename
 				cd $romdir/META-INF/com/google/android
 				if [[ ! -f $deviceloc/superr_byname ]]; then	
-					mountck=$(cat updater-script | grep "/system" | grep -m 1 "^mount" | gawk '{ print $3 }' | sed 's/\"//g; s/\/system//g; s/\,//g; s:\/:\\/:g')
+					mountck=$(grep "/system" updater-script | grep -m 1 "^mount" | gawk '{ print $3 }' | sed 's/\"//g; s/\/system//g; s/\,//g; s:\/:\\/:g')
 					if [[ ! $(echo "$mountck" | grep mmcblk) = "" ]]; then
 						echo "$mountck \/system" > $deviceloc/superr_mmc
-						bootmmc=$(cat updater-script | grep boot.img | cut -d'"' -f4 | sed 's:\/:\\/:g')
+						bootmmc=$(grep boot.img updater-script | cut -d'"' -f4 | sed 's:\/:\\/:g')
 						echo "$bootmmc \/boot" >> $deviceloc/superr_mmc
 						echo "mmc" > $deviceloc/superr_byname
 					elif [[ ! $(echo "$mountck" | grep by-name) = "" ]]; then
@@ -3400,17 +3422,17 @@ extract_new() {
 					grep ^$permtype updater-script | grep -v "/tmp/" > $prfiles/$permtype
 				fi
 				grep ^symlink updater-script > $prfiles/symlinks
-				cat $prfiles/symlinks | grep ",$" > $prfiles/symlinks2
+				grep ",$" $prfiles/symlinks > $prfiles/symlinks2
 				if [[ -s $prfiles/symlinks2 ]]; then	
 					line=""
 					cat $prfiles/symlinks2 | while read line; do
 						line2=$(echo "$line" | sed 's/\"/\\"/g; s/ /\\ /g; s:\/:\\/:g; s/\[/\\[/g')
-						cat updater-script | sed -n "/$line2/,/;/p" > $prfiles/mulsym
-						top=$(cat $prfiles/mulsym | head -n 1 | sed 's/\[/\\[/g')
+						sed -n "/$line2/,/;/p" updater-script > $prfiles/mulsym
+						top=$(head -n 1 $prfiles/mulsym | sed 's/\[/\\[/g')
 						top2=$(echo "$top" | gawk '{ print $1}')
-						bottom=$(cat $prfiles/mulsym | tail -n 1)
-						cat $prfiles/mulsym | grep -v "$top" | grep -v "$bottom" > $prfiles/mulsym2
-						cat updater-script | grep -v "$bottom" > updater-script2
+						bottom=$(tail -n 1 $prfiles/mulsym)
+						grep -v "$top" $prfiles/mulsym | grep -v "$bottom" > $prfiles/mulsym2
+						grep -v "$bottom" updater-script > updater-script2
 						mv updater-script2 updater-script
 						echo "$top" | tr ',' '\n' | grep -v ^symlink >> $prfiles/mulsym2
 						if [[ $(echo "$bottom" | tr -cd , | wc -c) -gt "0" ]]; then
@@ -3428,11 +3450,11 @@ extract_new() {
 						rm -rf $prfiles/mulsym2
 						rm -rf $prfiles/mulsym
 					done
-					cat updater-script | grep -v ",$" updater-script > updater-script2
+					grep -v ",$" updater-script > updater-script2
 					mv updater-script2 updater-script
-					cat $prfiles/symlinks | grep -v ",$" > $prfiles/symlinks2
+					grep -v ",$" $prfiles/symlinks > $prfiles/symlinks2
 					mv $prfiles/symlinks2 $prfiles/symlinks
-					cat $prfiles/symlinks | sed 's:\\\[:\[:g' > $prfiles/symlinks2
+					sed 's:\\\[:\[:g' $prfiles/symlinks > $prfiles/symlinks2
 					mv $prfiles/symlinks2 $prfiles/symlinks
 				fi
 				rm -rf $prfiles/symlinks2
@@ -3531,7 +3553,7 @@ extract_new() {
 				if [[ $choice = "y" ]]; then
 					extractimg="cache"
 					imgextract
-					if [[ -d cache && $(cat $romdir/system/build.prop | grep "ro.product.brand" | cut -d"=" -f2) = "samsung" ]]; then
+					if [[ -d cache && $(grep "ro.product.brand" $romdir/system/build.prop | cut -d"=" -f2) = "samsung" ]]; then
 						choice=""
 						echo ""
 						echo "Would you like to include the files from cache.img"
@@ -3583,7 +3605,7 @@ extract_new() {
 			deviceloc=""
 			deviceloc=$base/tools/devices/$devicename
 			choice=""
-			if [[ $(cat $romdir/system/build.prop | grep "ro.build.version.sdk" | cut -d"=" -f2) -ge "21" && ! $(cat $romdir/system/build.prop | grep "ro.product.brand" | cut -d"=" -f2) = "samsung" ]]; then
+			if [[ $(grep "ro.build.version.sdk" $romdir/system/build.prop | cut -d"=" -f2) -ge "21" && ! $(grep "ro.product.brand" $romdir/system/build.prop | cut -d"=" -f2) = "samsung" ]]; then
 				clear
 				banner
 				echo "${bluet}This ROM is Lollipop or beyond.$normal"
@@ -3609,7 +3631,7 @@ extract_new() {
 			find . -type l | sed 's/\./\"/; s/$/\");/' > $prfiles/sym2.txt
 			cd $prfiles
 			paste -d '' sym1.txt sym2.txt > sym3.txt
-			cat sym3.txt | sort > symlinks
+			sort sym3.txt > symlinks
 			cp symlinks symlinks.orig
 			rm -rf sym1.txt sym2.txt sym3.txt
 			rm -rf debloat_test
@@ -3674,7 +3696,7 @@ findimgsize() {
 			byname=$(cat $deviceloc/superr_byname)
 			byname2=$(echo "$byname" | sed 's/\\//g')
 			if [[ -f $deviceloc/superr_mmc ]]; then
-				imgblock=$(cat $deviceloc/superr_mmc | grep $whatimg | gawk '{ print $1 }' | cut -d"/" -f4)
+				imgblock=$(grep $whatimg $deviceloc/superr_mmc | gawk '{ print $1 }' | cut -d"/" -f4)
 			else
 				$adb "wait-for-device"
 				if [[ -f $deviceloc/superr_appbyname ]]; then
@@ -3880,6 +3902,8 @@ get_byname() {
 			elif [[ ! $(grep "by-name/APP" $fstab) = "" ]]; then
 				grep "by-name/APP" $fstab | gawk '{ print $1 }' | sed 's/\/APP//' > $deviceloc/superr_byname2
 				touch $deviceloc/superr_appbyname
+			elif [[ ! $(grep "by-name/userdata" $fstab) = "" ]]; then
+				grep "by-name/userdata" $fstab | gawk '{ print $1 }' | sed 's/\/userdata//' > $deviceloc/superr_byname2
 			fi
 			sed -i 's:/:\\/:g' $deviceloc/superr_byname2
 			mv $deviceloc/superr_byname2 $deviceloc/superr_byname
@@ -4008,10 +4032,10 @@ get_sig() {
 		echo ""
 		read -e signature1
 		echo $signature1 | sed 's/ /_/g; s:/:\\/:g' > $prfiles/signature
-		signature1=$(cat $prfiles/signature | sed 's/_/ /g')
+		signature1=$(sed 's/_/ /g' $prfiles/signature)
 		signature=$(cat $prfiles/signature)
 	else
-		signature1=$(cat $prfiles/signature | sed 's/_/ /g')
+		signature1=$(sed 's/_/ /g' $prfiles/signature)
 		signature=$(cat $prfiles/signature)
 	fi
 }
@@ -4203,7 +4227,7 @@ isinitd() {
 }
 isinsecure() {
 	if [[ -f $romdir/bootimg/ramdisk/default.prop ]]; then
-		if [[ $(cat $romdir/bootimg/ramdisk/default.prop | grep "ro.secure=0") = "" ]]; then
+		if [[ $(grep "ro.secure=0" $romdir/bootimg/ramdisk/default.prop) = "" ]]; then
 			insecurestatus="No"
 			insecurestatus1=$(echo "${redt}No")
 		else
@@ -4437,9 +4461,9 @@ partadd() {
 	banner
 	echo "${bluet}Adding $whatpart to the rom ...$normal"
 	partbyname=""
-	if [[ -f $deviceloc/superr_mmc && ! $(cat $deviceloc/superr_mmc | grep "$whatpart") = "" ]]; then
+	if [[ -f $deviceloc/superr_mmc && ! $(grep "$whatpart" $deviceloc/superr_mmc) = "" ]]; then
 		partbyname=$(grep "$whatpart" $deviceloc/superr_mmc | gawk '{ print $1 }')
-	elif [[ -f $deviceloc/superr_byname && ! $(cat $deviceloc/superr_byname | grep "by-name") = "" ]]; then
+	elif [[ -f $deviceloc/superr_byname && ! $(grep "by-name" $deviceloc/superr_byname) = "" ]]; then
 		if [[ $whatpart = "vendor" ]]; then	
 			if [[ -f $deviceloc/superr_capbyname ]]; then
 				partbyname="$(cat $deviceloc/superr_byname)\/VENDOR"
@@ -4784,12 +4808,12 @@ rootrem() {
 	if [[ -f $romdir/system/bin/debuggerd_real ]]; then
 		mv $romdir/system/bin/debuggerd_real $romdir/system/bin/debuggerd
 	fi
-	if [[ -f $romdir/system/bin/install-recovery.sh && ! $(cat $romdir/system/bin/install-recovery.sh | grep xbin) = "" ]]; then
+	if [[ -f $romdir/system/bin/install-recovery.sh && ! $(grep xbin $romdir/system/bin/install-recovery.sh) = "" ]]; then
 		rm -rf $romdir/system/bin/install-recovery.sh
 		grep -v "system/bin/install-recovery.sh" symlinks > symlinks2
 		mv symlinks2 symlinks
 	fi
-	if [[ -f $romdir/system/etc/install-recovery.sh && ! $(cat $romdir/system/etc/install-recovery.sh | grep xbin) = "" ]]; then
+	if [[ -f $romdir/system/etc/install-recovery.sh && ! $(grep xbin $romdir/system/etc/install-recovery.sh) = "" ]]; then
 		rm -rf $romdir/system/etc/install-recovery.sh
 		grep -v "system/etc/install-recovery.sh" symlinks > symlinks2
 		mv symlinks2 symlinks
@@ -4859,17 +4883,21 @@ update_project() {
 			permtype=$(cat $prfiles/permtype)
 		fi
 		if [[ $permtype = "" ]]; then
-			api=$(cat $romdir/system/build.prop | grep "ro.build.version.sdk" | cut -d"=" -f2)
+			api=$(grep "ro.build.version.sdk" $romdir/system/build.prop | cut -d"=" -f2)
 			choice=""
 			while [[ $choice -lt "1" || $choice -gt "3" ]] ; do
 				clear
 				banner
 				echo "Which perm type would you like to use?"
 				echo ""
-				echo "1) set_metadata"
+				if [[ ! $api -ge "19" ]]; then
+					echo "${redt}1) set_metadata  (For KitKat and beyond only)$normal"
+				else
+					echo "1) set_metadata  (For KitKat and beyond)"
+				fi
 				echo "2) set_perm"
-				if [[ ! $api -ge "21" ]]; then
-					echo "${redt}3) Sparse dat (For Lollipop and beyond)$normal"
+				if [[ ! $api -ge "21" || ! $(getconf LONG_BIT) = "64" ]]; then
+					echo "${redt}3) Sparse dat (For 64bit Linux and Lollipop+ only)$normal"
 				else
 					echo "3) Sparse dat (recommended)"
 				fi
@@ -4878,6 +4906,15 @@ update_project() {
 			done	
 			# set_metadata chosen
 			if [[ $choice == "1" ]]; then
+				if [[ ! $api -ge "19" ]]; then
+					clear
+					banner
+					echo "${redt}This ROM is NOT KitKat or beyond.$normal"
+					echo ""
+					read -p "Press ENTER to continue"
+					update_project
+					return 1
+				fi
 				permtype="set_metadata"
 				echo "$permtype" > $prfiles/permtype
 			# set_perm chosen
@@ -4886,10 +4923,10 @@ update_project() {
 				echo "$permtype" > $prfiles/permtype
 			# Sparse dat chosen
 			elif [[ $choice == "3" ]]; then
-				if [[ ! $api -ge "21" ]]; then
+				if [[ ! $api -ge "21" || ! $(getconf LONG_BIT) = "64" ]]; then
 					clear
 					banner
-					echo "${redt}This ROM is NOT Lollipop or beyond.$normal"
+					echo "${redt}This ROM is NOT Lollipop+ or you are running 32bit Linux.$normal"
 					echo ""
 					read -p "Press ENTER to continue"
 					update_project
@@ -4943,9 +4980,9 @@ update_project() {
 		rm -rf set_perm
 		if [[ $permtype = "set_perm" ]]; then
 			line=""
-			cat $tools/updater/set_perm-data | cut -d"\"" -f2 | while read line; do
+			cut -d"\"" -f2 $tools/updater/set_perm-data | while read line; do
 				if [[ $(grep -r -m 1 "^$line$" all_files.txt) = "$line" ]]; then
-					cat $tools/updater/set_perm-data | grep -m 1 "$line" >> set_perm
+					grep -m 1 "$line" $tools/updater/set_perm-data >> set_perm
 				fi
 			done
 			cp set_perm set_perm.orig
@@ -5003,14 +5040,14 @@ update_project() {
 				fi
 			fi	
 			cd $prfiles
-			cat file_contexts | sed 's/--//g' | grep "^/system/" | sort > file_contexts2
+			sed 's/--//g' file_contexts | grep "^/system/" | sort > file_contexts2
 			if [[ -f $prfiles/vendorimg ]]; then
 				grep "^/vendor/" file_contexts >> file_contexts2
 			fi
-			cat file_contexts2 | sed 's/\\././g; s/(\/\.\*)?//g' | gawk '{ print $1, $2 }' | sort > file_contexts3
+			sed 's/\\././g; s/(\/\.\*)?//g' file_contexts2 | gawk '{ print $1, $2 }' | sort > file_contexts3
 			mv file_contexts3 file_contexts2
 			line=""
-			for line in $(cat file_contexts2 | gawk '{ print $1 }'); do
+			for line in $(gawk '{ print $1 }' file_contexts2); do
 				if [[ $(grep -m 1 "^$line$" all_files.txt) = "$line" ]]; then
 					grep -m 1 "^$line " file_contexts2 >> pre_metadata
 				fi
@@ -5024,7 +5061,7 @@ update_project() {
 				elif [[ $(grep -m 1 "^$line2$" all_files.txt) = "$line2" && ! $(echo $line | grep "#CONTEXT") = "" ]]; then
 					grep -m 1 "$line2" $tools/updater/set_metadata-data | sed "s/#CONTEXT/u:object_r:system_file:s0/" >> set_metadata
 				elif [[ $(grep -m 1 "^$line2$" all_files.txt) = "$line2" && $(echo $line | grep "#CONTEXT") = "" ]]; then
-					cat $tools/updater/set_metadata-data | grep -m 1 "$line2" >> set_metadata
+					grep -m 1 "$line2" $tools/updater/set_metadata-data >> set_metadata
 				fi
 			done
 			rm -rf pre_metadata
@@ -5033,22 +5070,22 @@ update_project() {
 	cd $prfiles
 	rm -rf symlinks
 	cp symlinks.orig symlinks
-	cat all_files.txt | grep "/system/app\|/system/priv-app" | cut -d"/" -f1-4 | grep -v "^/system/app$\|^/system/priv-app$" | sort -u >> appsym
+	grep "/system/app\|/system/priv-app" all_files.txt | cut -d"/" -f1-4 | grep -v "^/system/app$\|^/system/priv-app$" | sort -u >> appsym
 	line=""
-	cat symlinks | grep "/system/app" | cut -d"\"" -f4 | cut -d"/" -f1-4 | while read line; do
+	grep "/system/app" symlinks | cut -d"\"" -f4 | cut -d"/" -f1-4 | while read line; do
 		if [[ ! "$line" = $(grep "^$line$" appsym) ]]; then
 			grep -v "$line" symlinks > symlinks2
 			mv symlinks2 symlinks
 		fi
 	done
 	line=""
-	cat symlinks | grep "/system/priv-app" | cut -d"\"" -f4 | cut -d"/" -f1-4 | while read line; do
+	grep "/system/priv-app" symlinks | cut -d"\"" -f4 | cut -d"/" -f1-4 | while read line; do
 		if [[ ! "$line" = $(grep "^$line$" appsym) ]]; then
 			grep -v "$line" symlinks > symlinks2
 			mv symlinks2 symlinks
 		fi
 	done
-	cat symlinks | sort -u > symlinks2
+	sort -u symlinks > symlinks2
 	mv symlinks2 symlinks
 	rm -rf appsym
 	cd $prfiles
