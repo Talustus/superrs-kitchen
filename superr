@@ -1133,31 +1133,22 @@ build_rom_zip() {
 		banner
 		echo "${bluet}Preparing files for dat creation ...$normal"
 		if [[ ! -f $prfiles/file_contexts ]]; then
-			removeboot=""
-			if [[ ! -d $romdir/bootimg/ramdisk ]]; then
-				if [[ -f $romdir/boot.img ]]; then
-					removeboot="1"
-					chosenimg="boot"
-					bootext="1"
-					boot_unpack
-				else
-					clear
-					banner
-					echo "${redb}${yellowt}ERROR:$normal"
-					echo "${redt}You need a boot.img for this process.$normal"
-					echo ""
-					read -p "Press ENTER to return to Build menu"
-					build_zip
-					return 1
-				fi
-			fi
-			if [[ -f $romdir/bootimg/ramdisk/file_contexts ]]; then
-				cp $romdir/bootimg/ramdisk/file_contexts $prfiles/
-				if [[ $removeboot = "1" ]]; then
-					rm -rf $romdir/bootimg
-					removeboot=""
-				fi
+			if [[ -f $romdir/boot.img ]]; then
+				chosenimg="boot"
+				bootext="1"
+				boot_unpack
+				rm -rf $romdir/bootimg
 			else
+				clear
+				banner
+				echo "${redb}${yellowt}ERROR:$normal"
+				echo "${redt}You need a boot.img for this process.$normal"
+				echo ""
+				read -p "Press ENTER to return to Build menu"
+				build_zip
+				return 1
+			fi
+			if [[ ! -f $prfiles/file_contexts ]]; then
 				clear
 				banner
 				echo "${redb}${yellowt}ERROR:$normal"
@@ -1170,20 +1161,10 @@ build_rom_zip() {
 				echo "${bluet}For now, you will need to build a normal ROM zip.$normal"
 				echo ""
 				read -p "Press ENTER to return to build menu"
-				if [[ $removeboot = "1" ]]; then
-					rm -rf $romdir/bootimg
-				fi
 				build_zip
 				return 1
 			fi
 		fi
-		cd $romdir
-		line=""
-		cat $prfiles/symlinks | while read line; do
-			target=$(echo "$line" | cut -d"\"" -f2)
-			link=$(echo "$line" | cut -d"\"" -f4 | sed 's/^\///')
-			ln -s -f -T $target $link
-		done
 		whatimg="system"
 		findimgsize
 		if [[ ! $(grep "vendor.transfer" $romdir/META-INF/com/google/android/updater-script) = "" ]]; then
@@ -1195,17 +1176,19 @@ build_rom_zip() {
 			findimgsize
 		fi
 		whatpart="system"
+		partimg
 		partsdat
 		if [[ ! $(grep "vendor.transfer" $romdir/META-INF/com/google/android/updater-script) = "" ]]; then
 			whatpart="vendor"
+			partimg
 			partsdat
 		fi
 		if [[ ! $(grep "data.transfer" $romdir/META-INF/com/google/android/updater-script) = "" ]]; then
 			whatpart="data"
+			partimg
 			partsdat
 		fi
 		rm -rf $romdir/tmpsparse
-		find . -type l -exec rm -f {} \;
 		clear
 		banner		
 		echo "${bluet}Building $signature.zip in $romname"
@@ -1214,6 +1197,57 @@ build_rom_zip() {
 		echo ""
 		7za a -mx7 $signature.zip install boot.img META-INF system.new.dat system.patch.dat system.transfer.list vendor.new.dat vendor.patch.dat vendor.transfer.list data.new.dat data.patch.dat data.transfer.list supersu $prfiles/file_contexts >> $logs/zip.log
 		rm -rf vendor.new.dat vendor.transfer.list vendor.patch.dat data.new.dat data.patch.dat data.transfer.list system.new.dat system.transfer.list system.patch.dat
+	elif [[ $permtype = "raw_img" ]]; then
+		clear
+		banner
+		echo "${bluet}Preparing files for img creation ...$normal"
+		if [[ ! -f $prfiles/file_contexts ]]; then
+			if [[ -f $romdir/boot.img ]]; then
+				chosenimg="boot"
+				bootext="1"
+				boot_unpack
+				rm -rf $romdir/bootimg
+			else
+				clear
+				banner
+				echo "${redb}${yellowt}ERROR:$normal"
+				echo "${redt}You need a boot.img for this process.$normal"
+				echo ""
+				read -p "Press ENTER to return to Build menu"
+				build_zip
+				return 1
+			fi
+		fi
+		whatimg="system"
+		findimgsize
+		if [[ ! $(grep "\"/vendor\"" $romdir/META-INF/com/google/android/updater-script) = "" ]]; then
+			whatimg="vendor"
+			findimgsize
+		fi
+		if [[ ! $(grep "\"/data\"" $romdir/META-INF/com/google/android/updater-script) = "" ]]; then
+			whatimg="data"
+			findimgsize
+		fi
+		clear
+		banner
+		whatpart="system"
+		partimg
+		if [[ ! $(grep "\"/vendor\"" $romdir/META-INF/com/google/android/updater-script) = "" ]]; then
+			whatpart="vendor"
+			partimg
+		fi
+		if [[ ! $(grep "\"/data\"" $romdir/META-INF/com/google/android/updater-script) = "" ]]; then
+			whatpart="data"
+			partimg
+		fi
+		clear
+		banner		
+		echo "${bluet}Building $signature.zip in $romname"
+		echo ""
+		echo "${yellowt}This may take a while. Please be patient ...$normal"
+		echo ""
+		7za a -mx7 $signature.zip boot.img META-INF system_new.img vendor_new.img data_new.img supersu >> $logs/zip.log
+		rm -rf system_new.img vendor_new.img data_new.img	
 	else
 		clear
 		banner		
@@ -1256,52 +1290,32 @@ build_zip() {
 		banner
 		echo "${bluet}Preparing files for system.img creation ...$normal"
 		if [[ ! -f $prfiles/file_contexts ]]; then
-			removeboot=""
-			if [[ ! -d $romdir/bootimg/ramdisk ]]; then
-				if [[ -f $romdir/boot.img ]]; then
-					removeboot="1"
-					chosenimg="boot"
-					bootext="1"
-					boot_unpack
-				fi
-			fi
-			if [[ -f $romdir/bootimg/ramdisk/file_contexts ]]; then
-				cp $romdir/bootimg/ramdisk/file_contexts $prfiles/
-				if [[ $removeboot = "1" ]]; then
-					rm -rf $romdir/bootimg
-					removeboot=""
-				fi
+			if [[ -f $romdir/boot.img ]]; then
+				chosenimg="boot"
+				bootext="1"
+				boot_unpack
+				rm -rf $romdir/bootimg
 			fi
 		fi
-		cd $romdir
-		line=""
-		cat $prfiles/symlinks | while read line; do
-			target=$(echo "$line" | cut -d"\"" -f2)
-			link=$(echo "$line" | cut -d"\"" -f4 | sed 's/^\///')
-			linkdir=$(dirname $link)
-			if [[ ! -d $linkdir ]]; then
-				mkdir -p $linkdir
-			fi
-			ln -s -f -T $target $link
-		done
 		if [[ -f $deviceloc/sysimgsize ]]; then
 			imgsize=$(cat $deviceloc/sysimgsize)
 		else
 			whatimg="system"
 			findimgsize
 		fi
-		clear
-		banner
-		echo "${bluet}Creating raw system.img ...$normal"
-		if [[ -f $prfiles/file_contexts ]]; then
-			( $tools/make_ext4fs -T 0 -S $prfiles/file_contexts -l $syssize -a system system_new.img system/ 2>&1 ) >> $logs/main.log
-		else
-			( $tools/make_ext4fs -T 0 -l $syssize -a system system_new.img system/ 2>&1 ) >> $logs/main.log
-		fi
-		find . -type l -exec rm -f {} \;
-		if [[ ! -f system.img ]]; then
+		whatpart="system"
+		partimg
+		if [[ -f system_new.img && ! -f system.img ]]; then
 			mv system_new.img system.img
 			imgname="system.img"
+		elif [[ ! -f system_new.img ]]; then
+			clear
+			banner
+			echo "${redt}There was a problem creating the image.$normal"
+			echo ""
+			read -p "Press ENTER to return to Build menu"
+			build_zip
+			return 1
 		else
 			imgname="system_new.img"
 		fi
@@ -1337,7 +1351,7 @@ change_permtype() {
 		fi
 	fi
 	choice=""
-	while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "4" ]] ; do
+	while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "5" ]] ; do
 		clear
 		banner
 		echo "${bluet}CURRENT PROJECT: $greent$romname$normal"
@@ -1368,7 +1382,12 @@ change_permtype() {
 				echo "3) Sparse dat (recommended)"
 			fi
 		fi
-		echo "${yellowt}4) ROM Tools menu"
+		if [[ $permtype = "raw_img" ]]; then
+			echo "4) raw_img (${bluet}CURRENT$normal)"
+		else
+			echo "4) raw_img"
+		fi
+		echo "${yellowt}5) ROM Tools menu"
 		echo "m = Main menu"
 		echo "${magentat}q = Quit$normal"
 		echo ""
@@ -1452,8 +1471,21 @@ change_permtype() {
 			mv $prfiles/permtype $prfiles/permtype_old
 		fi
 		echo "$permtype" > $prfiles/permtype	
-	# START ROM Tools menu chosen
+	# raw_img chosen
 	elif [[ $choice == "4" ]]; then
+		rm -rf $romdir/META-INF
+		cd $tools/updater
+		cp -r ./META-INF-IMG/* $romdir
+		cp $tools/updater/META-INF/com/google/android/update-binary $romdir/META-INF/com/google/android/
+		cd $prfiles
+		rm -rf permtype set_metadata set_perm
+		permtype="raw_img"
+		if [[ -f $prfiles/permtype ]]; then
+			mv $prfiles/permtype $prfiles/permtype_old
+		fi
+		echo "$permtype" > $prfiles/permtype
+	# START ROM Tools menu chosen
+	elif [[ $choice == "5" ]]; then
 		rom_tools
 		return 1
 	# START Main menu chosen
@@ -1505,7 +1537,7 @@ data_app() {
 }	
 data_apprem() {		
 	cd $romdir/META-INF/com/google/android
-	grep -v "\"\/data\"\|\"\/data\/app\"\|Extracting data\|#DATA\|data.transfer" updater-script > updater-script2
+	grep -v "\"\/data\"\|\"\/data\/app\"\|Extracting data\|#DATA\|data.transfer\|data_new.img" updater-script > updater-script2
 	mv updater-script2 updater-script
 	rm -rf $romdir/data
 }
@@ -3704,6 +3736,8 @@ findimgsize() {
 						newname="APP"
 					elif [[ $whatimg = "vendor" ]]; then
 						newname="VNR"
+					elif [[ $whatimg = "data" ]]; then
+						newname="UDA"
 					fi
 					imgblock=$($adb shell su -C "ls -al $byname2" | grep $newname | gawk '{ print $8 }' | cut -d"/" -f4)
 				elif [[ -f $deviceloc/superr_capbyname ]]; then
@@ -3711,6 +3745,8 @@ findimgsize() {
 						newname="SYSTEM"
 					elif [[ $whatimg = "vendor" ]]; then
 						newname="VENDOR"
+					elif [[ $whatimg = "data" ]]; then
+						newname="USERDATA"
 					fi
 					imgblock=$($adb shell su -C "ls -al $byname2" | grep $newname | gawk '{ print $8 }' | cut -d"/" -f4)
 				else
@@ -3719,6 +3755,15 @@ findimgsize() {
 			fi
 			$adb "wait-for-device"
 			rawsize=$($adb shell "cat /proc/partitions" | grep "$imgblock" | gawk '{ print $3 }')
+			if [[ $rawsize = "" ]]; then
+				clear
+				banner
+				echo "${redt}Something went wrong.$normal"
+				echo ""
+				read -p "Press ENTER to choose another detection method"
+				findimgsize
+				return 1
+			fi
 			export ${imgfile}size=$(echo $(($rawsize * 1024)))
 		#START Project $whatimg directory (BETA)
 		elif [[ $choice = "2" ]]; then
@@ -3739,7 +3784,7 @@ findimgsize() {
 				build_zip
 				return 1
 			fi
-			imgtest=$(du -hbd 0 $whatimg | gawk '{ print $1 }')
+			imgtest=$(du -hbd 0 $romdir/$whatimg | gawk '{ print $1 }')
 			export ${imgfile}size=$(($imgtest + 75000000))
 		#START Enter it manually in bytes
 		elif [[ $choice = "3" ]]; then
@@ -3762,9 +3807,6 @@ findimgsize() {
 					mv $whatimg.img-2 $whatimg.img
 				fi
 				export ${imgfile}size=$(wc -c $whatimg.img | gawk '{ print $1 }')
-				#bsize=$(tune2fs -l $whatimg.img | grep "Block size" | gawk '{ print $3 }')
-				#bcount=$(tune2fs -l $whatimg.img | grep "Block count" | gawk '{ print $3 }')
-				#export ${imgfile}size=$(($bcount *$bsize))
 			else
 				clear
 				banner
@@ -4155,6 +4197,7 @@ isdataappstatus() {
 			dataapp1=$(echo "${greent}Supported${normal}")
 		else
 			rm -rf $prfiles/userdata
+			data_apprem
 			dataapp="No"
 			dataapp1=$(echo "${redt}Add support${normal}")
 		fi
@@ -4502,6 +4545,29 @@ partadd() {
 				sed -i "/#DATA/ r $tools/updater/datasparse.txt" updater-script
 				sed -i "s/#PARTDATA/$partbyname/" updater-script
 			fi
+		elif [[ $permtype = "raw_img" ]]; then
+			cd $romdir/META-INF/com/google/android
+			gawk 'a=/^format/{b=1}b&&!a{print "#FORMAT";b=0}1' updater-script > updater-script2
+			mv updater-script2 updater-script
+			sed -i "s/#FORMAT/format(\"ext4\"\,\ \"EMMC\"\,\ \"$partbyname\"\,\ \"0\"\,\ \"\/$whatpart\");/" updater-script
+			gawk 'a=/^mount/{b=1}b&&!a{print "#MOUNT";b=0}1' updater-script > updater-script2
+			mv updater-script2 updater-script
+			sed -i "s/#MOUNT/mount(\"ext4\"\,\ \"EMMC\"\,\ \"$partbyname\"\,\ \"\/$whatpart\");/" updater-script
+			sed -i "s/#MOUNT/format(\"ext4\"\,\ \"EMMC\"\,\ \"$partbyname\"\,\ \"0\"\,\ \"\/$whatpart\");/" updater-script
+			gawk 'a=/^unmount/{b=1}b&&!a{print "#UNMOUNT";b=0}1' updater-script > updater-script2
+			mv updater-script2 updater-script
+			sed -i "s/#UNMOUNT/unmount(\"\/$whatpart\");/" updater-script
+			if [[ $whatpart = "vendor" ]]; then 	
+				gawk 'a=/system_new\.img/{b=1}b&&!a{print "#VENDOR";b=0}1' updater-script > updater-script2
+				mv updater-script2 updater-script
+				sed -i "/#VENDOR/ r $tools/updater/vendorraw.txt" updater-script
+				sed -i "s/#PARTVENDOR/$partbyname/" updater-script
+			elif [[ $whatpart = "data" ]]; then
+				gawk 'a=/system_new\.img/{b=1}b&&!a{print "#DATA";b=0}1' updater-script > updater-script2
+				mv updater-script2 updater-script
+				sed -i "/#DATA/ r $tools/updater/dataraw.txt" updater-script
+				sed -i "s/#PARTDATA/$partbyname/" updater-script
+			fi
 		else
 			cd $romdir/META-INF/com/google/android
 			gawk 'a=/^format/{b=1}b&&!a{print "#FORMAT";b=0}1' updater-script > updater-script2
@@ -4539,20 +4605,10 @@ partadd() {
 partsdat() {
 	clear
 	banner
-	echo "${bluet}Creating raw $whatpart.img ...$normal"	
-	if [[ $whatpart = "system" ]]; then
-		( $tools/make_ext4fs -T 0 -S $prfiles/file_contexts -l $syssize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
-	elif [[ $whatpart = "vendor" ]]; then
-		( $tools/make_ext4fs -T 0 -S $prfiles/file_contexts -l $vensize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
-	elif [[ $whatpart = "data" ]]; then
-		( $tools/make_ext4fs -T 0 -S $prfiles/file_contexts -l $datsize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
-	fi
+	echo "${bluet}Creating $whatpart sparse dat image ...$normal"
 	mkdir -p $romdir/tmpsparse
 	mv ${whatpart}_new.img $romdir/tmpsparse/${whatpart}_new.img
 	cd $romdir/tmpsparse
-	clear
-	banner
-	echo "${bluet}Creating $whatpart sparse dat image ...$normal"
 	( $tools/rimg2sdat ${whatpart}_new.img 2>&1 ) >> $logs/main.log
 	rm -rf ${whatpart}_new.img
 	touch $whatpart.patch.dat
@@ -4562,6 +4618,45 @@ partsdat() {
 	fi
 	mv * $romdir/
 	cd $romdir
+}
+partimg() {
+	clear
+	banner
+	echo "${bluet}Creating symlinks for $whatpart.img ...$normal"
+	cd $romdir
+	line=""
+	cat $prfiles/symlinks | while read line; do
+		target=$(echo "$line" | cut -d"\"" -f2)
+		link=$(echo "$line" | cut -d"\"" -f4 | sed 's/^\///')
+		linkdir=$(dirname $link)
+		if [[ ! -d $linkdir ]]; then
+			mkdir -p $linkdir
+		fi
+		ln -s -f -T $target $link
+	done
+	clear
+	banner
+	if [[ -f $prfiles/file_contexts ]]; then	
+		echo "${bluet}Creating raw $whatpart.img ...$normal"	
+		if [[ $whatpart = "system" ]]; then
+			( $tools/make_ext4fs -T 0 -S $prfiles/file_contexts -l $syssize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
+		elif [[ $whatpart = "vendor" ]]; then
+			( $tools/make_ext4fs -T 0 -S $prfiles/file_contexts -l $vensize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
+		elif [[ $whatpart = "data" ]]; then
+			( $tools/make_ext4fs -T 0 -S $prfiles/file_contexts -l $datsize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
+		fi
+	else
+		echo "${bluet}Creating raw $whatpart.img ...$normal"	
+		if [[ $whatpart = "system" ]]; then
+			echo "img size --> $syssize <--"
+			( $tools/make_ext4fs -T 0 -l $syssize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
+		elif [[ $whatpart = "vendor" ]]; then
+			( $tools/make_ext4fs -T 0 -l $vensize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
+		elif [[ $whatpart = "data" ]]; then
+			( $tools/make_ext4fs -T 0 -l $datsize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
+		fi
+	fi
+	find . -type l -exec rm -f {} \;
 }
 part_setup() {	
 	if [[ -f $deviceloc/superr_mmc ]]; then
@@ -4885,7 +4980,7 @@ update_project() {
 		if [[ $permtype = "" ]]; then
 			api=$(grep "ro.build.version.sdk" $romdir/system/build.prop | cut -d"=" -f2)
 			choice=""
-			while [[ $choice -lt "1" || $choice -gt "3" ]] ; do
+			while [[ $choice -lt "1" || $choice -gt "4" ]] ; do
 				clear
 				banner
 				echo "Which perm type would you like to use?"
@@ -4901,6 +4996,7 @@ update_project() {
 				else
 					echo "3) Sparse dat (recommended)"
 				fi
+				echo "4) raw_img"
 				echo ""
 				read -n 1 -p "Please enter your choice:" choice
 			done	
@@ -4941,6 +5037,21 @@ update_project() {
 				echo "$permtype" > $prfiles/permtype
 				update_project
 				return 1
+			# raw_img chosen
+			elif [[ $choice == "4" ]]; then
+				rm -rf $romdir/META-INF
+				cd $tools/updater
+				cp -r ./META-INF-IMG/* $romdir
+				cp $tools/updater/META-INF/com/google/android/update-binary $romdir/META-INF/com/google/android/
+				cd $prfiles
+				rm -rf permtype set_metadata set_perm
+				permtype="raw_img"
+				if [[ -f $prfiles/permtype ]]; then
+					mv $prfiles/permtype $prfiles/permtype_old
+				fi
+				echo "$permtype" > $prfiles/permtype
+				update_project
+				return 1
 			fi
 		else
 			rm -rf $prfiles/permtype_old
@@ -4966,7 +5077,7 @@ update_project() {
 				grep "^$permtype" updater-script | grep -v "/tmp/" > $prfiles/${permtype}_original
 			fi
 		fi
-		if [[ ! $permtype = "sparse_dat" ]]; then
+		if [[ ! $permtype = "sparse_dat" && ! $permtype = "raw_img" ]]; then
 			permtest=$(gawk '/#PERM/,/set_progress/' updater-script | grep set_metadata)
 			if [[ ! $permtest = "" ]]; then
 				grep -v "$permtest" updater-script > updater-script2
@@ -4989,33 +5100,24 @@ update_project() {
 		elif [[ $permtype = "set_metadata" ]]; then
 			if [[ ! -f $prfiles/file_contexts2 ]]; then
 				if [[ ! -f $prfiles/file_contexts ]]; then
-					removeboot=""
-					if [[ ! -d $romdir/bootimg/ramdisk ]]; then
-						if [[ -f $romdir/boot.img ]]; then
-							removeboot="1"
-							chosenimg="boot"
-							bootext="1"
-							boot_unpack
-						else
-							clear
-							banner
-							echo "${redb}${yellowt}ERROR:$normal"
-							echo "${redt}You need a boot.img for this process.$normal"
-							echo ""
-							read -p "Press ENTER to continue"
-							rm -rf permtype
-							permtype=""
-							update_project
-							return 1
-						fi
-					fi
-					if [[ -f $romdir/bootimg/ramdisk/file_contexts ]]; then
-						cp $romdir/bootimg/ramdisk/file_contexts $prfiles/
-						if [[ $removeboot = "1" ]]; then
-							rm -rf $romdir/bootimg
-							removeboot=""
-						fi
+					if [[ -f $romdir/boot.img ]]; then
+						chosenimg="boot"
+						bootext="1"
+						boot_unpack
+						rm -rf $romdir/bootimg
 					else
+						clear
+						banner
+						echo "${redb}${yellowt}ERROR:$normal"
+						echo "${redt}You need a boot.img for this process.$normal"
+						echo ""
+						read -p "Press ENTER to continue"
+						rm -rf permtype
+						permtype=""
+						update_project
+						return 1
+					fi
+					if [[ ! -f $prfiles/file_contexts ]]; then
 						clear
 						banner
 						echo "${redb}${yellowt}ERROR:$normal"
@@ -5025,15 +5127,11 @@ update_project() {
 						echo "file from the ramdisk to your 00_project_files directory"
 						echo "to use this feature."
 						echo ""
-						echo "${bluet}For now, you will need to use set_perm.$normal"
+						echo "${bluet}For now, you will need to use set_perm or raw_img.$normal"
 						echo ""
 						read -p "Press ENTER to continue"
-						if [[ $removeboot = "1" ]]; then
-							rm -rf $romdir/bootimg
-						fi
 						rm -rf $prfiles/permtype
-						permtype="set_perm"
-						echo "$permtype" > $prfiles/permtype
+						permtype=""
 						update_project
 						return 1
 					fi

@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v0.9.7.0 **#
+#** SuperR's Kitchen v0.9.7.1 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -16,7 +16,7 @@
 **Create flashable zips of many varieties including:**
 
 * Full ROM  
-* Switch between set_perm, set_metadata, and sparse_dat (Lollipop and beyond)
+* Switch between set_perm, set_metadata (KitKat+), raw_img, and sparse_dat (Lollipop+)
 * Kernel (including init.d if you added it with the kitchen)  
 * Recovery  
 * Media  
@@ -36,6 +36,10 @@
 * boot.img  
 * kernel.elf  
 * **OR**...manually enter it  
+
+**MMC auto-detection from:**
+
+* recovery.img  
 
 **Root/unroot**  
 **Deodex Marshmallow ROMs**  
