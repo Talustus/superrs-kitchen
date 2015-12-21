@@ -161,7 +161,18 @@ boot_insecure() {
 		return 1
 	fi
 	if [[ $insecurestatus = "No" ]]; then
-		sed -i -e "/ro\.secure=1/{r $tools/boot/insecure.txt" -e "d}" $romdir/bootimg/ramdisk/default.prop
+		if [[ ! $(grep "ro.secure=1" $romdir/bootimg/ramdisk/default.prop) = "" ]]; then
+			sed -i 's/ro\.secure=1/ro\.secure=0/' $romdir/bootimg/ramdisk/default.prop
+		else
+			gawk 'a=/^#/{b=1}b&&!a{print "ro\.secure=0";b=0}1' $romdir/bootimg/ramdisk/default.prop > $romdir/bootimg/ramdisk/default.prop2
+			mv $romdir/bootimg/ramdisk/default.prop2 $romdir/bootimg/ramdisk/default.prop
+		fi
+		if [[ ! $(grep "ro.adb.secure=1" $romdir/bootimg/ramdisk/default.prop) = "" ]]; then
+			sed -i 's/ro\.adb\.secure=1/ro\.adb\.secure=0/' $romdir/bootimg/ramdisk/default.prop
+		else
+			gawk 'a=/ro\.secure=0/{b=1}b&&!a{print "ro\.adb\.secure=0";b=0}1' $romdir/bootimg/ramdisk/default.prop > $romdir/bootimg/ramdisk/default.prop2
+			mv $romdir/bootimg/ramdisk/default.prop2 $romdir/bootimg/ramdisk/default.prop
+		fi
 		clear
 		banner
 		echo "${greent}The boot.img is now insecure$normal"
@@ -179,8 +190,7 @@ boot_insecure() {
 		echo ""
 		if [[ $REPLY = "y" ]]; then
 			sed -i 's/ro\.secure=0/ro\.secure=1/' $romdir/bootimg/ramdisk/default.prop
-			grep -v "ro.adb.secure=0" $romdir/bootimg/ramdisk/default.prop > $romdir/bootimg/ramdisk/default.prop2
-			mv $romdir/bootimg/ramdisk/default.prop2 $romdir/bootimg/ramdisk/default.prop
+			sed -i 's/ro\.adb\.secure=0/ro\.adb\.secure=1/' $romdir/bootimg/ramdisk/default.prop
 			clear
 			banner
 			echo "${greent}The boot.img is now secure$normal"
@@ -1504,6 +1514,10 @@ change_permtype() {
 			root
 		else
 			rm -rf $prfiles/root
+		fi
+		if [[ -f $prfiles/busybox ]]; then
+			root_busyboxrem
+			root_busybox
 		fi
 	fi
 	rom_tools
@@ -4184,6 +4198,19 @@ isassertdevices() {
 		assertdevices=$(grep -m 1 abort $romdir/META-INF/com/google/android/updater-script | gawk '{ print $5 }' | sed 's/\"//g' | sed 's/\\//g')
 	fi
 }
+isbusyboxstatus() {
+	if [[ -d $romdir ]]; then
+		if [[ -f $romdir/system/xbin/busybox || -d $romdir/Busybox || -d $romdir/busybox || -d $romdir/BusyBox ]]; then
+			if [[ ! -f $prfiles/busybox ]]; then
+				touch $prfiles/busybox
+			fi
+			busyboxstatus1=$(echo "${greent}Enabled${normal}")
+		else
+			rm -rf $prfiles/busybox
+			busyboxstatus1=$(echo "${redt}Disabled${normal}")
+		fi
+	fi
+}
 isdataappstatus() {
 	if [[ -d $romdir ]]; then
 		if [[ -d $romdir/data ]]; then
@@ -4710,6 +4737,7 @@ rom_tools() {
 		exec ./superr
 		return 1
 	fi
+	isbusyboxstatus
 	isdataappstatus
 	isodexstatus
 	isrootstatus
@@ -4724,7 +4752,7 @@ rom_tools() {
 		fi
 	fi
 	choice=""
-	while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "7" ]] ; do
+	while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "8" ]] ; do
 		clear
 		banner
 		echo "${bluet}CURRENT PROJECT: $greent$romname$normal"
@@ -4734,15 +4762,16 @@ rom_tools() {
 		echo ""
 		echo "1) Deodex ROM (${bluet}CURRENT: $greent$odexstatus1$normal)"
 		echo "2) Root/Unroot ROM (${bluet}CURRENT: $greent$rootstatus1$normal)"
-		echo "3) User app support (${bluet}CURRENT: $greent$dataapp1$normal)"
+		echo "3) Busybox Add/Remove (${bluet}CURRENT: $greent$busyboxstatus1$normal)"
+		echo "4) User app support (${bluet}CURRENT: $greent$dataapp1$normal)"
 		if [[ $permtype = "" ]]; then
-			echo "4) Change perm type (sparse_dat/set_perm/set_metadata)"
+			echo "5) Change perm type (sparse_dat/set_perm/set_metadata)"
 		else
-			echo "4) Change perm type (${bluet}CURRENT: $greent$permtype$normal)"
+			echo "5) Change perm type (${bluet}CURRENT: $greent$permtype$normal)"
 		fi
-		echo "5) Asserts: Add/Change devices (${bluet}CURRENT: $greent$assertdevices$normal)"
-		echo "${yellowt}6) Debloat Menu"
-		echo "7) Build Menu"
+		echo "6) Asserts: Add/Change devices (${bluet}CURRENT: $greent$assertdevices$normal)"
+		echo "${yellowt}7) Debloat Menu"
+		echo "8) Build Menu"
 		echo "m = Main menu"
 		echo "${magentat}q = Quit$normal"
 		echo ""
@@ -4794,8 +4823,50 @@ rom_tools() {
 		fi
 		rom_tools
 		return 1
-	# START User app support (/data/app)
+	# START Busybox Add/Remove
 	elif [[ $choice == "3" ]]; then
+		if [[ ! -f $prfiles/busybox ]]; then
+			if [[ -f $prfiles/root ]]; then
+				clear
+				banner
+				read -n 1 -p "Should we add Busybox to the ROM? y/n  "
+				if [[ $REPLY = "y" ]]; then
+					root_busybox
+					clear
+					banner
+					echo "${greent}Busybox has been added.$normal"
+					echo ""
+					read -p "Press ENTER to return to ROM Tools"
+				fi
+			else
+				clear
+				banner
+				echo "$redb${yellowt}ERROR:$normal"
+				echo "${redt}You must add root first.$normal"
+				echo ""
+				read -p "Press ENTER to return to ROM Tools"
+			fi
+		else
+			clear
+			banner
+			echo "${greent}You already have Busybox.$normal"
+			echo ""
+			read -n 1 -p "Should we remove it? y/n  "
+			echo ""
+			echo ""
+			if [[ $REPLY = "y" ]]; then
+				root_busyboxrem
+				clear
+				banner
+				echo "${greent}Busybox has been removed.$normal"
+				echo ""
+				read -p "Press ENTER to return to ROM Tools"
+			fi
+		fi
+		rom_tools
+		return 1	
+	# START User app support (/data/app)
+	elif [[ $choice == "4" ]]; then
 		if [[ ! $dataapp = "Yes" ]]; then
 			clear
 			banner
@@ -4834,20 +4905,20 @@ rom_tools() {
 		rom_tools
 		return 1
 	# START Change perm type (set_perm/set_metadata)
-	elif [[ $choice == "4" ]]; then
+	elif [[ $choice == "5" ]]; then
 		change_permtype
 		return 1
 	# START Asserts: Add/Change devices
-	elif [[ $choice == "5" ]]; then
+	elif [[ $choice == "6" ]]; then
 		assert_devices
 		rom_tools
 		return 1
 	# START Debloat Menu
-	elif [[ $choice == "6" ]]; then
+	elif [[ $choice == "7" ]]; then
 		debloat_rom
 		return 1
 	# START Build Zip Menu
-	elif [[ $choice == "7" ]]; then
+	elif [[ $choice == "8" ]]; then
 		build_zip
 		return 1
 	# START Main menu
@@ -4876,11 +4947,10 @@ root() {
 		grep "install-recovery.sh" symlinks >> symunroot
 	fi
 	sed -i "/#ROOT/ r $tools/root/root_prog" $romdir/META-INF/com/google/android/updater-script
-	supersu=$(find $tools/root -name *.zip | grep -m 1 ".zip" | rev | cut -d'/' -f1 | rev)
+	supersu=$(find $tools/root/supersu -name *.zip | rev | cut -d'/' -f1 | rev)
 	sed -i "s/#SUPERSU/$supersu/g" $romdir/META-INF/com/google/android/updater-script
 	mkdir -p $romdir/supersu
-	cp $tools/root/$supersu $romdir/supersu/
-	cp $tools/root/busybox $romdir/system/xbin
+	cp $tools/root/supersu/$supersu $romdir/supersu/
 	update_project
 }		
 rootrem() {
@@ -4951,6 +5021,27 @@ rootrem() {
 	cat $tools/root/root_files | while read rootfile ; do
 		rm -rf $romdir/$rootfile
 	done
+	update_project
+}
+root_busybox() {		
+	cd $romdir/META-INF/com/google/android
+	if [[ ! $(grep -o "#BUSYBOX" updater-script) = "#BUSYBOX" ]]; then
+		gawk '/#ROOT/ && !x {print "#BUSYBOX"; x=1} 1' updater-script > updater-script2
+		mv updater-script2 updater-script
+	fi
+	sed -i "/#BUSYBOX/ r $tools/root/busybox_prog" $romdir/META-INF/com/google/android/updater-script
+	busybox=$(find $tools/root/busybox -name *.zip | rev | cut -d'/' -f1 | rev)
+	sed -i "s/#BUSYBOX1/$busybox/g" $romdir/META-INF/com/google/android/updater-script
+	mkdir -p $romdir/busybox
+	cp $tools/root/busybox/$busybox $romdir/busybox/
+	update_project
+}
+root_busyboxrem() {
+	cd $romdir/META-INF/com/google/android
+	grep -v "Busybox\|#BUSYBOX\|/tmp/busybox" updater-script > updater-script2
+	mv updater-script2 updater-script
+	rm -rf $romdir/busybox
+	rm -rf $romdir/system/xbin/busybox
 	update_project
 }
 update_project() {

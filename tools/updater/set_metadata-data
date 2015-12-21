@@ -161,7 +161,6 @@ set_metadata("/system/bin/otp_server", "uid", 0, "gid", 2000, "mode", 0755, "cap
 set_metadata("/system/bin/patchoat", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/perfd", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/ping", "uid", 0, "gid", 0, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
-set_metadata("/system/bin/PktRspTest", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/pm-proxy", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/pm-service", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/pnpmgr", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
