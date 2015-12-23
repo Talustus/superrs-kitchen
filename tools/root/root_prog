@@ -1,4 +1,4 @@
-ui_print("Installing SuperSU...");
+ui_print("Installing SuperSU..."); ui_print(" ");
 package_extract_dir("supersu", "/tmp/supersu");
 run_program("/sbin/busybox", "unzip", "/tmp/supersu/#SUPERSU", "META-INF/com/google/android/*", "-d", "/tmp/supersu");
 run_program("/sbin/busybox", "sh", "/tmp/supersu/META-INF/com/google/android/update-binary", "dummy", "1", "/tmp/supersu/#SUPERSU");

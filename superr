@@ -4196,6 +4196,9 @@ imgextract() {
 	sudo umount output/
 	sudo chown -hR $myuser:$myuser $romdir/${extractimg}
 	rm -rf $romdir/output
+	find $romdir/${extractimg} ! -perm -g+r | grep -v lost+found | sed 's/^\.\///' | while read line; do
+		chmod 400 $line
+	done
 	extractimg=""
 }
 install_binaries() {
