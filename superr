@@ -1205,7 +1205,7 @@ build_rom_zip() {
 		echo ""
 		echo "${yellowt}This may take a while. Please be patient ...$normal"
 		echo ""
-		7za a -mx7 $signature.zip install boot.img META-INF system.new.dat system.patch.dat system.transfer.list vendor.new.dat vendor.patch.dat vendor.transfer.list data.new.dat data.patch.dat data.transfer.list supersu $prfiles/file_contexts >> $logs/zip.log
+		7za a -mx7 $signature.zip install boot.img META-INF system.new.dat system.patch.dat system.transfer.list vendor.new.dat vendor.patch.dat vendor.transfer.list data.new.dat data.patch.dat data.transfer.list supersu busybox $prfiles/file_contexts >> $logs/zip.log
 		rm -rf vendor.new.dat vendor.transfer.list vendor.patch.dat data.new.dat data.patch.dat data.transfer.list system.new.dat system.transfer.list system.patch.dat
 	elif [[ $permtype = "raw_img" ]]; then
 		clear
@@ -1256,13 +1256,13 @@ build_rom_zip() {
 		echo ""
 		echo "${yellowt}This may take a while. Please be patient ...$normal"
 		echo ""
-		7za a -mx7 $signature.zip boot.img META-INF system_new.img vendor_new.img data_new.img supersu >> $logs/zip.log
+		7za a -mx7 $signature.zip boot.img META-INF system_new.img vendor_new.img data_new.img supersu busybox >> $logs/zip.log
 		rm -rf system_new.img vendor_new.img data_new.img	
 	else
 		clear
 		banner		
 		echo "${bluet}Building $signature.zip in $romname ...$normal"
-		7za a -mx7 $signature.zip boot.img META-INF system vendor data supersu >> $logs/zip.log
+		7za a -mx7 $signature.zip boot.img META-INF system vendor data supersu busybox >> $logs/zip.log
 	fi
 	clear
 	banner
