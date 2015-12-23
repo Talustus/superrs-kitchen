@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v0.9.7.4 **#
+#** SuperR's Kitchen v0.9.7.5 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -12,6 +12,7 @@
 * system.ext4.win/boot.emmc.win (including multi-file *.win000, *.win001, etc)  
 * Sparse chunk files found in Moto and other factory firmware  
 * cm12 + roms with sparse dat files  
+* Zips that contain system.img and boot.img
 
 **Create flashable zips of many varieties including:**
 

@@ -1373,9 +1373,9 @@ change_permtype() {
 			echo "1) set_metadata (${bluet}CURRENT$normal)"
 		else
 			if [[ ! $api -ge "19" ]]; then
-				echo "${redt}1) set_metadata (For KitKat and beyond only)$normal"
+				echo "${redt}1) set_metadata (For KitKat+ only)$normal"
 			else
-				echo "1) set_metadata (For KitKat and beyond)"
+				echo "1) set_metadata (For KitKat+)"
 			fi
 		fi
 		if [[ $permtype = "set_perm" ]]; then
@@ -3410,10 +3410,10 @@ extract_new() {
 			fi			
 		fi
 		if [[ ! $(7za l $romdir/$romzip | grep system.new.dat) = "" ]]; then
-			cd $romdir
 			clear
 			banner
 			echo "${bluet}Extracting system.new.dat, system.transfer.list, and boot.img ...$normal"
+			cd $romdir
 			7za e $romzip system.new.dat system.transfer.list vendor.new.dat vendor.transfer.list boot.img >> $logs/zip.log
 			clear
 			banner
@@ -3428,8 +3428,24 @@ extract_new() {
 			fi
 			romzip=""
 			romimg="system.img"
-		fi
-		if [[ ! $(7za l $romzip | grep system.ext4.tar.a) = "" ]]; then
+		elif [[ ! $(7za l $romdir/$romzip | grep "system_new.img\|system.img") = "" ]]; then
+			clear
+			banner
+			echo "${bluet}Extracting images from zip ...$normal"
+			if [[ -f system.img ]]; then
+				mv system.img system_old.img
+			fi
+			cd $romdir
+			7za e $romzip system_new.img system.img vendor_new.img vendor.img boot.img >> $logs/zip.log
+			if [[ -f system_new.img ]]; then
+				mv system_new.img system.img
+			fi
+			if [[ -f vendor_new.img ]]; then
+				mv vendor_new.img vendor.img
+			fi
+			romzip=""			
+			romimg="system.img"
+		elif [[ ! $(7za l $romzip | grep system.ext4.tar.a) = "" ]]; then
 			clear
 			banner
 			echo "${bluet}Extracting system.ext4.tar.a and boot.img ...$normal"
@@ -5081,9 +5097,9 @@ update_project() {
 				echo "Which perm type would you like to use?"
 				echo ""
 				if [[ ! $api -ge "19" ]]; then
-					echo "${redt}1) set_metadata  (For KitKat and beyond only)$normal"
+					echo "${redt}1) set_metadata  (For KitKat+ only)$normal"
 				else
-					echo "1) set_metadata  (For KitKat and beyond)"
+					echo "1) set_metadata  (For KitKat+)"
 				fi
 				echo "2) set_perm"
 				if [[ ! $api -ge "21" || ! $(getconf LONG_BIT) = "64" ]]; then

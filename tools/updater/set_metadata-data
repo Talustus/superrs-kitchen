@@ -315,7 +315,6 @@ set_metadata("/system/vendor/lib/mediadrm/libdrmclearkeyplugin.so", "uid", 0, "g
 set_metadata("/system/vendor/lib/mediadrm/libwvdrmengine.so", "uid", 0, "gid", 0, "mode", 0644, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata_recursive("/system/vendor/lib/qcdrm", "uid", 0, "gid", 2000, "dmode", 0755, "fmode", 0644, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata_recursive("/system/vendor/lib/qcdrm/playready", "uid", 0, "gid", 0, "dmode", 0755, "fmode", 0644, "capabilities", 0x0, "selabel", "#CONTEXT");
-set_metadata("/system/vendor/lib/qcdrm/playready", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/vendor/lib/qcdrm/playready/lib", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata_recursive("/system/vendor/lib/qcdrm/playready/lib/drm", "uid", 0, "gid", 2000, "dmode", 0755, "fmode", 0644, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/vendor/lib/qcdrm/playready/lib/drm/libdrmprplugin_customer.so", "uid", 0, "gid", 0, "mode", 0644, "capabilities", 0x0, "selabel", "#CONTEXT");
