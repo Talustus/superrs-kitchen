@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v0.9.7.6 **#
+#** SuperR's Kitchen v0.9.7.7 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -38,7 +38,7 @@
 * kernel.elf  
 * **OR**...manually enter it  
 
-**MMC auto-detection from:**
+**mmcblk auto-detection from:**
 
 * recovery.img  
 
@@ -53,6 +53,7 @@
 **Debloat ROM**  
 **Custom Debloat list support**  
 **Remove Knox**  
+**Add/remove busybox (Big thanks to @osm0sis for his Busybox Installer)**  
 **Add/remove user app support (/data/app)**  
 **Kitchen updater (git pull if cloned, wget zip and extract if not)**  
 

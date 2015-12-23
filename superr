@@ -1182,8 +1182,10 @@ build_rom_zip() {
 			findimgsize
 		fi
 		if [[ ! $(grep "data.transfer" $romdir/META-INF/com/google/android/updater-script) = "" ]]; then
-			whatimg="data"
-			findimgsize
+			if [[ ! -f $prfiles/data-set_metadata ]]; then
+				whatimg="data"
+				findimgsize
+			fi
 		fi
 		whatpart="system"
 		partimg
@@ -1194,9 +1196,11 @@ build_rom_zip() {
 			partsdat
 		fi
 		if [[ ! $(grep "data.transfer" $romdir/META-INF/com/google/android/updater-script) = "" ]]; then
-			whatpart="data"
-			partimg
-			partsdat
+			if [[ ! -f $prfiles/data-set_metadata ]]; then
+				whatpart="data"
+				partimg
+				partsdat
+			fi
 		fi
 		rm -rf $romdir/tmpsparse
 		clear
@@ -1205,7 +1209,11 @@ build_rom_zip() {
 		echo ""
 		echo "${yellowt}This may take a while. Please be patient ...$normal"
 		echo ""
-		7za a -mx7 $signature.zip install boot.img META-INF system.new.dat system.patch.dat system.transfer.list vendor.new.dat vendor.patch.dat vendor.transfer.list data.new.dat data.patch.dat data.transfer.list supersu busybox $prfiles/file_contexts >> $logs/zip.log
+		if [[ -f $prfiles/data-set_metadata ]]; then
+			7za a -mx7 $signature.zip install boot.img META-INF system.new.dat system.patch.dat system.transfer.list vendor.new.dat vendor.patch.dat vendor.transfer.list data supersu busybox $prfiles/file_contexts >> $logs/zip.log
+		else
+			7za a -mx7 $signature.zip install boot.img META-INF system.new.dat system.patch.dat system.transfer.list vendor.new.dat vendor.patch.dat vendor.transfer.list data.new.dat data.patch.dat data.transfer.list supersu busybox $prfiles/file_contexts >> $logs/zip.log
+		fi
 		rm -rf vendor.new.dat vendor.transfer.list vendor.patch.dat data.new.dat data.patch.dat data.transfer.list system.new.dat system.transfer.list system.patch.dat
 	elif [[ $permtype = "raw_img" ]]; then
 		clear
@@ -1235,8 +1243,10 @@ build_rom_zip() {
 			findimgsize
 		fi
 		if [[ ! $(grep "\"/data\"" $romdir/META-INF/com/google/android/updater-script) = "" ]]; then
-			whatimg="data"
-			findimgsize
+			if [[ ! -f $prfiles/data-set_metadata ]]; then	
+				whatimg="data"
+				findimgsize
+			fi
 		fi
 		clear
 		banner
@@ -1247,8 +1257,10 @@ build_rom_zip() {
 			partimg
 		fi
 		if [[ ! $(grep "\"/data\"" $romdir/META-INF/com/google/android/updater-script) = "" ]]; then
-			whatpart="data"
-			partimg
+			if [[ ! -f $prfiles/data-set_metadata ]]; then
+				whatpart="data"
+				partimg
+			fi
 		fi
 		clear
 		banner		
@@ -1256,7 +1268,11 @@ build_rom_zip() {
 		echo ""
 		echo "${yellowt}This may take a while. Please be patient ...$normal"
 		echo ""
-		7za a -mx7 $signature.zip boot.img META-INF system_new.img vendor_new.img data_new.img supersu busybox >> $logs/zip.log
+		if [[ -f $prfiles/data-set_metadata ]]; then
+			7za a -mx7 $signature.zip boot.img META-INF system_new.img vendor_new.img data supersu busybox >> $logs/zip.log
+		else
+			7za a -mx7 $signature.zip boot.img META-INF system_new.img vendor_new.img data_new.img supersu busybox >> $logs/zip.log
+		fi
 		rm -rf system_new.img vendor_new.img data_new.img	
 	else
 		clear
@@ -1522,6 +1538,10 @@ change_permtype() {
 			root_busybox
 		fi
 	fi
+	if [[ -f $prfiles/data-set_metadata || -f $prfiles/data-sparse_dat || -f $prfiles/data-raw_img ]]; then
+		data_apprem
+		data_app
+	fi
 	rom_tools
 }
 choosepr() {
@@ -1555,7 +1575,7 @@ data_apprem() {
 	cd $romdir/META-INF/com/google/android
 	grep -v "\"\/data\"\|\"\/data\/app\"\|Extracting data\|#DATA\|data.transfer\|data_new.img\|#DATA" updater-script > updater-script2
 	mv updater-script2 updater-script
-	rm -rf $romdir/data
+	rm -f $prfiles/data-*
 }
 debinstall() {
 	debbased=$(which dpkg)
@@ -4230,21 +4250,23 @@ isbusyboxstatus() {
 	fi
 }
 isdataappstatus() {
-	if [[ -d $romdir ]]; then
-		if [[ -d $romdir/data ]]; then
-			if [[ ! -f $prfiles/userdata ]]; then
-				touch $prfiles/userdata
-			fi
+	if [[ -f $prfiles/data-set_metadata || -f $prfiles/data-sparse_dat || -f $prfiles/data-raw_img ]]; then
+		if [[ ! -d $romdir/data ]]; then
 			data_apprem
-			data_app
-			dataapp="Yes"
-			dataapp1=$(echo "${greent}Supported${normal}")
-		else
-			rm -rf $prfiles/userdata
-			data_apprem
-			dataapp="No"
-			dataapp1=$(echo "${redt}Add support${normal}")
+			rom_tools
+			return 1
 		fi
+		dataapp="Yes"
+		if [[ -f $prfiles/data-set_metadata ]]; then
+			dataapp1=$(echo "${greent}Enabled: set_metadata${normal}")
+		elif [[ -f $prfiles/data-sparse_dat ]]; then
+			dataapp1=$(echo "${greent}Enabled: sparse_dat${normal}")
+		elif [[ -f $prfiles/data-raw_img ]]; then
+			dataapp1=$(echo "${greent}Enabled: raw_img${normal}")
+		fi
+	else
+		dataapp="No"
+		dataapp1=$(echo "${redt}Add support${normal}")
 	fi
 }
 isdebloatstatus() {
@@ -4571,7 +4593,7 @@ partadd() {
 		fi		
 	fi
 	if [[ ! $partbyname = "" ]]; then
-		if [[ $permtype = "sparse_dat" ]]; then
+		if [[ $permtype = "sparse_dat" || $permtype = "raw_img" ]]; then
 			cd $romdir/META-INF/com/google/android
 			gawk 'a=/^mount/{b=1}b&&!a{print "#MOUNT";b=0}1' updater-script > updater-script2
 			mv updater-script2 updater-script
@@ -4580,39 +4602,41 @@ partadd() {
 			mv updater-script2 updater-script
 			sed -i "s/#UNMOUNT/unmount(\"\/$whatpart\");/" updater-script
 			if [[ $whatpart = "vendor" ]]; then 	
-				gawk 'a=/^block_image_update/{b=1}b&&!a{print "#VENDOR";b=0}1' updater-script > updater-script2
+				if [[ $permtype = "sparse_dat" ]]; then
+					gawk 'a=/^block_image_update/{b=1}b&&!a{print "#VENDOR";b=0}1' updater-script > updater-script2
+				else
+					gawk 'a=/system_new/{b=1}b&&!a{print "#VENDOR";b=0}1' updater-script > updater-script2
+				fi
 				mv updater-script2 updater-script
-				sed -i "/#VENDOR/ r $tools/updater/vendorsparse.txt" updater-script
+				sed -i "/#VENDOR/ r $tools/updater/vendor-$permtype.txt" updater-script
 				sed -i "s/#PARTVENDOR/$partbyname/" updater-script
 			elif [[ $whatpart = "data" ]]; then
-				gawk 'a=/^block_image_update/{b=1}b&&!a{print "#DATA";b=0}1' updater-script > updater-script2
+				if [[ $permtype = "sparse_dat" ]]; then	
+					gawk 'a=/^block_image_update/{b=1}b&&!a{print "#DATA";b=0}1' updater-script > updater-script2
+				else
+					gawk 'a=/system_new/{b=1}b&&!a{print "#DATA";b=0}1' updater-script > updater-script2
+				fi
 				mv updater-script2 updater-script
-				sed -i "/#DATA/ r $tools/updater/datasparse.txt" updater-script
-				sed -i "s/#PARTDATA/$partbyname/" updater-script
-			fi
-		elif [[ $permtype = "raw_img" ]]; then
-			cd $romdir/META-INF/com/google/android
-			if [[ $(echo "$partbyname" | grep "userdata\|UDA\|USERDATA") = "" ]]; then
-				gawk 'a=/^format/{b=1}b&&!a{print "#FORMAT";b=0}1' updater-script > updater-script2
-				mv updater-script2 updater-script
-				sed -i "s/#FORMAT/format(\"ext4\"\,\ \"EMMC\"\,\ \"$partbyname\"\,\ \"0\"\,\ \"\/$whatpart\");/" updater-script
-			fi
-			gawk 'a=/^mount/{b=1}b&&!a{print "#MOUNT";b=0}1' updater-script > updater-script2
-			mv updater-script2 updater-script
-			sed -i "s/#MOUNT/mount(\"ext4\"\,\ \"EMMC\"\,\ \"$partbyname\"\,\ \"\/$whatpart\");/" updater-script
-			sed -i "s/#MOUNT/format(\"ext4\"\,\ \"EMMC\"\,\ \"$partbyname\"\,\ \"0\"\,\ \"\/$whatpart\");/" updater-script
-			gawk 'a=/^unmount/{b=1}b&&!a{print "#UNMOUNT";b=0}1' updater-script > updater-script2
-			mv updater-script2 updater-script
-			sed -i "s/#UNMOUNT/unmount(\"\/$whatpart\");/" updater-script
-			if [[ $whatpart = "vendor" ]]; then 	
-				gawk 'a=/system_new/{b=1}b&&!a{print "#VENDOR";b=0}1' updater-script > updater-script2
-				mv updater-script2 updater-script
-				sed -i "/#VENDOR/ r $tools/updater/vendorraw.txt" updater-script
-				sed -i "s/#PARTVENDOR/$partbyname/" updater-script
-			elif [[ $whatpart = "data" ]]; then
-				gawk 'a=/system_new/{b=1}b&&!a{print "#DATA";b=0}1' updater-script > updater-script2
-				mv updater-script2 updater-script
-				sed -i "/#DATA/ r $tools/updater/dataraw.txt" updater-script
+				choice=""
+				while [[ $choice -lt "1" || $choice -gt "2" ]] ; do
+					clear
+					banner
+					echo "${yellowb}${redt}Data perm type:$normal"
+					echo ""
+					echo "1) $permtype"
+					echo "2) set_metadata"
+					echo ""
+					read -n 1 -p "Please choose /data perm type: " choice
+				done
+				# START sparse_dat/raw_img data
+				if [[ $choice == "1" ]]; then
+					sed -i "/#DATA/ r $tools/updater/data-$permtype.txt" updater-script
+					touch $prfiles/data-$permtype
+				# START metadata data
+				elif [[ $choice == "2" ]]; then
+					sed -i "/#DATA/ r $tools/updater/data-set_metadata.txt" updater-script
+					touch $prfiles/data-set_metadata
+				fi
 				sed -i "s/#PARTDATA/$partbyname/" updater-script
 			fi
 		else
@@ -4911,7 +4935,7 @@ rom_tools() {
 			banner
 			echo "${greent}You already have user app support$normal"
 			echo ""
-			echo "${redt}This will delete the /data directory from your ROM$normal"
+			echo "${bluet}The /data directory in your project will remain.$normal"
 			echo ""
 			read -n 1 -p "Should we remove it? y/n  "
 			echo ""
