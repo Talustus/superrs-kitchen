@@ -446,6 +446,8 @@ boot_tools() {
 		return 1
 	# START Quit
 	elif [[ $choice == "q" ]]; then
+		echo ""
+		echo ""
 		exit
 	fi
 	if [[ -d $romdir/${chosenimg}img ]]; then
@@ -496,6 +498,8 @@ boot_tools() {
 			return 1
 		# START Quit
 		elif [[ $choice == "q" ]]; then
+			echo ""
+			echo ""
 			exit
 		fi
 	fi
@@ -652,6 +656,8 @@ boot_tools() {
 		return 1
 	# START Quit
 	elif [[ $choice = "q" ]]; then
+		echo ""
+		echo ""
 		exit
 	fi
 }
@@ -815,6 +821,8 @@ build_custom_zip() {
 		fi
 		# START Exit
 		if [[ $choice = "q" ]]; then
+			echo ""
+			echo ""
 			exit		
 		fi
 		byname=$(cat $deviceloc/superr_byname)
@@ -1367,6 +1375,8 @@ build_zip() {
 		return 1
 	# START Quit
 	elif [[ $choice = "q" ]]; then
+		echo ""
+		echo ""
 		exit
 	fi
 }
@@ -1523,6 +1533,8 @@ change_permtype() {
 		return 1
 	# START Quit chosen
 	elif [[ $choice == "q" ]]; then
+		echo ""
+		echo ""
 		exit
 	fi
 	update_project
@@ -1863,6 +1875,8 @@ debloat_rom() {
 		return 1
 	# START Exit
 	elif [[ $choice == "q" ]]; then
+		echo ""
+		echo ""
 		exit
 	fi
 }
@@ -3395,6 +3409,8 @@ extract_new() {
 			return 1
 		# START Quit
 		elif [[ $choice == "q" ]]; then	
+			echo ""
+			echo ""
 			exit	
 		fi
 	fi
@@ -3871,6 +3887,8 @@ findimgsize() {
 			fi
 		#START Quit
 		elif [[ $choice = "q" ]]; then
+			echo ""
+			echo ""
 			exit
 		fi
 	fi
@@ -4769,6 +4787,9 @@ part_setup() {
 	fi
 }
 rom_tools() {
+	clear
+	banner
+	echo "${bluet}Checking status ...$normal"
 	odexstatus=""
 	odexstatus1=""
 	dataapp=""
@@ -4978,6 +4999,8 @@ rom_tools() {
 		return 1
 	# START Quit
 	elif [[ $choice == "q" ]]; then
+		echo ""
+		echo ""
 		exit
 	fi
 }
@@ -5276,12 +5299,10 @@ update_project() {
 				fi
 			fi	
 			cd $prfiles
-			sed 's/--//g' file_contexts | grep "^/system/" | sort > file_contexts2
+			grep "^/system/" file_contexts | grep -v "(\/\.\*)?" | sed 's/--//g; s/\.\*/\*/g' | sort > file_contexts2
 			if [[ -f $prfiles/vendorimg ]]; then
-				grep "^/vendor/" file_contexts >> file_contexts2
+				grep "^/vendor/" file_contexts | grep -v "(\/\.\*)?" | sed 's/--//g; s/\.\*/\*/g' >> file_contexts2
 			fi
-			sed 's/\\././g; s/(\/\.\*)?//g' file_contexts2 | gawk '{ print $1, $2 }' | sort > file_contexts3
-			mv file_contexts3 file_contexts2
 			line=""
 			for line in $(gawk '{ print $1 }' file_contexts2); do
 				if [[ $(grep -m 1 "^$line$" all_files.txt) = "$line" ]]; then
@@ -5595,5 +5616,7 @@ elif [[ $choice == "8" ]]; then
 	return 1
 # START Quit
 elif [[ $choice == "q" ]]; then
+	echo ""
+	echo ""
 	exit
 fi
