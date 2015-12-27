@@ -5073,8 +5073,8 @@ rootrem() {
 	fi
 	remrootscript=""	
 	cat $tools/root/root_files | while read remrootscript ; do 
-		grep -v "$remrootscript" symlinks > symlinks2
-		mv symlinks2 symlinks
+		grep -v "$remrootscript" symlinks.orig > symlinks.orig2
+		mv symlinks.orig2 symlinks.orig
 	done
 	if [[ ! $permtype = "sparse_dat" && ! $permtype = "raw_img" ]]; then
 		remrootscript=""
