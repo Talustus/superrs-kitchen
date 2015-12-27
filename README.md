@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v0.9.8.0 **#
+#** SuperR's Kitchen v0.9.8.1 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -25,7 +25,7 @@
 
 **Boot features:**
 
-* Unpack/repack boot/recovery img (Big Thanks to osm0sis for mkbootimg source!!!)  
+* Unpack/repack boot/recovery img (Big Thanks to @osm0sis for mkbootimg source!!!)  
 * Add/remove init.d support to boot.img  
 * Add/remove insecure boot.img  
 * open_bump.py compatible (download it and add to the tools directory)  

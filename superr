@@ -5299,10 +5299,12 @@ update_project() {
 				fi
 			fi	
 			cd $prfiles
-			grep "^/system/" file_contexts | grep -v "(\/\.\*)?" | sed 's/--//g; s/\.\*/\*/g' | sort > file_contexts2
+			sed 's/--//g' file_contexts | grep "^/system/" | sort > file_contexts2
 			if [[ -f $prfiles/vendorimg ]]; then
-				grep "^/vendor/" file_contexts | grep -v "(\/\.\*)?" | sed 's/--//g; s/\.\*/\*/g' >> file_contexts2
+				grep "^/vendor/" file_contexts >> file_contexts2
 			fi
+			sed 's/\\././g; s/(\/\.\*)?//g' file_contexts2 | gawk '{ print $1, $2 }' | sort > file_contexts3
+			mv file_contexts3 file_contexts2
 			line=""
 			for line in $(gawk '{ print $1 }' file_contexts2); do
 				if [[ $(grep -m 1 "^$line$" all_files.txt) = "$line" ]]; then
