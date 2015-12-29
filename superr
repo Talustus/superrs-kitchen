@@ -72,6 +72,64 @@ assert_devices() {
 	sed -i "s/#ASSERTDEVICE/$assertdevice/g" assert	
 	sed -i '/#ASSERT/ r assert' $romdir/META-INF/com/google/android/updater-script
 }
+boot_dmverity() {
+	cd $romdir/bootimg/ramdisk
+	fstab=$(ls | grep -v goldfish | grep -m 1 fstab)
+	if [[ $(grep "verify" $fstab) = "" ]]; then
+		clear
+		banner
+		echo "${redb}${yellowt}${bold}NOTICE:$normal"
+		echo "${redt}dm-verity is already disabled.$normal"
+		echo ""
+		read -p "Press ENTER to return to Boot/Recovery menu"
+		boot_tools
+		return 1
+	fi
+	clear
+	banner
+	echo "${bluet}Removing dm-verity ...$normal"
+	if [[ ! $(grep ",verify=${byname}\/metadata" $fstab) = "" ]]; then
+		sed -i "s/,verify=${byname}\/metadata//" $fstab
+	elif [[ ! $(grep ",verify=${byname}" $fstab) = "" ]]; then
+		sed -i "s/,verify=${byname}//" $fstab
+	elif [[ ! $(grep ",verify" $fstab) = "" ]]; then
+		sed -i 's/,verify//' $fstab
+	elif [[ ! $(grep "verify" $fstab) = "" ]]; then
+		sed -i 's/verify//' $fstab
+	fi
+	clear
+	banner
+	echo "${greent}dm-verity has been removed.$normal"
+	echo ""
+	read -p "Press ENTER to return to boot menu"
+	boot_tools
+	return 1
+}
+boot_forcee() {
+	cd $romdir/bootimg/ramdisk
+	fstab=$(ls | grep -v goldfish | grep -m 1 fstab)
+	if [[ $(grep "forceencrypt" $fstab) = "" ]]; then
+		clear
+		banner
+		echo "${redb}${yellowt}${bold}NOTICE:$normal"
+		echo "${redt}forceencrypt is already disabled.$normal"
+		echo ""
+		read -p "Press ENTER to return to Boot/Recovery menu"
+		boot_tools
+		return 1
+	fi
+	clear
+	banner
+	echo "${bluet}Removing forceencrypt ...$normal"
+	sed -i "s/forceencrypt/encryptable/" $fstab
+	clear
+	banner
+	echo "${greent}forceencrypt has been removed.$normal"
+	echo ""
+	read -p "Press ENTER to return to boot menu"
+	boot_tools
+	return 1
+}
 boot_initd() {
 	if [[ $chosenimg = "recovery" ]]; then
 		clear
@@ -367,7 +425,14 @@ boot_repack() {
 	return 1
 }
 boot_tools() {
+	clear
+	banner
+	echo "${bluet}Checking status ...$normal"
 	timestamp=$(date +%m-%d-%Y-%H:%M:%S)
+	dmveritystatus=""
+	forceestatus=""
+	dmveritystatus1=""
+	forceestatus1=""
 	insecurestatus=""
 	initdstatus=""
 	insecurestatus1=""
@@ -402,6 +467,8 @@ boot_tools() {
 			fi
 		fi
 	fi
+	isdmverity
+	isforcee
 	isinitd
 	isinsecure
 	chosenimg=""
@@ -452,7 +519,7 @@ boot_tools() {
 	fi
 	if [[ -d $romdir/${chosenimg}img ]]; then
 		choice=""
-		while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "4" ]] ; do
+		while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "6" ]] ; do
 			clear
 			banner
 			echo "${bluet}CURRENT PROJECT: $greent$romname$normal"
@@ -467,6 +534,8 @@ boot_tools() {
 			if [[ $chosenimg = "boot" ]]; then
 				echo "3) Add/Remove init.d support (${bluet}CURRENT: $initdstatus1$normal)"
 				echo "4) Insecure/Secure the boot.img (${bluet}CURRENT: $insecurestatus1$normal)"
+				echo "5) Remove dm-verity (${bluet}CURRENT: $dmveritystatus1$normal)"
+				echo "6) Remove forceencrypt (${bluet}CURRENT: $forceestatus1$normal)"
 			fi
 			echo "${yellowt}m = Main menu"
 			echo "${magentat}q = Quit$normal"
@@ -490,6 +559,14 @@ boot_tools() {
 		# START Insecure/Secure the boot.img
 		elif [[ $choice == "4" ]]; then
 			boot_insecure
+			return 1
+		# START Remove dm-verity
+		elif [[ $choice == "5" ]]; then
+			boot_dmverity
+			return 1
+		# START Remove forceencrypt
+		elif [[ $choice == "6" ]]; then
+			boot_forcee
 			return 1
 		# START Main menu
 		elif [[ $choice == "m" ]]; then
@@ -4330,6 +4407,32 @@ isdebloatcustomstatus() {
 		debloatcustomstatus1=$(echo "${redt}/tools/root/bloat_custom is EMPTY${normal}")
 	fi	
 }
+isdmverity() {
+	if [[ -d $romdir/bootimg/ramdisk ]]; then
+		cd $romdir/bootimg/ramdisk
+		fstab=$(ls | grep -v goldfish | grep -m 1 fstab)
+		if [[ ! $(grep "verify" $fstab) = "" ]]; then
+			dmveritystatus="Yes"
+			dmveritystatus1="${redt}Enabled$normal"
+		else
+			dmveritystatus="No"
+			dmveritystatus1="${greent}Disabled$normal"
+		fi
+	fi
+}
+isforcee() {
+	if [[ -d $romdir/bootimg/ramdisk ]]; then
+		cd $romdir/bootimg/ramdisk
+		fstab=$(ls | grep -v goldfish | grep -m 1 fstab)
+		if [[ ! $(grep "forceencrypt" $fstab) = "" ]]; then
+			forceestatus="Yes"
+			forceestatus1="${redt}Enabled$normal"
+		else
+			forceestatus="No"
+			forceestatus1="${greent}Disabled$normal"
+		fi
+	fi
+}
 isfullrom() {
 	fullrom=""
 	fullrom1=""
@@ -4348,10 +4451,10 @@ isinitd() {
 		cd $romdir/bootimg/ramdisk
 		if [[ ! $(grep -r "init.d" . | grep -v "lge_fota" | grep -v "chargerlogo") = "" ]]; then
 			initdstatus="Yes"
-			initdstatus1="${greent}Yes$normal"
+			initdstatus1="${greent}Enabled$normal"
 		else
 			initdstatus="No"
-			initdstatus1="${redt}No$normal"
+			initdstatus1="${redt}Disabled$normal"
 		fi
 	fi
 }
@@ -4359,10 +4462,10 @@ isinsecure() {
 	if [[ -f $romdir/bootimg/ramdisk/default.prop ]]; then
 		if [[ $(grep "ro.secure=0" $romdir/bootimg/ramdisk/default.prop) = "" ]]; then
 			insecurestatus="No"
-			insecurestatus1=$(echo "${redt}No")
+			insecurestatus1=$(echo "${redt}Secure$normal")
 		else
 			insecurestatus="Yes"
-			insecurestatus1=$(echo "${greent}Yes")
+			insecurestatus1=$(echo "${greent}Insecure$normal")
 		fi
 	fi
 }
@@ -4414,10 +4517,18 @@ kitchen_update() {
 		banner
 		echo "${bluet}Checking for updates ...$normal"
 		dlurl="https://bitbucket.org/superr/superrs-kitchen/downloads"
-		newzip=$(wget -qO- $dlurl | cat | grep "Kitchen_v" | gawk '{ print $4 }' | grep -m 1 .zip | cut -d">" -f2 | cut -d"<" -f1)
-		newv=$(echo "$newzip" | cut -d"_" -f3 | cut -d"." -f1-4)
-		upcheck=$(echo "$newv" | sed 's/v//; s/\.//g; s/^0//')
-		currentv=$(echo "$superrv" | sed 's/v//; s/\.//g; s/^0//')
+		newzip=$(wget -qO- $dlurl | grep -m 1 Kitchen_v | gawk '{ print $4 }' | cut -d">" -f2 | cut -d"<" -f1)
+		newv=$(echo "$newzip" | sed 's/SuperRs_Kitchen_//; s/\.zip//')
+		if [[ ! $(echo "$newv" | grep v0) = "" ]]; then
+			upcheck=$(echo "$newv" | sed 's/v//; s/\.//g; s/^0//')
+		else
+			upcheck=$(echo "$newv" | sed 's/v//; s/\.//g; s/$/0/')
+		fi
+		if [[ ! $(echo "$superrv" | grep v0) = "" ]]; then
+			currentv=$(echo "$superrv" | sed 's/v//; s/\.//g; s/^0//')
+		else
+			currentv=$(echo "$superrv" | sed 's/v//; s/\.//g; s/$/0/')
+		fi
 		if [[ $(echo "$newzip" | grep Kitchen_v) = "" ]]; then
 	 		clear
 			banner
