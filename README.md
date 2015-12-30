@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v0.9.8.2 **#
+#** SuperR's Kitchen v0.9.8.3 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -28,6 +28,8 @@
 * Unpack/repack boot/recovery img (Big Thanks to @osm0sis for mkbootimg source!!!)  
 * Add/remove init.d support to boot.img  
 * Add/remove insecure boot.img  
+* Remove dm-verity  
+* Remove forceencrypt  
 * open_bump.py compatible (download it and add to the tools directory)  
 
 **By-name auto-detection from:**
