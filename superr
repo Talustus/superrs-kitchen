@@ -507,6 +507,7 @@ boot_tools() {
 
 		# START Pack img, delete ramdisk
 		if [[ $choice == "1" ]]; then
+			repackk=""
 			boot_repack
 			return 1
 		# START Pack img, keep ramdisk
@@ -525,7 +526,7 @@ boot_tools() {
 		# START Remove dm-verity
 		elif [[ $choice == "5" ]]; then
 			cd $romdir/bootimg/ramdisk
-			fstab=$(ls | grep -v goldfish | grep -m 1 fstab)
+			findfstab
 			if [[ $(grep "verify" $fstab) = "" ]]; then
 				clear
 				banner
@@ -547,7 +548,7 @@ boot_tools() {
 		# START Remove forceencrypt
 		elif [[ $choice == "6" ]]; then
 			cd $romdir/bootimg/ramdisk
-			fstab=$(ls | grep -v goldfish | grep -m 1 fstab)
+			findfstab
 			if [[ $(grep "forceencrypt" $fstab) = "" ]]; then
 				clear
 				banner
@@ -3769,6 +3770,9 @@ extract_new() {
 	exec ./superr
 	return 1
 }
+findfstab() {
+	fstab=$(find ! -type l | grep -v "goldfish\|ranchu" | grep -m 1 fstab | sed 's/\.\///')
+}
 findimgsize() {	
 	imgfile=$(echo $whatimg | cut -c1-3)
 	if [[ -f $deviceloc/${imgfile}imgsize ]]; then
@@ -4022,7 +4026,7 @@ get_byname() {
 				fi
 			fi
 			cd $romdir/bootimg/ramdisk
-			fstab=$(ls | grep -v goldfish | grep -m 1 fstab)
+			findfstab
 			if [[ ! $(grep "by-name/system" $fstab) = "" ]]; then
 				grep "by-name/system" $fstab | gawk '{ print $1 }' | sed 's/\/system//' > $deviceloc/superr_byname2
 			elif [[ ! $(grep "by-name/SYSTEM" $fstab) = "" ]]; then
@@ -4090,7 +4094,7 @@ get_byname() {
 				fi
 			fi
 			cd $romdir/recoveryimg/ramdisk/etc
-			fstab=$(ls | grep -v goldfish | grep -m 1 fstab)
+			findfstab
 			if [[ ! $(grep "/system" $fstab | gawk '{ print $1 }' | grep mmcb) = "" && ! $(grep "/system" $fstab | gawk '{ print $2 }' | grep system) = "" ]]; then
 				grep "/system" $fstab | gawk '{ print $1,$2 }' | sed 's/\//\\\//g' >> $deviceloc/superr_mmc
 				grep "/boot" $fstab | gawk '{ print $1,$2 }' | sed 's/\//\\\//g' >> $deviceloc/superr_mmc
@@ -4350,7 +4354,7 @@ isdebloatcustomstatus() {
 isdmverity() {
 	if [[ -d $romdir/bootimg/ramdisk ]]; then
 		cd $romdir/bootimg/ramdisk
-		fstab=$(ls | grep -v goldfish | grep -m 1 fstab)
+		findfstab
 		if [[ ! $(grep "verify" $fstab) = "" ]]; then
 			dmveritystatus="Yes"
 			dmveritystatus1="${redt}Enabled$normal"
@@ -4363,7 +4367,7 @@ isdmverity() {
 isforcee() {
 	if [[ -d $romdir/bootimg/ramdisk ]]; then
 		cd $romdir/bootimg/ramdisk
-		fstab=$(ls | grep -v goldfish | grep -m 1 fstab)
+		findfstab
 		if [[ ! $(grep "forceencrypt" $fstab) = "" ]]; then
 			forceestatus="Yes"
 			forceestatus1="${redt}Enabled$normal"
