@@ -4463,16 +4463,8 @@ kitchen_update() {
 		dlurl="https://bitbucket.org/superr/superrs-kitchen/downloads"
 		newzip=$(wget -qO- $dlurl | grep -m 1 Kitchen_v | gawk '{ print $4 }' | cut -d">" -f2 | cut -d"<" -f1)
 		newv=$(echo "$newzip" | sed 's/SuperRs_Kitchen_//; s/\.zip//')
-		if [[ ! $(echo "$newv" | grep v0) = "" ]]; then
-			upcheck=$(echo "$newv" | sed 's/v//; s/\.//g; s/^0//')
-		else
-			upcheck=$(echo "$newv" | sed 's/v//; s/\.//g; s/$/0/')
-		fi
-		if [[ ! $(echo "$superrv" | grep v0) = "" ]]; then
-			currentv=$(echo "$superrv" | cut -d"-" -f1 | cut -d"_" -f1 | sed 's/v//; s/\.//g; s/^0//')
-		else
-			currentv=$(echo "$superrv" | cut -d"-" -f1 | cut -d"_" -f1 | sed 's/v//; s/\.//g; s/$/0/')
-		fi
+		upcheck=$(echo "$newv" | sed 's/v//; s/\.//g; s/^0//')
+		currentv=$(echo "$superrv" | cut -d"-" -f1 | cut -d"_" -f1 | sed 's/v//; s/\.//g; s/^0//')
 		if [[ $(echo "$newzip" | grep Kitchen_v) = "" ]]; then
 	 		clear
 			banner
@@ -5476,6 +5468,37 @@ italic=$(tput sitm)
 stand=$(tput smso)
 underline=$(tput smul)
 normal=$(tput sgr0)
+
+if [[ $greeting = "" ]]; then
+	clear
+	echo "$bold$blueb                                                                            $normal"
+	echo "$bold$blueb                                                                            $normal"
+	echo "$bold$blueb                                                                            $normal"
+	echo "$bold$blueb                                                                            $normal"
+	echo "$bold$blueb                                                                            $normal"
+	echo "$bold$blueb                                                                            $normal"
+	echo "$bold$blueb                                                                            $normal"
+	echo "$bold$blueb                                                                            $normal"
+	echo "$bold$blueb                                                                            $normal"
+	echo "$bold$blueb      ,                        , _                ,                         $normal"
+	echo "$bold$blueb     /|   |                   /|/ \              /|   |             |       $normal"
+	echo "$bold$blueb      |___| __,   _   _        |   |  _           |   | _  __,  ,_  |       $normal"
+	echo "$bold$blueb      |   |/  | |/ \|/ \|   |  |   | |/ |  |  |_  |   ||/ /  | /  | |       $normal"
+	echo "$bold$blueb      |   |\_/|_|__/|__/ \_/|/ |   |_|__/\/ \/     \_/||__\_/|_/  |_o       $normal"
+	echo "$bold$blueb               /|  /|      /|                        /|                     $normal"
+	echo "$bold$blueb               \|  \|      \|                        \|                     $normal"
+	echo "$bold$blueb                                                                            $normal"
+	echo "$bold$blueb                                                                            $normal"
+	echo "$bold$blueb                                                                            $normal"
+	echo "$bold$blueb                                                                            $normal"
+	echo "$bold$blueb                                                                            $normal"
+	echo "$bold$blueb                                                                            $normal"
+	echo "$bold$blueb                                                                            $normal"
+	echo "$bold$blueb                                                                            $normal"
+	echo "$bold$blueb                                                                            $normal"
+	sleep 5
+	export greeting="1"
+fi
 
 if [[ ! $(echo $SHELL | grep -o -m 1 bash$) = "bash" ]]; then
 	clear
