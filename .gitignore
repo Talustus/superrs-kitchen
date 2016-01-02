@@ -4,6 +4,7 @@
 /tools/root/bloat_custom
 /tools/depmet
 /tools/depbuild
+/tools/updatecheck*
 /tools/boot/mtk-tools/mkbootimg
 /tools/mkbootimg
 /tools/unpackbootimg

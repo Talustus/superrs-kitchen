@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v1.0.0.1 **#
+#** SuperR's Kitchen v1.0.0.2 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -44,6 +44,12 @@
 
 * recovery.img  
 
+**Kitchen updater:**
+
+* git pull if the kitchen was cloned  
+* wget zip and extract if kitchen zip was downloaded  
+* Option to check for updates when the kitchen starts  
+
 **Root/unroot**  
 **Deodex Marshmallow ROMs**  
 **Deodex Lollipop ROMs**  
@@ -57,7 +63,6 @@
 **Remove Knox**  
 **Add/remove busybox (Big thanks to @osm0sis for his Busybox Installer)**  
 **Add/remove user app support (/data/app)**  
-**Kitchen updater (git pull if cloned, wget zip and extract if not)**  
 
 ##**USAGE:**##
 

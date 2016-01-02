@@ -4502,13 +4502,12 @@ kitchen_update() {
 				rm -rf $tools/simg2img
 				rm -rf $tools/img2simg
 				rm -rf $tools/make_ext4fs
-				rm -rf $tools/sepolicy-inject
 				git pull
 				clear
 				banner
 				echo "${greent}SuperR's Kitchen has been updated$normal"
 				echo ""
-				read -p "Press ENTER to return to main menu"
+				read -p "Press ENTER to return to continue"
 			else
 				clear
 				banner
@@ -4516,6 +4515,7 @@ kitchen_update() {
 				echo ""
 				mkdir tmpkupdate
 				mv tools/devices tmpkupdate/
+				mv tools/updatecheck* tmpkupdate/
 				if [[ -f tools/open_bump.py ]]; then
 					mv tools/open_bump.py tmpkupdate/
 				fi
@@ -4537,6 +4537,7 @@ kitchen_update() {
 						mv tools/devices/$line tmpkupdate/devices/
 					fi
 				done
+				mv tmpkupdate/updatecheck* tools/
 				rm -rf $newzip 
 				rm -rf tools/devices
 				mv tmpkupdate/devices tools/
@@ -4545,14 +4546,26 @@ kitchen_update() {
 				banner
 				echo "${greent}SuperR's Kitchen has been updated$normal"
 				echo ""
-				read -p "Press ENTER to return to main menu"
+				read -p "Press ENTER to continue"
 			fi
 		else
 			clear
 			banner
 			echo "${greent}SuperR's Kitchen is already up to date$normal"
 			echo ""
-			read -p "Press ENTER to return to main menu"
+			read -p "Press ENTER to continue"
+		fi
+		export updatecheck="1"
+		if [[ ! -f $tools/updatecheck-yes && ! -f $tools/updatecheck-no ]]; then
+			clear
+			banner
+			choice=""
+			read -n 1 -p "Do you want to check for updates when the kitchen starts?  y/n" choice
+			if [[ $choice = "y" ]]; then
+				touch $tools/updatecheck-yes
+			else
+				touch $tools/updatecheck-no
+			fi		
 		fi
 	else
 		clear
@@ -4709,7 +4722,7 @@ partadd() {
 			fi
 		else
 			cd $romdir/META-INF/com/google/android
-			if [[ $(echo "$partbyname" | grep "userdata\|UDA\|USERDATA") = "" ]]; then	
+			if [[ ! $whatpart = "data" ]]; then	
 				gawk 'a=/^format/{b=1}b&&!a{print "#FORMAT";b=0}1' updater-script > updater-script2
 				mv updater-script2 updater-script
 				sed -i "s/#FORMAT/format(\"ext4\"\,\ \"EMMC\"\,\ \"$partbyname\"\,\ \"0\"\,\ \"\/$whatpart\");/" updater-script
@@ -4717,7 +4730,7 @@ partadd() {
 			gawk 'a=/^mount/{b=1}b&&!a{print "#MOUNT";b=0}1' updater-script > updater-script2
 			mv updater-script2 updater-script
 			sed -i "s/#MOUNT/mount(\"ext4\"\,\ \"EMMC\"\,\ \"$partbyname\"\,\ \"\/$whatpart\");/" updater-script
-			sed -i "s/#MOUNT/format(\"ext4\"\,\ \"EMMC\"\,\ \"$partbyname\"\,\ \"0\"\,\ \"\/$whatpart\");/" updater-script
+			#sed -i "s/#MOUNT/format(\"ext4\"\,\ \"EMMC\"\,\ \"$partbyname\"\,\ \"0\"\,\ \"\/$whatpart\");/" updater-script
 			gawk 'a=/^unmount/{b=1}b&&!a{print "#UNMOUNT";b=0}1' updater-script > updater-script2
 			mv updater-script2 updater-script
 			sed -i "s/#UNMOUNT/unmount(\"\/$whatpart\");/" updater-script
@@ -5565,6 +5578,9 @@ if [[ ! -x $tools/mkbootimg || ! -x $tools/unpackbootimg || ! -x $tools/simg2img
 	rm -rf $tools/boot/mtk-tools/mkbootimg
 	ln -s $tools/mkbootimg $tools/boot/mtk-tools/mkbootimg
 	cd $base
+fi
+if [[ -f $tools/updatecheck-yes && $updatecheck = "" ]]; then
+	kitchen_update
 fi
 if [[ ! $(ls -d */ | grep 'superr_') = "" ]]; then
 	if [[ "$romname" = "" ]]; then
