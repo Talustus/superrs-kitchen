@@ -4579,7 +4579,7 @@ kitchen_update() {
 	return 1
 }
 moveoldfiles() {
-	if [[ -d $romdir/system || -d $romdir/META-INF || -d $romdir/supersu || -d $romdir/data ]]; then
+	if [[ -d $romdir/system || -d $romdir/META-INF || -d $romdir/supersu || -d $romdir/busybox || -d $romdir/data || -d $romdir/vendor ]]; then
 		echo $timestamp > $prfiles/temptime
 		temptime=$(cat $prfiles/temptime)
 		mkdir -p $prfiles/old_rom_files/$romname.$temptime
@@ -4593,8 +4593,14 @@ moveoldfiles() {
 	if [[ -d $romdir/supersu ]]; then
 		mv $romdir/supersu $prfiles/old_rom_files/$romname.$temptime/
 	fi
+	if [[ -d $romdir/busybox ]]; then
+		mv $romdir/busybox $prfiles/old_rom_files/$romname.$temptime/
+	fi
 	if [[ -d $romdir/data ]]; then
 		mv $romdir/data $prfiles/old_rom_files/$romname.$temptime/
+	fi
+	if [[ -d $romdir/vendor ]]; then
+		mv $romdir/vendor $prfiles/old_rom_files/$romname.$temptime/
 	fi
 	if [[ -d $romdir/install ]]; then
 		mv $romdir/install $prfiles/old_rom_files/$romname.$temptime/
@@ -4631,7 +4637,7 @@ new_project() {
 	echo "Enter new project name (${yellowt}spaces will be replaced with _$normal):"
 	read -e romname1
 	romname=$(echo "$romname1" | sed 's/ /_/g')
-	if [[ $(find -type d | grep $romname$) = "" ]]; then
+	if [[ $(ls -d */ | grep "superr_$romname/") = "" ]]; then
 		mkdir -p superr_$romname/00_project_files/logs
 	else
 		clear
@@ -4678,7 +4684,11 @@ partadd() {
 			cd $romdir/META-INF/com/google/android
 			gawk 'a=/^mount/{b=1}b&&!a{print "#MOUNT";b=0}1' updater-script > updater-script2
 			mv updater-script2 updater-script
-			sed -i "s/#MOUNT/mount(\"ext4\"\,\ \"EMMC\"\,\ \"$partbyname\"\,\ \"\/$whatpart\"\,\ \"\");/" updater-script
+			if [[ $permtype = "sparse_dat" ]]; then	
+				sed -i "s/#MOUNT/mount(\"ext4\"\,\ \"EMMC\"\,\ \"$partbyname\"\,\ \"\/$whatpart\"\,\ \"\");/" updater-script
+			else
+				sed -i "s/#MOUNT/mount(\"ext4\"\,\ \"EMMC\"\,\ \"$partbyname\"\,\ \"\/$whatpart\");/" updater-script
+			fi
 			gawk 'a=/^unmount/{b=1}b&&!a{print "#UNMOUNT";b=0}1' updater-script > updater-script2
 			mv updater-script2 updater-script
 			sed -i "s/#UNMOUNT/unmount(\"\/$whatpart\");/" updater-script
@@ -4730,7 +4740,6 @@ partadd() {
 			gawk 'a=/^mount/{b=1}b&&!a{print "#MOUNT";b=0}1' updater-script > updater-script2
 			mv updater-script2 updater-script
 			sed -i "s/#MOUNT/mount(\"ext4\"\,\ \"EMMC\"\,\ \"$partbyname\"\,\ \"\/$whatpart\");/" updater-script
-			#sed -i "s/#MOUNT/format(\"ext4\"\,\ \"EMMC\"\,\ \"$partbyname\"\,\ \"0\"\,\ \"\/$whatpart\");/" updater-script
 			gawk 'a=/^unmount/{b=1}b&&!a{print "#UNMOUNT";b=0}1' updater-script > updater-script2
 			mv updater-script2 updater-script
 			sed -i "s/#UNMOUNT/unmount(\"\/$whatpart\");/" updater-script
