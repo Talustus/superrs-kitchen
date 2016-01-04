@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v1.0.0.3 **#
+#** SuperR's Kitchen v1.0.0.4 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -6,6 +6,7 @@
 **Extract and create ROM from:**
 
 * Rooted Device  
+* Custom Recovery  
 * Existing ROM zip  
 * system.img/boot.img (and cache.img on Samsung devices)
 * system.ext4.tar/boot.img  
