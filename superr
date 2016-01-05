@@ -3313,18 +3313,18 @@ extract_new() {
 			echo ""
 			echo "1) Add a ROM zip, tar/boot.img, system.img/boot.img, or"
 			echo "   win/boot.win then choose this option"
-			echo "2) Pull system, boot, and recovery images from your ${redt}${bold}rooted$normal"
-			echo "   device OR from custom recovery for extraction."
+			echo "2) Pull system, vendor, boot, and recovery images from your"
+			echo "   ${redt}${bold}rooted$normal device OR from custom recovery for extraction."
 			echo "${yellowt}m = Main Menu"
 			echo "${magentat}q = Quit$normal"
 			echo ""
 			read -n 1 -p "Please enter your choice:" choice
 		done
-		# START I added a ROM zip, tar/boot.img, system.img/boot.img, or win/boot.win
+		# START Add a ROM zip, tar/boot.img, system.img/boot.img, or win/boot.win
 		if [[ $choice = "1" ]]; then
 			extract_new
 			return 1
-		# START Extract system.img and boot.img from your rooted device
+		# START Pull system, vendor, boot, and recovery images from device
 		elif [[ $choice = "2" ]]; then
 			choice=""
 			while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "2" ]] ; do
@@ -3363,32 +3363,29 @@ extract_new() {
 				fi
 				$adb pull /system/build.prop $romdir/build.prop
 				get_devicename
-				if [[ ! -f $base/tools/devices/$devicename/superr_byname ]]; then
-					mkdir $base/tools/devices/$devicename
+				deviceloc="$base/tools/devices/$devicename"
+				rm -rf $romdir/build.prop
+				if [[ ! -f $deviceloc/superr_byname ]]; then
+					mkdir -p $deviceloc
 					byname1=$($adb shell "mount | grep by-name | grep system")
 					byname=$(echo "$byname1" | gawk '{ print $1 }' | rev | cut -d'/' -f2- | rev)
-					echo "$byname" | sed 's:/:\\/:g' > $base/tools/devices/$devicename/superr_byname
+					echo "$byname" | sed 's:/:\\/:g' > $deviceloc/superr_byname
 				else
-					byname=$(cat $base/tools/devices/$devicename/superr_byname | sed 's:\\::g')
+					byname=$(cat $deviceloc/superr_byname | sed 's:\\::g')
 				fi
-				clear
-				banner
-				echo "${bluet}Extracting boot.img from your device ...$normal"
-				echo ""
-				$adb pull $byname/boot
-				mv boot boot.img
-				clear
-				banner
-				echo "${bluet}Extracting system.img from your device ...$normal"
-				echo ""
-				$adb pull $byname/system
-				mv system system.img
-				clear
-				banner
-				echo "${bluet}Extracting recovery.img from your device ...$normal"
-				echo ""
-				$adb pull $byname/recovery
-				mv recovery recovery.img
+				pullimg="boot"
+				pullimgr
+				pullimg="system"
+				pullimgr
+				pullimg="recovery"
+				pullimgr
+				if [[ -f $deviceloc/superr_mmc && ! $(grep "vendor" $deviceloc/superr_mmc) = "" ]]; then
+					pullimg="vendor"
+					pullimgr
+				elif [[ ! $(grep "by-name" $deviceloc/superr_byname) = "" && ! $($adb shell ls -la $byname | grep vendor) = "" ]]; then
+					pullimg="vendor"
+					pullimgr
+				fi
 			# START My device is booted to Android (must be rooted)
 			elif [[ $choice = "2" ]]; then
 				clear
@@ -3413,13 +3410,15 @@ extract_new() {
 				$adb "wait-for-device"
 				$adb pull /system/build.prop $romdir/build.prop
 				get_devicename
-				if [[ ! -f $base/tools/devices/$devicename/superr_byname ]]; then
-					mkdir $base/tools/devices/$devicename
+				deviceloc="$base/tools/devices/$devicename"
+				rm -rf $romdir/build.prop
+				if [[ ! -f $deviceloc/superr_byname ]]; then
+					mkdir -p $deviceloc
 					byname1=$($adb shell "mount | grep by-name | grep system")
 					byname=$(echo "$byname1" | gawk '{ print $1 }' | rev | cut -d'/' -f2- | rev)
-					echo "$byname1" | sed 's:/:\\/:g' > $base/tools/devices/$devicename/superr_byname
+					echo "$byname1" | sed 's:/:\\/:g' > $deviceloc/superr_byname
 				else
-					byname=$(cat $base/tools/devices/$devicename/superr_byname | sed 's:\\::g')
+					byname=$(cat $deviceloc/superr_byname | sed 's:\\::g')
 				fi
 				clear
 				banner
@@ -3456,33 +3455,19 @@ extract_new() {
 						return 1
 					fi
 				fi
-				clear
-				banner
-				echo "${bluet}Extracting system partition to /sdcard ...$normal"
-				echo ""
-				$adb shell su -C "dd if=$byname/system of=/sdcard/system.img"
-				echo ""
-				echo "${bluet}Pulling system.img from your device ...$normal"
-				$adb pull /sdcard/system.img $romdir/system.img > $logs/main.log
-				$adb shell "rm -rf /sdcard/system.img"
-				clear
-				banner
-				echo "${bluet}Extracting boot partition to /sdcard ...$normal"
-				echo ""
-				$adb shell su -C "dd if=$byname/boot of=/sdcard/boot.img"
-				echo ""
-				echo "${bluet}Pulling boot.img from your device ...$normal"
-				$adb pull /sdcard/boot.img $romdir/boot.img > $logs/main.log
-				$adb shell "rm -rf /sdcard/boot.img"
-				clear
-				banner
-				echo "${bluet}Extracting recovery partition to /sdcard ...$normal"
-				echo ""
-				$adb shell su -C "dd if=$byname/recovery of=/sdcard/recovery.img"
-				echo ""
-				echo "${bluet}Pulling recovery.img from your device ...$normal"
-				$adb pull /sdcard/recovery.img $romdir/recovery.img > $logs/main.log
-				$adb shell "rm -rf /sdcard/recovery.img"
+				pullimg="system"
+				pullimga
+				pullimg="boot"
+				pullimga
+				pullimg="recovery"
+				pullimga
+				if [[ -f $deviceloc/superr_mmc && ! $(grep "vendor" $deviceloc/superr_mmc) = "" ]]; then
+					pullimg="vendor"
+					pullimga
+				elif [[ ! $(grep "by-name" $deviceloc/superr_byname) = "" && ! $($adb shell ls -la $byname | grep vendor) = "" ]]; then
+					pullimg="vendor"
+					pullimga
+				fi
 			# START Main Menu
 			elif [[ $choice = "m" ]]; then
 				cd $base
@@ -3494,15 +3479,15 @@ extract_new() {
 				echo ""
 				exit
 			fi
-			rm -rf $romdir/build.prop
 			if [[ -f $romdir/system.img ]]; then
 				romimg="system.img"
 			else	
 				clear
 				banner
 				echo "${redb}${yellowt}${bold}ERROR:$normal"
-				echo "${redt}Something went wrong. Most likely you lack permission"
-				echo "to pull img's from your device.$normal"
+				echo "${redt}Something went wrong. Most likely you lack permission to"
+				echo "pull images from your device, or you don't have enough"
+				echo "space on your device to store the images.$normal"
 				echo ""
 				read -p "Press ENTER to return to the Main menu"
 				cd $base
@@ -4948,6 +4933,39 @@ part_setup() {
 		sed -i "s/#BYNAME/$byname/g" $romdir/META-INF/com/google/android/updater-script
 	fi
 }
+pullimga() {
+	clear
+	banner
+	echo "${bluet}Extracting $pullimg partition to /sdcard ...$normal"
+	echo ""
+	if [[ -f $base/tools/devices/$devicename/superr_mmc ]]; then
+		partbyname=$(grep "$pullimg" $base/tools/devices/$devicename/superr_mmc | gawk '{ print $1 }' | sed 's/\\//g')
+		$adb shell su -C "dd if=$partbyname of=/sdcard/$pullimg.img"
+	else
+		$adb shell su -C "dd if=$byname/$pullimg of=/sdcard/$pullimg.img"
+	fi
+	echo ""
+	echo "${bluet}Pulling $pullimg.img from your device ...$normal"
+	$adb pull /sdcard/$pullimg.img $romdir/$pullimg.img > $logs/main.log
+	$adb shell rm /sdcard/$pullimg.img
+	pullimg=""
+}
+pullimgr() {
+	clear
+	banner
+	echo "${bluet}Extracting $pullimg.img from your device ...$normal"
+	echo ""
+	if [[ -f $base/tools/devices/$devicename/superr_mmc ]]; then
+		partbyname=$(grep "$pullimg" $base/tools/devices/$devicename/superr_mmc | gawk '{ print $1 }' | sed 's/\\//g')
+		mmcname=$(echo "$partbyname" | rev | cut -d"/" -f1 | rev)
+		$adb pull $partbyname
+		mv $mmcname $pullimg.img
+	else
+		$adb pull $byname/$pullimg
+		mv $pullimg $pullimg.img
+	fi
+	pullimg=""
+}
 rom_tools() {
 	clear
 	banner
@@ -5345,7 +5363,7 @@ update_project() {
 				read -n 1 -p "Please enter your choice:" choice
 			done	
 			# set_metadata chosen
-			if [[ $choice == "1" ]]; then
+			if [[ $choice = "1" ]]; then
 				if [[ ! $api -ge "19" ]]; then
 					clear
 					banner
@@ -5358,11 +5376,11 @@ update_project() {
 				permtype="set_metadata"
 				echo "$permtype" > $prfiles/permtype
 			# set_perm chosen
-			elif [[ $choice == "2" ]]; then
+			elif [[ $choice = "2" ]]; then
 				permtype="set_perm"
 				echo "$permtype" > $prfiles/permtype
 			# Sparse dat chosen
-			elif [[ $choice == "3" ]]; then
+			elif [[ $choice = "3" ]]; then
 				if [[ ! $api -ge "21" || ! $(getconf LONG_BIT) = "64" ]]; then
 					clear
 					banner
@@ -5382,7 +5400,7 @@ update_project() {
 				update_project
 				return 1
 			# raw_img chosen
-			elif [[ $choice == "4" ]]; then
+			elif [[ $choice = "4" ]]; then
 				rm -rf $romdir/META-INF
 				cd $tools/updater
 				cp -r ./META-INF-IMG/* $romdir
@@ -5416,13 +5434,11 @@ update_project() {
 			if [[ ! $(grep "^$permtype" updater-script | grep -v "/tmp/") = "" ]]; then
 				gawk 'a=/^#SYM/{b=1}b&&!a{print "#PERM";b=0}1' updater-script > updater-script2
 				mv updater-script2 updater-script
-				#gawk '/^set_perm/ && !x {print "#PERM"; x=1} 1' updater-script > updater-script2
-				#mv updater-script2 updater-script
 				grep "^$permtype" updater-script | grep -v "/tmp/" > $prfiles/${permtype}_original
 			fi
 		fi
-		if [[ ! $permtype = "sparse_dat" && ! $permtype = "raw_img" ]]; then
-			permtest=$(gawk '/#PERM/,/set_progress/' updater-script | grep set_metadata)
+		if [[ $permtype = "set_metadata" || $permtype = "set_perm" ]]; then
+			permtest=$(gawk '/#PERM/,/set_progress/' updater-script | grep $permtype)
 			if [[ ! $permtest = "" ]]; then
 				grep -v "$permtest" updater-script > updater-script2
 				mv updater-script2 updater-script
