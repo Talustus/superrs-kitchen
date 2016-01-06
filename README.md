@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v1.0.0.5 **#
+#** SuperR's Kitchen v1.0.0.6 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -64,6 +64,7 @@
 **Remove Knox**  
 **Add/remove busybox (Big thanks to @osm0sis for his Busybox Installer)**  
 **Add/remove user app support (/data/app)**  
+**Sign zips**  
 
 ##**USAGE:**##
 

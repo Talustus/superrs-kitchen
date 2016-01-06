@@ -1220,6 +1220,9 @@ build_rom_zip() {
 	if [[ -f $romdir/$signature.zip ]]; then
 		mv $romdir/$signature.zip $romdir/${signature}_$timestamp.zip
 	fi
+	if [[ -f $romdir/$signature-signed.zip ]]; then
+		mv $romdir/$signature-signed.zip $romdir/$signature-signed_$timestamp.zip
+	fi
 	cd $romdir
 	permtype=$(cat $prfiles/permtype)
 	if [[ $permtype = "sparse_dat" ]]; then
@@ -1366,9 +1369,38 @@ build_rom_zip() {
 	fi
 	clear
 	banner
-	echo "$greent$signature.zip has been created in $romname. Enjoy!$normal"
-	echo ""
-	read -p "Press ENTER to return to ROM Tools"
+	if [[ -f $signature.zip ]]; then
+		clear
+		banner
+		echo "$greent$signature.zip has been created in $romname.$normal"
+		echo ""
+		reply=""
+		read -n 1 -p "Would you like to sign $signature.zip?  y/n" reply
+		if [[ $reply = "y" ]]; then
+			clear
+			banner
+			echo "${bluet}Signing $signature.zip ...$normal"
+			java -jar $tools/signapk/signapk.jar $tools/signapk/testkey.x509.pem $tools/signapk/testkey.pk8 $signature.zip $signature-signed.zip
+			if [[ -f $signature-signed.zip ]]; then
+				clear
+				banner
+				echo "$greent$signature-signed.zip has been created in $romname. Enjoy!$normal"
+				echo ""
+				read -p "Press ENTER to return to ROM Tools"
+				rom_tools
+				return 1
+			fi
+		fi
+	else
+		clear
+		banner
+		echo "${redt}${yellowb}ERROR:$normal"
+		echo "${redt}Something went wrong. Check the zip.log for errors.$normal"
+		echo ""
+		read -p "Press ENTER to return to ROM Tools"
+		rom_tools
+		return 1
+	fi
 	rom_tools
 }
 build_zip() {
@@ -3160,13 +3192,15 @@ dozipalign() {
 			$zipalign -f 4 $app $app-2 >/dev/null 2>&1
 			mv $app-2 $app
 		done		
-		cd $privdir
-		privapp=""
-		ls $privdir | while read privapp ; do
-			echo "Zipaligning $privapp ..."
-			$zipalign -f 4 $privapp $privapp-2 >/dev/null 2>&1
-			mv $privapp-2 $privapp
-		done	
+		if [[ -d $privdir ]]; then
+			cd $privdir
+			privapp=""
+			ls $privdir | while read privapp ; do
+				echo "Zipaligning $privapp ..."
+				$zipalign -f 4 $privapp $privapp-2 >/dev/null 2>&1
+				mv $privapp-2 $privapp
+			done
+		fi
 	elif [[ $api -ge "21" ]]; then
 		cd $appdir
 		app=""
@@ -3176,14 +3210,16 @@ dozipalign() {
 			$zipalign -f 4 $app.apk $app.apk-2 >/dev/null 2>&1
 			mv $app.apk-2 $app.apk
 		done		
-		cd $privdir
-		privapp=""
-		ls $privdir | while read privapp ; do
-			echo "Zipaligning $privapp.apk ..."
-			cd $privdir/$privapp
-			$zipalign -f 4 $privapp.apk $privapp.apk-2 >/dev/null 2>&1
-			mv $privapp.apk-2 $privapp.apk
-		done
+		if [[ -d $privdir ]]; then
+			cd $privdir
+			privapp=""
+			ls $privdir | while read privapp ; do
+				echo "Zipaligning $privapp.apk ..."
+				cd $privdir/$privapp
+				$zipalign -f 4 $privapp.apk $privapp.apk-2 >/dev/null 2>&1
+				mv $privapp.apk-2 $privapp.apk
+			done
+		fi
 	fi
 }
 elf_unpack() {
