@@ -1380,11 +1380,20 @@ build_rom_zip() {
 			clear
 			banner
 			echo "${bluet}Signing $signature.zip ...$normal"
-			java -jar $tools/signapk/signapk.jar $tools/signapk/testkey.x509.pem $tools/signapk/testkey.pk8 $signature.zip $signature-signed.zip
+			java -jar $tools/signapk/signapk.jar -w $tools/signapk/testkey.x509.pem $tools/signapk/testkey.pk8 $signature.zip $signature-signed.zip
 			if [[ -f $signature-signed.zip ]]; then
 				clear
 				banner
 				echo "$greent$signature-signed.zip has been created in $romname. Enjoy!$normal"
+				echo ""
+				read -p "Press ENTER to return to ROM Tools"
+				rom_tools
+				return 1
+			else
+				clear
+				banner
+				echo "${redt}${yellowb}ERROR:$normal"
+				echo "${redt}Something went wrong with the signing.$normal"
 				echo ""
 				read -p "Press ENTER to return to ROM Tools"
 				rom_tools
@@ -3622,6 +3631,10 @@ extract_new() {
 			banner
 			echo "${bluet}Extracting $romzip in $romname$normal"
 			7za x $romzip >> $logs/zip.log
+			rm -rf $romdir/META-INF/*.RSA
+			rm -rf $romdir/META-INF/*.SF
+			rm -rf $romdir/META-INF/*.MF
+			rm -rf $romdir/META-INF/com/android
 			deviceloc=""
 			if [[ -f $romdir/system/build.prop && -f $romdir/META-INF/com/google/android/updater-script ]]; then
 				get_devicename
