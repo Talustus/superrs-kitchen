@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v1.0.0.7 **#
+#** SuperR's Kitchen v1.0.0.8 **#
 ##by SuperR##
 
 ##**FEATURES**##

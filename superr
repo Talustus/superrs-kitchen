@@ -463,18 +463,18 @@ boot_tools() {
 		done
 	fi
 	# START boot.img chosen
-	if [[ $choice == "1" ]]; then
+	if [[ $choice = "1" ]]; then
 		chosenimg="boot"
 	# START recovery.img chosen
-	elif [[ $choice == "2" ]]; then
+	elif [[ $choice = "2" ]]; then
 		chosenimg="recovery"
 	# START Main menu
-	elif [[ $choice == "m" ]]; then
+	elif [[ $choice = "m" ]]; then
 		cd $base
 		exec ./superr
 		return 1
 	# START Quit
-	elif [[ $choice == "q" ]]; then
+	elif [[ $choice = "q" ]]; then
 		echo ""
 		echo ""
 		exit
@@ -506,25 +506,25 @@ boot_tools() {
 		done
 
 		# START Pack img, delete ramdisk
-		if [[ $choice == "1" ]]; then
+		if [[ $choice = "1" ]]; then
 			repackk=""
 			boot_repack
 			return 1
 		# START Pack img, keep ramdisk
-		elif [[ $choice == "2" ]]; then
+		elif [[ $choice = "2" ]]; then
 			repackk="1"
 			boot_repack
 			return 1
 		# START Add/Remove init.d support
-		elif [[ $choice == "3" ]]; then
+		elif [[ $choice = "3" ]]; then
 			boot_initd
 			return 1
 		# START Insecure/Secure the boot.img
-		elif [[ $choice == "4" ]]; then
+		elif [[ $choice = "4" ]]; then
 			boot_insecure
 			return 1
 		# START Remove dm-verity
-		elif [[ $choice == "5" ]]; then
+		elif [[ $choice = "5" ]]; then
 			cd $romdir/bootimg/ramdisk
 			findfstab
 			if [[ $(grep "verify" $fstab) = "" ]]; then
@@ -546,7 +546,7 @@ boot_tools() {
 			boot_tools
 			return 1
 		# START Remove forceencrypt
-		elif [[ $choice == "6" ]]; then
+		elif [[ $choice = "6" ]]; then
 			cd $romdir/bootimg/ramdisk
 			findfstab
 			if [[ $(grep "forceencrypt" $fstab) = "" ]]; then
@@ -568,12 +568,12 @@ boot_tools() {
 			boot_tools
 			return 1
 		# START Main menu
-		elif [[ $choice == "m" ]]; then
+		elif [[ $choice = "m" ]]; then
 			cd $base
 			exec ./superr
 			return 1
 		# START Quit
-		elif [[ $choice == "q" ]]; then
+		elif [[ $choice = "q" ]]; then
 			echo ""
 			echo ""
 			exit
@@ -649,15 +649,19 @@ boot_tools() {
 		get_byname
 		clear
 		banner		
-		echo "${bluet}Building zip in $romname ...$normal"
+		echo "${bluet}Preparing to build ...$normal"
 		if [[ -d $romdir/META-INF ]]; then
 			mv $romdir/META-INF $romdir/META-INF1
 		fi
 		cp -r $tools/updater/META-INF $romdir/META-INF
 		rm -rf $romdir/META-INF/com/google/android/updater-script
 		if [[ $chosenimg = "recovery" ]]; then
+			signature2=$(echo "$signature-recovery")
+			signature3=$(echo "$signature1 Recovery")
 			cp $tools/updater/custom/updater-script-recovery $romdir/META-INF/com/google/android/updater-script
-		elif [[ $chosenimg = "boot" ]]; then	
+		elif [[ $chosenimg = "boot" ]]; then
+			signature2=$(echo "$signature-kernel")
+			signature3=$(echo "$signature1 Kernel")	
 			if [[ -d $romdir/system/etc/init.d ]]; then
 				cp $tools/updater/custom/updater-script-kernel-init $romdir/META-INF/com/google/android/updater-script
 			else
@@ -675,25 +679,29 @@ boot_tools() {
 			cd $prfiles
 			sed -i '/#ASSERT/ r assert' $romdir/META-INF/com/google/android/updater-script
 		fi
-		clear
-		banner
-		echo "${bluet}Building $signature.zip ...$normal"
 		grep -v "#ASSERT" $romdir/META-INF/com/google/android/updater-script > $romdir/META-INF/com/google/android/updater-script2
 		mv $romdir/META-INF/com/google/android/updater-script2 $romdir/META-INF/com/google/android/updater-script
-		sed -i "s/#SIGNATURE/$signature1/g" $romdir/META-INF/com/google/android/updater-script
+		sed -i "s/#SIGNATURE/$signature3/g" $romdir/META-INF/com/google/android/updater-script
 		sed -i "s/#DEVICENAME/$devicename/g" $romdir/META-INF/com/google/android/updater-script
+		clear
+		banner
 		if [[ $chosenimg = "recovery" ]]; then
+			echo "${bluet}Building $signature2.zip in $romname ...$normal"
 			cd $romdir
-			7za a -mx7 $signature.zip recovery.img META-INF >> $logs/zip.log
+			if [[ -f $signature2.zip ]]; then
+				mv $signature2.zip ${signature2}_$timestamp.zip
+			fi
+			7za a -mx7 $signature2.zip recovery.img META-INF >> $logs/zip.log
 		elif [[ $chosenimg = "boot" ]]; then
+			echo "${bluet}Building $signature2.zip in $romname ...$normal"
 			cd $romdir
-			if [[ -f $signature.zip ]]; then
-				mv $signature.zip ${signature}_$timestamp.zip
+			if [[ -f $signature2.zip ]]; then
+				mv $signature2.zip ${signature2}_$timestamp.zip
 			fi
 			if [[ -d $romdir/system/etc/init.d ]]; then
-				7za a -mx7 $signature.zip boot.img system/etc/init.d META-INF >> $logs/zip.log
+				7za a -mx7 $signature2.zip boot.img system/etc/init.d META-INF >> $logs/zip.log
 			else
-				7za a -mx7 $signature.zip boot.img META-INF >> $logs/zip.log
+				7za a -mx7 $signature2.zip boot.img META-INF >> $logs/zip.log
 			fi
 		else
 			rm -rf $romdir/META-INF
@@ -716,13 +724,14 @@ boot_tools() {
 		rm -rf $prfiles/boot		
 		clear
 		banner
-		echo "$greent$signature.zip has been created in $romname. Enjoy!$normal"
+		echo "$greent$signature2.zip has been created in $romname. Enjoy!$normal"
 		echo ""
+		signzip
 		read -p "Press ENTER to return to Boot/Recovery Tools menu"	
 		boot_tools
 		return 1	
 	# START Boot/Recovery Menu
-	elif [[ $choice == "3" ]]; then
+	elif [[ $choice = "3" ]]; then
 		boot_tools
 		return 1
 	# START Main menu
@@ -963,7 +972,7 @@ build_custom_zip() {
 				if [[ "$odexstatus" = "Deodexed" ]]; then
 					clear
 					banner
-					read -n 1 -p "Should we zipalign before building the ROM? y/n  "
+					read -n 1 -p "Should we zipalign before building the zip? y/n  "
 					echo ""
 					echo ""
 					if [[ $REPLY = "y" ]]; then
@@ -986,12 +995,12 @@ build_custom_zip() {
 			mv updater-script2 updater-script
 		fi
 		clear
-		banner		
-		echo "${bluet}Building zip in $romname ...$normal"		
+		banner				
 		# START framework, app, priv-app
 		if [[ $choice = "1" ]]; then
 			if [[ ! $isframe = "" && ! $isapp = "" && ! $isprivapp = "" ]]; then
 				signature2=$(echo "$signature-afp")
+				echo "${bluet}Building $signature2.zip in $romname ...$normal"
 				cd $romdir/META-INF/com/google/android
 				grep -v "\"/system/lib\"\|\"/system/media\"" updater-script > updater-script2
 				mv updater-script2 updater-script
@@ -1023,6 +1032,7 @@ build_custom_zip() {
 		if [[ $choice = "2" ]]; then
 			if [[ ! $isframe = "" && ! $isapp = "" && ! $isprivapp = "" && ! $islib = "" ]]; then	
 				signature2=$(echo "$signature-aflp")
+				echo "${bluet}Building $signature2.zip in $romname ...$normal"
 				cd $romdir/META-INF/com/google/android
 				grep -v "\"/system/media\"" updater-script > updater-script2
 				mv updater-script2 updater-script
@@ -1054,6 +1064,7 @@ build_custom_zip() {
 		if [[ $choice = "3" ]]; then
 			if [[ ! $isframe = "" ]]; then	
 				signature2=$(echo "$signature-framework")
+				echo "${bluet}Building $signature2.zip in $romname ...$normal"
 				cd $romdir/META-INF/com/google/android
 				grep -v "\"/system/app\"\|\"/system/lib\"\|\"/system/media\"\|\"/system/priv-app\"" updater-script > updater-script2
 				mv updater-script2 updater-script
@@ -1085,6 +1096,7 @@ build_custom_zip() {
 		if [[ $choice = "4" ]]; then
 			if [[ ! $isapp = "" || ! $isprivapp = "" ]]; then
 				signature2=$(echo "$signature-ap")
+				echo "${bluet}Building $signature2.zip in $romname ...$normal"
 				cd $romdir/META-INF/com/google/android
 				grep -v "\"/system/framework\"\|\"/system/lib\"\|\"/system/media\"" updater-script > updater-script2
 				mv updater-script2 updater-script
@@ -1116,6 +1128,7 @@ build_custom_zip() {
 		if [[ $choice = "5" ]]; then
 			if [[ ! $islib = "" ]]; then
 				signature2=$(echo "$signature-lib")
+				echo "${bluet}Building $signature2.zip in $romname ...$normal"
 				cd $romdir/META-INF/com/google/android
 				grep -v "\"/system/app\"\|\"/system/framework\"\|\"/system/media\"\|\"/system/priv-app\"" updater-script > updater-script2
 				mv updater-script2 updater-script
@@ -1147,6 +1160,7 @@ build_custom_zip() {
 		if [[ $choice = "6" ]]; then
 			if [[ ! $ismedia = "" ]]; then
 				signature2=$(echo "$signature-media")
+				echo "${bluet}Building $signature2.zip in $romname ...$normal"
 				cd $romdir/META-INF/com/google/android
 				grep -v "\"/system/app\"\|\"/system/framework\"\|\"/system/lib\"\|\"/system/priv-app\"" updater-script > updater-script2
 				mv updater-script2 updater-script
@@ -1174,6 +1188,19 @@ build_custom_zip() {
 				return 1
 			fi
 		fi
+		clear
+		banner
+		if [[ -f $signature2.zip ]]; then
+			echo "$greent$signature2.zip has been created in $romname$normal"
+			echo ""
+			signzip
+			read -p "Press ENTER to return to Build Menu"
+		else
+			echo "$redt${yellowb}ERROR:$normal"
+			echo "${redt}Something went wrong. Check the zip.log for errors.$normal"
+			echo ""
+			read -p "Press ENTER to return to Build menu"
+		fi
 	else
 		clear
 		banner
@@ -1184,7 +1211,6 @@ build_custom_zip() {
 		read -p "Press ENTER to return to Build menu"
 	fi
 	build_zip
-	return 1
 }
 build_rom_zip() {
 	timestamp=$(date +%m-%d-%Y-%H:%M:%S)
@@ -1370,45 +1396,16 @@ build_rom_zip() {
 	clear
 	banner
 	if [[ -f $signature.zip ]]; then
-		clear
-		banner
 		echo "$greent$signature.zip has been created in $romname.$normal"
 		echo ""
-		reply=""
-		read -n 1 -p "Would you like to sign $signature.zip?  y/n" reply
-		if [[ $reply = "y" ]]; then
-			clear
-			banner
-			echo "${bluet}Signing $signature.zip ...$normal"
-			java -jar $tools/signapk/signapk.jar -w $tools/signapk/testkey.x509.pem $tools/signapk/testkey.pk8 $signature.zip $signature-signed.zip
-			if [[ -f $signature-signed.zip ]]; then
-				clear
-				banner
-				echo "$greent$signature-signed.zip has been created in $romname. Enjoy!$normal"
-				echo ""
-				read -p "Press ENTER to return to ROM Tools"
-				rom_tools
-				return 1
-			else
-				clear
-				banner
-				echo "${redt}${yellowb}ERROR:$normal"
-				echo "${redt}Something went wrong with the signing.$normal"
-				echo ""
-				read -p "Press ENTER to return to ROM Tools"
-				rom_tools
-				return 1
-			fi
-		fi
+		signature2="$signature"
+		signzip
+		read -p "Press ENTER to return to ROM Tools"
 	else
-		clear
-		banner
 		echo "${redt}${yellowb}ERROR:$normal"
 		echo "${redt}Something went wrong. Check the zip.log for errors.$normal"
 		echo ""
 		read -p "Press ENTER to return to ROM Tools"
-		rom_tools
-		return 1
 	fi
 	rom_tools
 }
@@ -1545,11 +1542,11 @@ change_permtype() {
 	clear
 	banner	
 	# set_metadata chosen
-	if [[ $choice == "1" ]]; then
+	if [[ $choice = "1" ]]; then
 		if [[ ! $api -ge "19" ]]; then
 			clear
 			banner
-			echo "${redt}This ROM is NOT KitKat or beyond.$normal"
+			echo "${redt}This ROM is NOT KitKat+$normal"
 			echo ""
 			read -p "Press ENTER to return to Change Perm menu"
 			change_permtype
@@ -1566,9 +1563,9 @@ change_permtype() {
 		fi
 		if [[ $permtype = "sparse_dat" || $permtype = "raw_img" ]]; then
 			cd $romdir
-			rm -rf install system.patch.dat META-INF
+			rm -rf install META-INF
 			cd $prfiles
-			rm -rf permtype set_metadata set_perm dat
+			rm -rf permtype set_metadata set_perm
 			cp -r $tools/updater/META-INF $romdir
 		fi
 		permtype="set_metadata"
@@ -1577,7 +1574,7 @@ change_permtype() {
 		fi
 		echo "$permtype" > $prfiles/permtype
 	# set_perm chosen
-	elif [[ $choice == "2" ]]; then
+	elif [[ $choice = "2" ]]; then
 		echo "${bluet}Changing perm type ...$normal"
 		if [[ -s $prfiles/$permtype ]]; then
 			cd $romdir/META-INF/com/google/android
@@ -1589,9 +1586,9 @@ change_permtype() {
 		fi
 		if [[ $permtype = "sparse_dat" || $permtype = "raw_img" ]]; then
 			cd $romdir
-			rm -rf install system.patch.dat META-INF
+			rm -rf install META-INF
 			cd $prfiles
-			rm -rf permtype set_metadata set_perm dat
+			rm -rf permtype set_metadata set_perm
 			cp -r $tools/updater/META-INF $romdir
 		fi
 		permtype="set_perm"
@@ -1600,7 +1597,7 @@ change_permtype() {
 		fi
 		echo "$permtype" > $prfiles/permtype
 	# Sparse dat chosen
-	elif [[ $choice == "3" ]]; then
+	elif [[ $choice = "3" ]]; then
 		if [[ ! $api -ge "21" || ! $(getconf LONG_BIT) = "64" ]]; then
 			clear
 			banner
@@ -1622,7 +1619,7 @@ change_permtype() {
 		fi
 		echo "$permtype" > $prfiles/permtype	
 	# raw_img chosen
-	elif [[ $choice == "4" ]]; then
+	elif [[ $choice = "4" ]]; then
 		echo "${bluet}Changing perm type ...$normal"
 		rm -rf $romdir/META-INF
 		cd $tools/updater
@@ -1636,16 +1633,16 @@ change_permtype() {
 		fi
 		echo "$permtype" > $prfiles/permtype
 	# START ROM Tools menu chosen
-	elif [[ $choice == "5" ]]; then
+	elif [[ $choice = "5" ]]; then
 		rom_tools
 		return 1
 	# START Main menu chosen
-	elif [[ $choice == "m" ]]; then
+	elif [[ $choice = "m" ]]; then
 		cd $base
 		exec ./superr
 		return 1
 	# START Quit chosen
-	elif [[ $choice == "q" ]]; then
+	elif [[ $choice = "q" ]]; then
 		echo ""
 		echo ""
 		exit
@@ -1771,7 +1768,7 @@ debloat_rom() {
 	done
 
 	# START Debloat ROM
-	if [[ $choice == "1" ]]; then
+	if [[ $choice = "1" ]]; then
 		if [[ $debloatstatus = "Debloated" ]]; then
 			clear
 			banner
@@ -1815,7 +1812,7 @@ debloat_rom() {
 		return 1
 
 	# START Custom Debloat
-	elif [[ $choice == "2" ]]; then
+	elif [[ $choice = "2" ]]; then
 		if [[ ! -s $tools/root/bloat_custom ]]; then
 			clear
 			banner
@@ -1871,7 +1868,7 @@ debloat_rom() {
 		return 1
 
 	# START Remove Samsung Knox
-	elif [[ $choice == "3" ]]; then
+	elif [[ $choice = "3" ]]; then
 		if [[ $knoxstatus = "No" ]]; then
 			clear
 			banner
@@ -1914,7 +1911,7 @@ debloat_rom() {
 		debloat_rom
 		return 1
 	# START Restore Bloat/Knox
-	elif [[ $choice == "4" ]]; then
+	elif [[ $choice = "4" ]]; then
 		if [[ -d $prfiles/debloated_files ]]; then
 			if [[ ! -d $prfiles/debloated_files ]]; then
 				clear
@@ -1971,23 +1968,23 @@ debloat_rom() {
 			return 1
 		fi
 	# START Refresh Bloat Status
-	elif [[ $choice == "5" ]]; then
+	elif [[ $choice = "5" ]]; then
 		rm -rf $prfiles/debloat_list
 		rm -rf $prfiles/debloat_custom
 		rm -rf $prfiles/debloat_knox
 		debloat_rom
 		return 1
 	# START ROM Tools Menu
-	elif [[ $choice == "6" ]]; then
+	elif [[ $choice = "6" ]]; then
 		rom_tools
 		return 1
 	# START Main Menu
-	elif [[ $choice == "m" ]]; then
+	elif [[ $choice = "m" ]]; then
 		cd $base
 		exec ./superr
 		return 1
 	# START Exit
-	elif [[ $choice == "q" ]]; then
+	elif [[ $choice = "q" ]]; then
 		echo ""
 		echo ""
 		exit
@@ -4051,7 +4048,7 @@ get_byname() {
 			read -n 1 -p "Please enter your choice:" choice
 		done
 		# START Detect by-name from your device
-		if [[ $choice == "1" ]]; then
+		if [[ $choice = "1" ]]; then
 			clear
 			banner
 			echo "${bluet}** Enable usb debugging on your Android device in system settings"
@@ -4109,7 +4106,7 @@ get_byname() {
 			fi
 		fi
 		# START Detect by-name from the boot.img
-		if [[ $choice == "2" ]]; then
+		if [[ $choice = "2" ]]; then
 			if [[ ! -f $romdir/boot.img && ! -f $romdir/kernel.elf ]]; then
 				clear
 				banner
@@ -4178,7 +4175,7 @@ get_byname() {
 			fi
 		fi
 		# START Enter it manually
-		if [[ $choice == "3" ]]; then
+		if [[ $choice = "3" ]]; then
 			clear
 			banner
 			echo "Please enter your by-name directory and press ENTER"
@@ -4194,7 +4191,7 @@ get_byname() {
 			rm -rf $prfiles/permtype_old
 		fi
 		# START Create mmc from recovery.img
-		if [[ $choice == "4" ]]; then
+		if [[ $choice = "4" ]]; then
 			clear
 			banner
 			echo "${bluet}Creating mmc from recovery.img ...$normal"
@@ -4845,11 +4842,11 @@ partadd() {
 					read -n 1 -p "Please choose /data perm type: " choice
 				done
 				# START sparse_dat/raw_img data
-				if [[ $choice == "1" ]]; then
+				if [[ $choice = "1" ]]; then
 					sed -i "/#DATA/ r $tools/updater/data-$permtype.txt" updater-script
 					touch $prfiles/data-$permtype
 				# START metadata data
-				elif [[ $choice == "2" ]]; then
+				elif [[ $choice = "2" ]]; then
 					sed -i "/#DATA/ r $tools/updater/data-set_metadata.txt" updater-script
 					touch $prfiles/data-set_metadata
 				fi
@@ -5078,7 +5075,7 @@ rom_tools() {
 	done
 
 	# START Deodex ROM
-	if [[ $choice == "1" ]]; then
+	if [[ $choice = "1" ]]; then
 		rm -rf $logs/extraodex.txt
 		if [[ ! -d "$framedir" || ! -f $romdir/system/build.prop ]]; then
 			clear
@@ -5111,7 +5108,7 @@ rom_tools() {
 			return 1
 		fi
 	# START Root/Unroot ROM
-	elif [[ $choice == "2" ]]; then
+	elif [[ $choice = "2" ]]; then
 		if [[ ! -f $prfiles/root ]]; then
 			clear
 			banner
@@ -5145,7 +5142,7 @@ rom_tools() {
 		rom_tools
 		return 1
 	# START Busybox Add/Remove
-	elif [[ $choice == "3" ]]; then
+	elif [[ $choice = "3" ]]; then
 		if [[ ! -f $prfiles/busybox ]]; then
 			if [[ -f $prfiles/root ]]; then
 				clear
@@ -5187,7 +5184,7 @@ rom_tools() {
 		rom_tools
 		return 1	
 	# START User app support (/data/app)
-	elif [[ $choice == "4" ]]; then
+	elif [[ $choice = "4" ]]; then
 		if [[ ! $dataapp = "Yes" ]]; then
 			clear
 			banner
@@ -5226,29 +5223,29 @@ rom_tools() {
 		rom_tools
 		return 1
 	# START Change perm type (set_perm/set_metadata)
-	elif [[ $choice == "5" ]]; then
+	elif [[ $choice = "5" ]]; then
 		change_permtype
 		return 1
 	# START Asserts: Add/Change devices
-	elif [[ $choice == "6" ]]; then
+	elif [[ $choice = "6" ]]; then
 		assert_devices
 		rom_tools
 		return 1
 	# START Debloat Menu
-	elif [[ $choice == "7" ]]; then
+	elif [[ $choice = "7" ]]; then
 		debloat_rom
 		return 1
 	# START Build Zip Menu
-	elif [[ $choice == "8" ]]; then
+	elif [[ $choice = "8" ]]; then
 		build_zip
 		return 1
 	# START Main menu
-	elif [[ $choice == "m" ]]; then
+	elif [[ $choice = "m" ]]; then
 		cd $base
 		exec ./superr
 		return 1
 	# START Quit
-	elif [[ $choice == "q" ]]; then
+	elif [[ $choice = "q" ]]; then
 		echo ""
 		echo ""
 		exit
@@ -5362,6 +5359,29 @@ root_busyboxrem() {
 	mv updater-script2 updater-script
 	rm -rf $romdir/busybox
 	rm -rf $romdir/system/xbin/busybox
+}
+signzip() {
+	reply=""
+	read -n 1 -p "Would you like to sign $signature2.zip?  y/n  " reply
+	if [[ $reply = "y" ]]; then
+		clear
+		banner
+		echo "${bluet}Signing $signature2.zip ...$normal"
+		java -jar $tools/signapk/signapk.jar -w $tools/signapk/testkey.x509.pem $tools/signapk/testkey.pk8 $signature2.zip $signature2-signed.zip
+		clear
+		banner
+		if [[ -f $signature2-signed.zip ]]; then
+			echo "$greent$signature2-signed.zip has been created in $romname. Enjoy!$normal"
+			echo ""
+		else
+			echo "${redt}${yellowb}ERROR:$normal"
+			echo "${redt}Something went wrong with the signing.$normal"
+			echo ""
+		fi
+	else
+		echo ""
+		echo ""
+	fi
 }
 update_project() {
 	permtype=$(cat $prfiles/permtype)
@@ -5834,41 +5854,41 @@ while [[ ! $choice = "q" && $choice -lt "1" || $choice -gt "8" ]]; do
 done
 
 # START Create new project directory
-if [[ $choice == "1" ]]; then
+if [[ $choice = "1" ]]; then
 	new_project
 	return 1
 # START Choose a different project
-elif [[ $choice == "2" ]]; then
+elif [[ $choice = "2" ]]; then
 	romname=""
 	cd $base
 	exec ./superr
 	return 1
 # START Delete a project
-elif [[ $choice == "3" ]]; then
+elif [[ $choice = "3" ]]; then
 	delete_project
 	return 1
 # START Extract for new ROM
-elif [[ $choice == "4" ]]; then
+elif [[ $choice = "4" ]]; then
 	extract_new
 	return 1
 # START Check for updates
-elif [[ $choice == "5" ]]; then
+elif [[ $choice = "5" ]]; then
 	kitchen_update
 	return 1
 # START Zip all devices to share
-elif [[ $choice == "6" ]]; then
+elif [[ $choice = "6" ]]; then
 	grab_devices
 	return 1
 # START Boot Tools
-elif [[ $choice == "7" ]]; then
+elif [[ $choice = "7" ]]; then
 	boot_tools
 	return 1
 # START ROM tools
-elif [[ $choice == "8" ]]; then
+elif [[ $choice = "8" ]]; then
 	rom_tools
 	return 1
 # START Quit
-elif [[ $choice == "q" ]]; then
+elif [[ $choice = "q" ]]; then
 	echo ""
 	echo ""
 	exit
