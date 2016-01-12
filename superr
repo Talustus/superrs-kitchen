@@ -325,7 +325,11 @@ boot_repack() {
 				( find . | cpio -o -H newc -O ../ramdisk2/sbin/ramdisk.cpio ) 2>&1 >/dev/null
 			fi
 			cd $romdir/${chosenimg}img
-			rm -rf ramdisk
+			if [[ $api -ge "23" ]]; then
+				sudo rm -rf ramdisk
+			else
+				rm -rf ramdisk
+			fi
 			mv ramdisk2 ramdisk
 		fi
 		if [[ -d $romdir/${chosenimg}img/ramdisk ]]; then
@@ -917,7 +921,13 @@ boot_unpack() {
 	fi
 	bootext=""
 	if [[ ! -f $prfiles/file_contexts && -f $romdir/${chosenimg}img/ramdisk/file_contexts ]]; then
-		cp $romdir/${chosenimg}img/ramdisk/file_contexts $prfiles/
+		if [[ $api -ge "23" ]]; then
+			myuser=$(echo "$(whoami | gawk '{ print $1 }')")
+			sudo cp $romdir/${chosenimg}img/ramdisk/file_contexts $prfiles/
+			sudo chown -h $myuser:$myuser $prfiles/file_contexts
+		else
+			cp $romdir/${chosenimg}img/ramdisk/file_contexts $prfiles/
+		fi
 	fi
 }
 build_custom_zip() {
@@ -3976,6 +3986,7 @@ findfstab() {
 	fi
 }
 findimgsize() {	
+	cd $romdir
 	imgfile=$(echo $whatimg | cut -c1-3)
 	if [[ -f $deviceloc/${imgfile}imgsize ]]; then
 		export ${imgfile}size=$(cat $deviceloc/${imgfile}imgsize)
@@ -4417,7 +4428,7 @@ grab_devices() {
 	return 1
 }
 imgextract() {
-	myuser=$(echo "$(whoami | gawk '{print $1}')")
+	myuser=$(echo "$(whoami | gawk '{ print $1 }')")
 	clear
 	banner
 	echo "${bluet}Checking/Converting if ${extractimg}.img is sparse ...$normal"
@@ -5518,7 +5529,7 @@ update_project() {
 	fi
 	get_byname
 	cd $romdir
-	find . | sed 's/\.//' | grep "^\/system\|^\/vendor" | grep -v "system\.img\|vendor\.img" | sort > $prfiles/all_files.txt
+	find . -path ./bootimg -prune -o -print | sed 's/\.//' | grep "^\/system\|^\/vendor" | grep -v "system\.img\|vendor\.img" | sort > $prfiles/all_files.txt
 	sed -i '/^$/d' $prfiles/all_files.txt
 	if [[ ! $permtype = "sparse_dat" && ! $permtype = "raw_img" ]]; then
 		cd $romdir/META-INF/com/google/android
