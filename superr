@@ -5521,7 +5521,9 @@ signzip() {
 	fi
 }
 update_project() {
-	permtype=$(cat $prfiles/permtype)
+	if [[ -f $prfiles/permtype ]]; then
+		permtype=$(cat $prfiles/permtype)
+	fi
 	adb=$tools/adb
 	if [[ ! $(grep "#SIGNATURE" $romdir/META-INF/com/google/android/updater-script) = "" ]]; then
 		cd $prfiles
@@ -5670,7 +5672,11 @@ update_project() {
 						chosenimg="boot"
 						bootext="1"
 						boot_unpack
-						rm -rf $romdir/bootimg
+						if [[ $api -ge "23" ]]; then
+							sudo rm -rf $romdir/bootimg
+						else
+							rm -rf $romdir/bootimg
+						fi
 					else
 						clear
 						banner
