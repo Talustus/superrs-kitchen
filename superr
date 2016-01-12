@@ -5529,7 +5529,7 @@ update_project() {
 	fi
 	get_byname
 	cd $romdir
-	find . -path ./bootimg -prune -o -print | sed 's/\.//' | grep "^\/system\|^\/vendor" | grep -v "system\.img\|vendor\.img" | sort > $prfiles/all_files.txt
+	find . \( -path ./bootimg -o -path ./recoveryimg \) -prune -o -print | sed 's/\.//' | grep "^\/system\|^\/vendor" | grep -v "system\.img\|vendor\.img" | sort > $prfiles/all_files.txt
 	sed -i '/^$/d' $prfiles/all_files.txt
 	if [[ ! $permtype = "sparse_dat" && ! $permtype = "raw_img" ]]; then
 		cd $romdir/META-INF/com/google/android
