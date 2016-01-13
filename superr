@@ -1350,7 +1350,11 @@ build_rom_zip() {
 				chosenimg="boot"
 				bootext="1"
 				boot_unpack
-				rm -rf $romdir/bootimg
+				if [[ $api -ge "23" ]]; then
+					sudo rm -rf $romdir/bootimg
+				else
+					rm -rf $romdir/bootimg
+				fi
 			else
 				clear
 				banner
@@ -1427,7 +1431,11 @@ build_rom_zip() {
 				chosenimg="boot"
 				bootext="1"
 				boot_unpack
-				rm -rf $romdir/bootimg
+				if [[ $api -ge "23" ]]; then
+					sudo rm -rf $romdir/bootimg
+				else
+					rm -rf $romdir/bootimg
+				fi
 			else
 				clear
 				banner
@@ -1532,7 +1540,11 @@ build_zip() {
 				chosenimg="boot"
 				bootext="1"
 				boot_unpack
-				rm -rf $romdir/bootimg
+				if [[ $api -ge "23" ]]; then
+					sudo rm -rf $romdir/bootimg
+				else
+					rm -rf $romdir/bootimg
+				fi
 			fi
 		fi
 		whatimg="system"
@@ -4255,7 +4267,11 @@ get_byname() {
 			mv $deviceloc/superr_byname2 $deviceloc/superr_byname
 			byname=$(cat $deviceloc/superr_byname)
 			rm -rf $prfiles/permtype_old
-			rm -rf $romdir/bootimg
+			if [[ $api -ge "23" ]]; then
+				sudo rm -rf $romdir/bootimg
+			else
+				rm -rf $romdir/bootimg
+			fi
 			if [[ $byname = "" ]]; then
 				clear
 				banner
@@ -5072,7 +5088,6 @@ partimg() {
 	else
 		echo "${bluet}Creating raw $whatpart.img ...$normal"	
 		if [[ $whatpart = "system" ]]; then
-			echo "img size --> $syssize <--"
 			( $tools/make_ext4fs -T 0 -l $syssize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
 		elif [[ $whatpart = "vendor" ]]; then
 			( $tools/make_ext4fs -T 0 -l $vensize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log

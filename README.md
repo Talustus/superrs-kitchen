@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v1.0.1.2 **#
+#** SuperR's Kitchen v1.0.1.3 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -13,7 +13,7 @@
 * system.ext4.win/boot.emmc.win (including multi-file *.win000, *.win001, etc)  
 * Sparse chunk files found in Moto and other factory firmware  
 * cm12 + roms with sparse dat files  
-* Zips that contain system.img and boot.img
+* Zips that contain system.img and boot.img  
 
 **Create flashable zips of many varieties including:**
 
@@ -27,8 +27,8 @@
 **Boot features:**
 
 * Unpack/repack boot/recovery img (Big Thanks to @osm0sis for mkbootimg source!!!)  
-* Add/remove init.d support to boot.img  
-* Add/remove insecure boot.img  
+* Add/remove init.d support  
+* Add/remove insecure boot  
 * Remove dm-verity  
 * Remove forceencrypt  
 * open_bump.py compatible (download it and add to the tools directory)  
