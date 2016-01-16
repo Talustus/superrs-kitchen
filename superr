@@ -3345,7 +3345,9 @@ elf_unpack() {
 		7z e kernel.elf 2>&1 >/dev/null
 		mv 0 zImage
 		mv 1 ramdisk_elf.gz
-		mv 2 rpm
+		if [[ -f 2 ]]; then
+			mv 2 rpm
+		fi
 		if [[ -f 3 ]]; then
 			mv 3 cert
 		fi
@@ -3353,7 +3355,7 @@ elf_unpack() {
 		mkdir -p ramdisk
 		cd ramdisk
 		cpio -i < $romdir/${chosenimg}img/ramdisk_elf
-		if [[ ! -f $prfiles/file_contexts ]]; then
+		if [[ ! -f $prfiles/file_contexts && -f file_contexts ]]; then
 			cp file_contexts $prfiles/
 		fi	
 	fi
@@ -4167,22 +4169,21 @@ get_byname() {
 			get_devicename
 			echo "$devicename" > $deviceloc/devicename
 			if [[ $(cat $deviceloc/devicename) = "$devicename" ]]; then
-				byname1=$($adb shell "mount | grep by-name | grep system")
-				if [[ ! $($adb shell "mount | grep by-name | grep system") = "" ]]; then
-					byname1=$($adb shell "mount | grep by-name | grep system")
-				elif [[ ! $($adb shell "mount | grep by-name | grep SYSTEM") = "" ]]; then
-					byname1=$($adb shell "mount | grep by-name | grep SYSTEM")
+				if [[ ! $($adb shell "mount" | grep "by-name/system") = "" ]]; then
+					byname1=$($adb shell "mount" | grep "by-name/system")
+				elif [[ ! $($adb shell "mount" | grep "by-name/SYSTEM") = "" ]]; then
+					byname1=$($adb shell "mount" | grep "by-name/SYSTEM")
 					touch $deviceloc/superr_capbyname
-				elif [[ ! $($adb shell "mount | grep by-name | grep APP") = "" ]]; then
-					byname1=$($adb shell "mount | grep by-name | grep APP")
+				elif [[ ! $($adb shell "mount" | grep "by-name/APP") = "" ]]; then
+					byname1=$($adb shell "mount" | grep "by-name/APP")
 					touch $deviceloc/superr_appbyname
 				fi
 				echo "$byname1" | gawk '{ print $1 }' | rev | cut -d'/' -f2- | rev | sed 's:/:\\/:g' > $deviceloc/superr_byname
-				byname=$(cat $deviceloc/superr_byname)
 				rm -rf $deviceloc/devicename
 				rm -rf $deviceloc/build.prop
 				rm -rf $prfiles/permtype_old
-				if [[ $byname = "" ]]; then
+				if [[ $byname1 = "" ]]; then
+					rm -rf $deviceloc/superr_byname
 					clear
 					banner
 					echo "${redb}${yellowt}ERROR:$normal"
@@ -4190,9 +4191,10 @@ get_byname() {
 					echo "Try detecting mmc partitions from recovery.img$normal"
 					echo ""
 					read -p "Press ENTER to continue"
-					rm -rf $deviceloc/superr_byname
 					get_byname
 					return 1
+				else
+					byname=$(cat $deviceloc/superr_byname)
 				fi
 			else
 				clear
