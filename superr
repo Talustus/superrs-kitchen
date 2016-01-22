@@ -3343,19 +3343,10 @@ elf_unpack() {
 		cp $romdir/kernel.elf $romdir/${chosenimg}img/
 		cd $romdir/${chosenimg}img
 		$p7z e kernel.elf 2>&1 >/dev/null
-		mv 0 zImage
-		mv 1 ramdisk-packed
-		if [[ -f 2 ]]; then
-			mv 2 rpm
-		fi
-		if [[ -f 3 ]]; then
-			mv 3 cert
-		fi
-		$p7z e ramdisk-packed 2>&1 >/dev/null
-		mv ramdisk-packed~ ramdisk_elf
+		$p7z e 1 2>&1 >/dev/null
 		mkdir -p ramdisk
 		cd ramdisk
-		cpio -i < $romdir/${chosenimg}img/ramdisk_elf
+		cpio -i < $romdir/${chosenimg}img/1~
 		if [[ ! -f $prfiles/file_contexts && -f file_contexts ]]; then
 			cp file_contexts $prfiles/
 		fi

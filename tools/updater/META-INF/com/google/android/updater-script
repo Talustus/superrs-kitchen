@@ -33,6 +33,7 @@ ui_print(" ");
 package_extract_file("boot.img", "#BYNAME/boot");
 set_progress(0.800000);
 #ROOT
+ui_print(" ");
 #BUSYBOX
 set_progress(0.900000);
 unmount("/system");
