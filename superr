@@ -1497,7 +1497,9 @@ build_rom_zip() {
 		echo "$greent$signature.zip has been created in $romname.$normal"
 		echo ""
 		signature2="$signature"
+		#if [[ ! $permtype = "sparse_dat" && ! $permtype = "raw_img" ]]; then
 		signzip
+		#fi
 		read -p "Press ENTER to return to ROM Tools"
 	else
 		echo "${redt}${yellowb}ERROR:$normal"
@@ -5526,7 +5528,7 @@ signzip() {
 		clear
 		banner
 		echo "${bluet}Signing $signature2.zip ...$normal"
-		java -jar $tools/signapk/signapk.jar -w $tools/signapk/testkey.x509.pem $tools/signapk/testkey.pk8 $signature2.zip $signature2-signed.zip
+		java -Xmx2048m -jar $tools/signapk/signapk.jar -w $tools/signapk/testkey.x509.pem $tools/signapk/testkey.pk8 $signature2.zip $signature2-signed.zip
 		clear
 		banner
 		if [[ -f $signature2-signed.zip ]]; then
