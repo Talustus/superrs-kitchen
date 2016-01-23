@@ -3110,7 +3110,6 @@ deodex_old() {
 		return 1
 	fi
 	rm -rf $logs/*.log
-	cd $tools
 	clear
 	echo ""
 	echo "----------------------------------------------------"
@@ -3258,6 +3257,33 @@ deodex_old() {
 		rom_tools
 		return 1
 	fi
+}
+deodex_sqsh() {
+	sqshdir=$(echo $sqshfile | cut -d"." -f1)
+	clear
+	banner
+	echo "${bluet}Extracting $sqshfile ...$normal"
+	cd $romdir/system
+	mkdir -p sqshtmp
+	mv $sqshfile sqshtmp/
+	cd sqshtmp
+	$p7z x $sqshfile 2>&1 >> $logs/zip.log
+	rm -rf $sqshfile
+	clear
+	banner
+	echo "${bluet}Moving odex files to system ...$normal"
+	line=""
+	find . -type d | sed 's/^.\///' | while read line; do
+		mkdir -p $romdir/system/$line
+	done
+	line=""
+	find . -type f | sed 's/^.\///' | while read line; do
+		mv $line $romdir/system/$line
+	done
+	cd $romdir/system
+	rm -rf sqshtmp $sqshdir
+	sqshfile=""
+	sqshdir=""
 }
 different_project() {
 	romname=""
@@ -5258,6 +5284,18 @@ rom_tools() {
 			rom_tools
 			return 1
 		fi		
+		if [[ -f $romdir/system/odex.sqsh ]]; then
+			sqshfile="odex.sqsh"
+			deodex_sqsh
+			if [[ -f $romdir/system/odex1.sqsh ]]; then
+				sqshfile="odex1.sqsh"
+				deodex_sqsh
+				if [[ -f $romdir/system/odex2.sqsh ]]; then
+					sqshfile="odex2.sqsh"
+					deodex_sqsh
+				fi
+			fi
+		fi
 		if [[ $api -lt 21 ]]; then
 			deodex_old
 			return 1
