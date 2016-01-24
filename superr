@@ -1496,8 +1496,8 @@ build_rom_zip() {
 	if [[ -f $signature.zip ]]; then
 		echo "$greent$signature.zip has been created in $romname.$normal"
 		echo ""
-		signature2="$signature"
 		#if [[ ! $permtype = "sparse_dat" && ! $permtype = "raw_img" ]]; then
+		signature2="$signature"
 		signzip
 		#fi
 		read -p "Press ENTER to return to ROM Tools"
@@ -2251,7 +2251,7 @@ deodex_l() {
 	echo "----------------------------------------------------"
 	echo ""
 	cd $romdir
-	find . -name *.odex | sed 's/.\///' | grep -v system/framework | grep -v system/app/ | grep -v system/priv-app/ | rev | cut -d"/" -f3- | rev >> $logs/extraodex.txt
+	find . -name *.odex | sed 's/.\///' | grep -v "system/framework\|system/app/\|system/priv-app/" | rev | cut -d"/" -f3- | rev >> $logs/extraodex.txt
 	extraodex=$(cat $logs/extraodex.txt)
 	if [[ ! $extraodex = "" ]]; then
 		extraapp=""
@@ -2666,7 +2666,7 @@ deodex_m() {
 	echo "----------------------------------------------------"
 	echo ""
 	cd $romdir
-	find . -name *.odex | sed 's/.\///' | grep -v system/framework | grep -v system/app/ | grep -v system/priv-app/ | rev | cut -d"/" -f4- | rev >> $logs/extraodex.txt
+	find . -name *.odex | sed 's/.\///' | grep -v "system/framework\|system/app/\|system/priv-app/" | rev | cut -d"/" -f4- | rev >> $logs/extraodex.txt
 	extraodex=$(cat $logs/extraodex.txt)
 	if [[ ! $extraodex = "" ]]; then
 		extraapp=""
@@ -3117,7 +3117,7 @@ deodex_old() {
 	echo "----------------------------------------------------"
 	echo ""
 	cd $romdir
-	find . -name *.odex | sed 's/.\///' | grep -v system/framework | grep -v system/app/ | grep -v system/priv-app/ | rev | cut -d"." -f2- | rev >> $logs/extraodex.txt
+	find . -name *.odex | sed 's/.\///' | grep -v "system/framework\|system/app/\|system/priv-app/" | rev | cut -d"." -f2- | rev >> $logs/extraodex.txt
 	extraodex=$(cat $logs/extraodex.txt)
 	if [[ ! $extraodex = "" ]]; then
 		line=""
@@ -4741,7 +4741,7 @@ isknoxstatus() {
 }
 isodexstatus() {
 	if [[ -d $romdir ]]; then
-		if [[ $(ls $romdir/system -R | grep .odex$) = "" ]]; then
+		if [[ $(ls $romdir/system -R | grep .odex$) = "" && ! -f $romdir/system/odex.sqsh ]]; then
 			odexstatus="Deodexed"
 			odexstatus1=$(echo "${greent}Deodexed${normal}")
 		else
@@ -5566,7 +5566,7 @@ signzip() {
 		clear
 		banner
 		echo "${bluet}Signing $signature2.zip ...$normal"
-		java -Xmx2048m -jar $tools/signapk/signapk.jar -w $tools/signapk/testkey.x509.pem $tools/signapk/testkey.pk8 $signature2.zip $signature2-signed.zip
+		java -Xmx3072m -jar $tools/signapk/signapk.jar -w $tools/signapk/testkey.x509.pem $tools/signapk/testkey.pk8 $signature2.zip $signature2-signed.zip
 		clear
 		banner
 		if [[ -f $signature2-signed.zip ]]; then
