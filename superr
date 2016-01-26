@@ -1334,6 +1334,10 @@ build_rom_zip() {
 	cd $prfiles
 	get_sig
 	if [[ -f $romdir/$signature.zip ]]; then
+		#signature2="$signature"
+		#signzip
+		#rom_tools
+		#return 1
 		mv $romdir/$signature.zip $romdir/${signature}_$timestamp.zip
 	fi
 	if [[ -f $romdir/$signature-signed.zip ]]; then
@@ -5565,8 +5569,29 @@ signzip() {
 	if [[ $reply = "y" ]]; then
 		clear
 		banner
+		echo "${bluet}Checking ram ...$normal"
+		cd $romdir
+		zipbyte=$(wc -c $signature2.zip | gawk '{ print $1 }')
+		zipmb=$(echo | gawk "{ print $zipbyte/1024/1024+1 }" | cut -d"." -f1)
+		totalmem=$(grep MemTotal /proc/meminfo | gawk '{ print $2 }')
+		heapsize=$(echo | gawk "{ print $totalmem/1024-500 }" | cut -d"." -f1)
+		ramest=$(echo | gawk "{ print ${zipmb}*3.48+1 }" | cut -d"." -f1)
+		if [[ $ramest -gt $heapsize ]]; then
+			clear
+			banner
+			echo "${redt}${yellowb}WARNING:$normal"
+			echo "${redt}You may not have enough ram to sign this zip.$normal"
+			echo ""
+			choice=""
+			read -n 1 -p "Would you like to try anyway?  y/n" choice
+			if [[ ! $choice = "y" ]]; then
+				return 1
+			fi
+		fi
+		clear
+		banner
 		echo "${bluet}Signing $signature2.zip ...$normal"
-		java -Xmx3072m -jar $tools/signapk/signapk.jar -w $tools/signapk/testkey.x509.pem $tools/signapk/testkey.pk8 $signature2.zip $signature2-signed.zip
+		java -Xmx${heapsize}m -jar $tools/signapk/signapk.jar -w $tools/signapk/testkey.x509.pem $tools/signapk/testkey.pk8 $signature2.zip $signature2-signed.zip
 		clear
 		banner
 		if [[ -f $signature2-signed.zip ]]; then
