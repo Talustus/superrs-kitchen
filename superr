@@ -767,7 +767,7 @@ boot_tools() {
 			if [[ -f $signature2.zip ]]; then
 				mv $signature2.zip ${signature2}_$timestamp.zip
 			fi
-			$p7z a -mx7 $signature2.zip recovery.img META-INF >> $logs/zip.log
+			$p7z a -mx7 $signature2.zip recovery.img META-INF 2>/dev/null >> $logs/zip.log
 		elif [[ $chosenimg = "boot" ]]; then
 			echo "${bluet}Building $signature2.zip in $romname ...$normal"
 			cd $romdir
@@ -775,9 +775,9 @@ boot_tools() {
 				mv $signature2.zip ${signature2}_$timestamp.zip
 			fi
 			if [[ -d $romdir/system/etc/init.d ]]; then
-				$p7z a -mx7 $signature2.zip boot.img system/etc/init.d META-INF >> $logs/zip.log
+				$p7z a -mx7 $signature2.zip boot.img system/etc/init.d META-INF 2>/dev/null >> $logs/zip.log
 			else
-				$p7z a -mx7 $signature2.zip boot.img META-INF >> $logs/zip.log
+				$p7z a -mx7 $signature2.zip boot.img META-INF 2>/dev/null >> $logs/zip.log
 			fi
 		else
 			rm -rf $romdir/META-INF
@@ -2255,7 +2255,7 @@ deodex_l() {
 	echo "----------------------------------------------------"
 	echo ""
 	cd $romdir
-	find . -name *.odex | sed 's/.\///' | grep -v "system/framework\|system/app/\|system/priv-app/" | rev | cut -d"/" -f3- | rev >> $logs/extraodex.txt
+	find . -name *.odex | sed 's/.\///' | grep -v "system/framework/$arch/\|system/framework/$arch2/\|system/app/\|system/priv-app/" | rev | cut -d"/" -f3- | rev | sort -u >> $logs/extraodex.txt
 	extraodex=$(cat $logs/extraodex.txt)
 	if [[ ! $extraodex = "" ]]; then
 		extraapp=""
@@ -2276,13 +2276,13 @@ deodex_l() {
 			echo ""
 			echo "... Extracting $app.odex.gz"
 			echo ""
-			$p7z e "$appdir/$app/$arch/$app.odex.gz" >> $logs/zip.log
+			$p7z e "$appdir/$app/$arch/$app.odex.gz" 2>/dev/null >> $logs/zip.log
 		elif [[ -f "$appdir/$app/$arch/$app.odex.xz" ]]; then
 			cd $appdir/$app/$arch
 			echo ""
 			echo "... Extracting $app.odex.xz"
 			echo ""
-			$p7z e "$appdir/$app/$arch/$app.odex.xz" >> $logs/zip.log
+			$p7z e "$appdir/$app/$arch/$app.odex.xz" 2>/dev/null >> $logs/zip.log
 		fi
 	done
 	if [[ ! $arch2 = "" ]]; then
@@ -2293,13 +2293,13 @@ deodex_l() {
 				echo ""
 				echo "... Extracting $app.odex.gz"
 				echo ""
-				$p7z e "$appdir/$app/$arch2/$app.odex.gz" >> $logs/zip.log
+				$p7z e "$appdir/$app/$arch2/$app.odex.gz" 2>/dev/null >> $logs/zip.log
 			elif [[ -f "$appdir/$app/$arch2/$app.odex.xz" ]]; then
 				cd $appdir/$app/$arch2
 				echo ""
 				echo "... Extracting $app.odex.xz"
 				echo ""
-				$p7z e "$appdir/$app/$arch2/$app.odex.xz" >> $logs/zip.log
+				$p7z e "$appdir/$app/$arch2/$app.odex.xz" 2>/dev/null >> $logs/zip.log
 			fi
 		done 
 	fi
@@ -2320,7 +2320,7 @@ deodex_l() {
 				if [[ -f "$appdir/$app/$arch/$app-classes3.dex" ]]; then
 					mv $appdir/$app/$arch/$app-classes3.dex $appdir/$app/$arch/classes3.dex
 				fi
-				$p7z u -tzip $appdir/$app/$app.apk $appdir/$app/$arch/classes*.dex >> $logs/zip.log
+				$p7z u -tzip $appdir/$app/$app.apk $appdir/$app/$arch/classes*.dex 2>/dev/null >> $logs/zip.log
 				rm -rf $appdir/$app/$arch
 			else
 				echo ""
@@ -2347,7 +2347,7 @@ deodex_l() {
 					if [[ -f "$appdir/$app/$arch2/$app-classes3.dex" ]]; then
 						mv $appdir/$app/$arch2/$app-classes3.dex $appdir/$app/$arch2/classes3.dex
 					fi
-					$p7z u -tzip $appdir/$app/$app.apk $appdir/$app/$arch2/classes*.dex >> $logs/zip.log
+					$p7z u -tzip $appdir/$app/$app.apk $appdir/$app/$arch2/classes*.dex 2>/dev/null >> $logs/zip.log
 					rm -rf $appdir/$app/$arch2
 				else
 					echo ""
@@ -2386,13 +2386,13 @@ deodex_l() {
 			echo ""
 			echo "... Extracting $privapp.odex.gz"
 			echo ""
-			$p7z e "$privdir/$privapp/$arch/$privapp.odex.gz" >> $logs/zip.log
+			$p7z e "$privdir/$privapp/$arch/$privapp.odex.gz" 2>/dev/null >> $logs/zip.log
 		elif [[ -f "$privdir/$privapp/$arch/$privapp.odex.xz" ]]; then
 			cd $privdir/$privapp/$arch
 			echo ""
 			echo "... Extracting $privapp.odex.xz"
 			echo ""
-			$p7z e "$privdir/$privapp/$arch/$privapp.odex.xz" >> $logs/zip.log
+			$p7z e "$privdir/$privapp/$arch/$privapp.odex.xz" 2>/dev/null >> $logs/zip.log
 		fi
 	done
 	if [[ ! $arch2 = "" ]]; then
@@ -2403,13 +2403,13 @@ deodex_l() {
 				echo ""
 				echo "... Extracting $privapp.odex.gz"
 				echo ""
-				$p7z e "$privdir/$privapp/$arch2/$privapp.odex.gz" >> $logs/zip.log
+				$p7z e "$privdir/$privapp/$arch2/$privapp.odex.gz" 2>/dev/null >> $logs/zip.log
 			elif [[ -f "$privdir/$privapp/$arch2/$privapp.odex.xz" ]]; then
 				cd $privdir/$privapp/$arch2
 				echo ""
 				echo "... Extracting $privapp.odex.xz"
 				echo ""
-				$p7z e "$privdir/$privapp/$arch2/$privapp.odex.xz" >> $logs/zip.log
+				$p7z e "$privdir/$privapp/$arch2/$privapp.odex.xz" 2>/dev/null >> $logs/zip.log
 			fi
 		done
 	fi
@@ -2429,7 +2429,7 @@ deodex_l() {
 				if [[ -f "$privdir/$privapp/$arch/$privapp-classes3.dex" ]]; then
 					mv $privdir/$privapp/$arch/$privapp-classes3.dex $privdir/$privapp/$arch/classes3.dex
 				fi
-				$p7z u -tzip $privdir/$privapp/$privapp.apk $privdir/$privapp/$arch/classes*.dex >> $logs/zip.log
+				$p7z u -tzip $privdir/$privapp/$privapp.apk $privdir/$privapp/$arch/classes*.dex 2>/dev/null >> $logs/zip.log
 				rm -rf $privdir/$privapp/$arch
 			else
 				echo ""
@@ -2455,7 +2455,7 @@ deodex_l() {
 					if [[ -f "$privdir/$privapp/$arch2/$privapp-classes3.dex" ]]; then
 						mv $privdir/$privapp/$arch2/$privapp-classes3.dex $privdir/$privapp/$arch2/classes3.dex
 					fi
-					$p7z u -tzip $privdir/$privapp/$privapp.apk $privdir/$privapp/$arch2/classes*.dex >> $logs/zip.log
+					$p7z u -tzip $privdir/$privapp/$privapp.apk $privdir/$privapp/$arch2/classes*.dex 2>/dev/null >> $logs/zip.log
 					rm -rf $privdir/$privapp/$arch2
 				else
 					echo ""
@@ -2481,7 +2481,7 @@ deodex_l() {
 			echo ""
 			echo "... Extracting $frame.odex.gz"
 			echo ""
-			$p7z e "$frame.odex.gz" >> $logs/zip.log
+			$p7z e "$frame.odex.gz" 2>/dev/null >> $logs/zip.log
 			rm -rf "$frame.odex.gz"
 		done
 	elif [[ ! $(ls | grep .xz | rev | cut -c 9- | rev) = "" ]]; then
@@ -2490,7 +2490,7 @@ deodex_l() {
 			echo ""
 			echo "... Extracting $frame.odex.xz"
 			echo ""
-			$p7z e $frame.odex.xz >> $logs/zip.log
+			$p7z e $frame.odex.xz 2>/dev/null >> $logs/zip.log
 			rm -rf $frame.odex.xz
 		done
 	fi
@@ -2511,9 +2511,9 @@ deodex_l() {
 				mv $framedir/$arch/$frame-classes3.dex $framedir/$arch/classes3.dex
 			fi
 			if [[ ! -f $framedir/$frame.apk ]]; then
-				$p7z u -tzip $framedir/$frame.jar $framedir/$arch/classes*.dex >> $logs/zip.log
+				$p7z u -tzip $framedir/$frame.jar $framedir/$arch/classes*.dex 2>/dev/null >> $logs/zip.log
 			else
-				$p7z u -tzip $framedir/$frame.apk $framedir/$arch/classes*.dex >> $logs/zip.log
+				$p7z u -tzip $framedir/$frame.apk $framedir/$arch/classes*.dex 2>/dev/null >> $logs/zip.log
 			fi
 			rm -rf $framedir/$arch/classes*.dex
 		else
@@ -2538,9 +2538,9 @@ deodex_l() {
 					mv $framedir/$arch/dex/$frame2-classes3.dex $framedir/$arch/dex/classes3.dex
 				fi
 				if [[ $(ls $framedir | grep $frame2.apk) = "" ]]; then
-					$p7z u -tzip $framedir/$frame2.jar $framedir/$arch/dex/classes*.dex >> $logs/zip.log
+					$p7z u -tzip $framedir/$frame2.jar $framedir/$arch/dex/classes*.dex 2>/dev/null >> $logs/zip.log
 				else
-					$p7z u -tzip $framedir/$frame2.apk $framedir/$arch/dex/classes*.dex >> $logs/zip.log
+					$p7z u -tzip $framedir/$frame2.apk $framedir/$arch/dex/classes*.dex 2>/dev/null >> $logs/zip.log
 				fi
 				rm -rf $framedir/$arch/dex/classes*.dex
 			fi
@@ -2565,7 +2565,7 @@ deodex_l() {
 	if [[ ! $arch2 = "" ]]; then
 		rm -rf $framedir/$arch2
 	fi
-	stillodexed=$(find $romdir -name *.odex)
+	stillodexed=$(find $romdir -name *.odex | grep -v 00_project_files)
 	if [[ "$stillodexed" = "" ]]; then
 		clear
 		banner
@@ -2670,7 +2670,7 @@ deodex_m() {
 	echo "----------------------------------------------------"
 	echo ""
 	cd $romdir
-	find . -name *.odex | sed 's/.\///' | grep -v "system/framework\|system/app/\|system/priv-app/" | rev | cut -d"/" -f4- | rev >> $logs/extraodex.txt
+	find . -name *.odex | sed 's/.\///' | grep -v "system/framework/oat/\|system/framework/$arch/\|system/framework/$arch2/\|system/app/\|system/priv-app/" | rev | cut -d"/" -f4- | rev | sort -u >> $logs/extraodex.txt
 	extraodex=$(cat $logs/extraodex.txt)
 	if [[ ! $extraodex = "" ]]; then
 		extraapp=""
@@ -2691,13 +2691,13 @@ deodex_m() {
 			echo ""
 			echo "... Extracting $app.odex.gz"
 			echo ""
-			$p7z e "$appdir/$app/oat/$arch/$app.odex.gz" >> $logs/zip.log
+			$p7z e "$appdir/$app/oat/$arch/$app.odex.gz" 2>/dev/null >> $logs/zip.log
 		elif [[ -f "$appdir/$app/oat/$arch/$app.odex.xz" ]]; then
 			cd $appdir/$app/oat/$arch
 			echo ""
 			echo "... Extracting $app.odex.xz"
 			echo ""
-			$p7z e "$appdir/$app/oat/$arch/$app.odex.xz" >> $logs/zip.log
+			$p7z e "$appdir/$app/oat/$arch/$app.odex.xz" 2>/dev/null >> $logs/zip.log
 		fi
 	done
 	if [[ ! $arch2 = "" ]]; then
@@ -2708,13 +2708,13 @@ deodex_m() {
 				echo ""
 				echo "... Extracting $app.odex.gz"
 				echo ""
-				$p7z e "$appdir/$app/oat/$arch2/$app.odex.gz" >> $logs/zip.log
+				$p7z e "$appdir/$app/oat/$arch2/$app.odex.gz" 2>/dev/null >> $logs/zip.log
 			elif [[ -f "$appdir/$app/oat/$arch2/$app.odex.xz" ]]; then
 				cd $appdir/$app/oat/$arch2
 				echo ""
 				echo "... Extracting $app.odex.xz"
 				echo ""
-				$p7z e "$appdir/$app/oat/$arch2/$app.odex.xz" >> $logs/zip.log
+				$p7z e "$appdir/$app/oat/$arch2/$app.odex.xz" 2>/dev/null >> $logs/zip.log
 			fi
 		done 
 	fi
@@ -2751,7 +2751,7 @@ deodex_m() {
 				if [[ -f "$app.apk:classes3.dex.dex" ]]; then
 					mv $app.apk:classes3.dex.dex classes3.dex
 				fi
-				$p7z u -tzip $appdir/$app/$app.apk classes*.dex >> $logs/zip.log
+				$p7z u -tzip $appdir/$app/$app.apk classes*.dex 2>/dev/null >> $logs/zip.log
 				rm -rf $appdir/$app/oat
 				cd $tools
 			else
@@ -2796,7 +2796,7 @@ deodex_m() {
 					if [[ -f "$app.apk:classes3.dex.dex" ]]; then
 						mv $app.apk:classes3.dex.dex classes3.dex
 					fi
-					$p7z u -tzip $appdir/$app/$app.apk classes*.dex >> $logs/zip.log
+					$p7z u -tzip $appdir/$app/$app.apk classes*.dex 2>/dev/null >> $logs/zip.log
 					rm -rf $appdir/$app/oat
 					cd $tools
 				else
@@ -2834,13 +2834,13 @@ deodex_m() {
 			echo ""
 			echo "... Extracting $privapp.odex.gz"
 			echo ""
-			$p7z e "$privdir/$privapp/oat/$arch/$privapp.odex.gz" >> $logs/zip.log
+			$p7z e "$privdir/$privapp/oat/$arch/$privapp.odex.gz" 2>/dev/null >> $logs/zip.log
 		elif [[ -f "$privdir/$privapp/oat/$arch/$privapp.odex.xz" ]]; then
 			cd $privdir/$privapp/oat/$arch
 			echo ""
 			echo "... Extracting $privapp.odex.xz"
 			echo ""
-			$p7z e "$privdir/$privapp/oat/$arch/$privapp.odex.xz" >> $logs/zip.log
+			$p7z e "$privdir/$privapp/oat/$arch/$privapp.odex.xz" 2>/dev/null >> $logs/zip.log
 		fi
 	done
 	if [[ ! $arch2 = "" ]]; then
@@ -2851,13 +2851,13 @@ deodex_m() {
 				echo ""
 				echo "... Extracting $privapp.odex.gz"
 				echo ""
-				$p7z e "$privdir/$privapp/oat/$arch2/$privapp.odex.gz" >> $logs/zip.log
+				$p7z e "$privdir/$privapp/oat/$arch2/$privapp.odex.gz" 2>/dev/null >> $logs/zip.log
 			elif [[ -f "$privdir/$privapp/oat/$arch2/$privapp.odex.xz" ]]; then
 				cd $privdir/$privapp/oat/$arch2
 				echo ""
 				echo "... Extracting $privapp.odex.xz"
 				echo ""
-				$p7z e "$privdir/$privapp/oat/$arch2/$privapp.odex.xz" >> $logs/zip.log
+				$p7z e "$privdir/$privapp/oat/$arch2/$privapp.odex.xz" 2>/dev/null >> $logs/zip.log
 			fi
 		done
 	fi
@@ -2893,7 +2893,7 @@ deodex_m() {
 				if [[ -f "$privapp.apk:classes3.dex.dex" ]]; then
 					mv $privapp.apk:classes3.dex.dex classes3.dex
 				fi
-				$p7z u -tzip $privdir/$privapp/$privapp.apk classes*.dex >> $logs/zip.log
+				$p7z u -tzip $privdir/$privapp/$privapp.apk classes*.dex 2>/dev/null >> $logs/zip.log
 				rm -rf $privdir/$privapp/oat
 				cd $tools
 			else
@@ -2937,7 +2937,7 @@ deodex_m() {
 					if [[ -f "$privapp.apk:classes3.dex.dex" ]]; then
 						mv $privapp.apk:classes3.dex.dex classes3.dex
 					fi
-					$p7z u -tzip $privdir/$privapp/$privapp.apk classes*.dex >> $logs/zip.log
+					$p7z u -tzip $privdir/$privapp/$privapp.apk classes*.dex 2>/dev/null >> $logs/zip.log
 					rm -rf $privdir/$privapp/oat
 					cd $tools
 				else
@@ -2956,13 +2956,13 @@ deodex_m() {
 	echo "----------------------------------------------------"
 	echo ""
 	cd $framedir/oat/$arch
-	if [[ ! $(ls $framedir/oat/$arch | grep .gz | rev | cut -c 9- | rev) = "" ]]; then
+	if [[ ! $(ls | grep .gz | rev | cut -c 9- | rev) = "" ]]; then
 		frame=""
 		for frame in $(ls | grep .gz | rev | cut -c 9- | rev); do
 			echo ""
 			echo "... Extracting $frame.odex.gz"
 			echo ""
-			$p7z e "$frame.odex.gz" >> $logs/zip.log
+			$p7z e "$frame.odex.gz" 2>/dev/null >> $logs/zip.log
 			rm -rf "$frame.odex.gz"
 		done
 	elif [[ ! $(ls | grep .xz | rev | cut -c 9- | rev) = "" ]]; then
@@ -2971,7 +2971,7 @@ deodex_m() {
 			echo ""
 			echo "... Extracting $frame.odex.xz"
 			echo ""
-			$p7z e $frame.odex.xz >> $logs/zip.log
+			$p7z e $frame.odex.xz 2>/dev/null >> $logs/zip.log
 			rm -rf $frame.odex.xz
 		done
 	fi
@@ -2980,14 +2980,16 @@ deodex_m() {
 	cd $framedir
 	mkdir temp
 	line=""
-	for line in $(grep -v dex $framedir/$arch/classes.log); do
-		mv $line temp/
+	for line in $(grep -v .dex$ $framedir/$arch/classes.log); do
+		if [[ -f $line ]]; then
+			mv $line temp/
+		fi
 	done
 	cd $tools
 	frame=""
-	for frame in $( ls $framedir | rev | cut -d"." -f2- | rev | grep -v ^$arch$ | grep -v ^$arch2$ | grep -v ^oat$ | grep -v temp | grep -v framework-res); do
+	for frame in $( ls $framedir | grep .jar$ | rev | cut -d"." -f2- | rev ); do
 		if [[ -d "$framedir/oat/$arch" ]]; then	
-			if [[ $($p7z l $framedir/$frame.jar | grep classes.dex) = "" ]]; then
+			if [[ $($p7z l $framedir/$frame.jar | grep classes.dex) = "" && -f $framedir/oat/$arch/$frame.odex ]]; then
 				echo ""
 				echo "... Deodexing $frame"
 				echo ""
@@ -3015,7 +3017,7 @@ deodex_m() {
 				if [[ -f "$frame.jar:classes3.dex.dex" ]]; then
 					mv $frame.jar:classes3.dex.dex classes3.dex
 				fi
-				$p7z u -tzip $framedir/$frame.jar classes*.dex >> $logs/zip.log
+				$p7z u -tzip $framedir/$frame.jar classes*.dex 2>/dev/null >> $logs/zip.log
 				rm -rf classes2.log
 				rm -rf classes*.dex
 				cd $tools
@@ -3028,11 +3030,11 @@ deodex_m() {
 		fi
 	done
 	cd $tools
-	if [[ -f "$framedir/$arch/boot.oat" ]]; then	
+	if [[ -f "$framedir/$arch/boot.oat" ]]; then
 		line=""
 		for line in $(cat $framedir/$arch/classes.log); do
 			line2=$(echo "$line" | rev | cut -d"." -f2- | rev)
-			if [[ $($p7z l $framedir/temp/$line | grep classes.dex) = "" ]]; then		
+			if [[ ! -f $framedir/temp/$line || $($p7z l $framedir/temp/$line | grep classes.dex) = "" ]]; then
 				echo ""
 				echo "... Deodexing $line2"
 				echo ""
@@ -3041,15 +3043,15 @@ deodex_m() {
 				cd $framedir/temp
 				if [[ $(echo "$line" | grep classes) = "" ]]; then
 					mv $line.tmp classes.dex
-					$p7z u -tzip $line classes.dex >> $logs/zip.log
+					$p7z u -tzip $line classes.dex 2>/dev/null >> $logs/zip.log
 				elif [[ ! $(echo "$line" | grep classes2) = "" ]]; then
 					frame=$(echo "$line" | cut -d":" -f1)
 					mv $line.tmp classes2.dex
-					$p7z u -tzip $frame classes2.dex >> $logs/zip.log
+					$p7z u -tzip $frame classes2.dex 2>/dev/null >> $logs/zip.log
 				elif [[ ! $(echo "$line" | grep classes3) = "" ]]; then
 					frame=$(echo "$line" | cut -d":" -f1)
 					mv $line.tmp classes3.dex
-					$p7z u -tzip $frame classes3.dex >> $logs/zip.log
+					$p7z u -tzip $frame classes3.dex 2>/dev/null >> $logs/zip.log
 				fi
 				rm -rf classes*.dex
 				rm -rf smali
@@ -3062,7 +3064,7 @@ deodex_m() {
 		done
 		cd $framedir/temp
 		line=""
-		for line in $(grep -v dex $framedir/$arch/classes.log); do
+		for line in $(grep -v .dex$ $framedir/$arch/classes.log); do
 			mv $line $framedir/
 		done
 	fi
@@ -3079,7 +3081,7 @@ deodex_m() {
 	if [[ ! $arch2 = "" ]]; then
 		rm -rf $framedir/$arch2
 	fi
-	stillodexed=$(find $romdir -name *.odex)
+	stillodexed=$(find $romdir -name *.odex | grep -v 00_project_files)
 	if [[ "$stillodexed" = "" ]]; then
 		clear
 		banner
@@ -3140,7 +3142,7 @@ deodex_old() {
 				echo ""
 				java -jar $baksmali -a $api -d $framedir -x $appdir/$app.odex -o $appdir/smali  >> $logs/main.log
 				java -jar $smali -a $api $appdir/smali -o $appdir/classes.dex >> $logs/main.log
-				$p7z u -tzip $appdir/$app.apk $appdir/classes.dex >> $logs/zip.log
+				$p7z u -tzip $appdir/$app.apk $appdir/classes.dex 2>/dev/null >> $logs/zip.log
 				rm -rf $appdir/$app.odex
 				rm -rf $appdir/smali
 				rm -rf $appdir/classes.dex
@@ -3178,7 +3180,7 @@ deodex_old() {
 				echo ""
 				java -jar $baksmali -a $api -d $framedir -x $privdir/$privapp.odex -o $privdir/smali  >> $logs/main.log
 				java -jar $smali -a $api $privdir/smali -o $privdir/classes.dex >> $logs/main.log
-				$p7z u -tzip $privdir/$privapp.apk $privdir/classes.dex >> $logs/zip.log
+				$p7z u -tzip $privdir/$privapp.apk $privdir/classes.dex 2>/dev/null >> $logs/zip.log
 				rm -rf $privdir/$privapp.odex
 				rm -rf $privdir/smali
 				rm -rf $privdir/classes.dex
@@ -3199,7 +3201,7 @@ deodex_old() {
 	echo ""
 	
 	frame=""
-	for frame in $( ls $framedir | grep -E .jar | rev | cut -c 5- | rev ); do
+	for frame in $( ls $framedir | grep .jar | rev | cut -c 5- | rev ); do
 		if [ -f "$framedir/$frame.odex" ]; then
 			if [[ $($p7z l $framedir/$frame.jar | grep classes.dex) = "" ]]; then
 				echo ""
@@ -3207,7 +3209,7 @@ deodex_old() {
 				echo ""
 				java -jar $baksmali -a $api -d $framedir -x $framedir/$frame.odex -o $framedir/smali  >> $logs/main.log
 				java -jar $smali -a $api $framedir/smali -o $framedir/classes.dex >> $logs/main.log
-				$p7z u -tzip $framedir/$frame.jar $framedir/classes.dex >> $logs/zip.log
+				$p7z u -tzip $framedir/$frame.jar $framedir/classes.dex 2>/dev/null >> $logs/zip.log
 				rm -rf $framedir/smali
 				rm -rf $framedir/classes.dex
 			else
@@ -3227,7 +3229,7 @@ deodex_old() {
 				echo ""
 				java -jar $baksmali -a $api -d $framedir -x $framedir/$frame2.odex -o $framedir/smali  >> $logs/main.log
 				java -jar $smali -a $api $framedir/smali -o $framedir/classes.dex >> $logs/main.log
-				$p7z u -tzip $framedir/$frame2.apk $framedir/classes.dex >> $logs/zip.log
+				$p7z u -tzip $framedir/$frame2.apk $framedir/classes.dex 2>/dev/null >> $logs/zip.log
 				rm -rf $framedir/smali
 				rm -rf $framedir/classes.dex
 			else
@@ -3240,7 +3242,7 @@ deodex_old() {
 	done
 	rm -rf $framedir/*.odex
 
-	stillodexed=$(find $romdir -name *.odex)
+	stillodexed=$(find $romdir -name *.odex | grep -v 00_project_files)
 	if [[ "$stillodexed" = "" ]]; then
 		clear
 		banner
@@ -3271,7 +3273,7 @@ deodex_sqsh() {
 	mkdir -p sqshtmp
 	mv $sqshfile sqshtmp/
 	cd sqshtmp
-	$p7z x $sqshfile 2>&1 >> $logs/zip.log
+	$p7z x $sqshfile 2>/dev/null >> $logs/zip.log
 	rm -rf $sqshfile
 	clear
 	banner
@@ -3725,7 +3727,7 @@ extract_new() {
 			banner
 			echo "${bluet}Extracting system.new.dat, system.transfer.list, and boot.img ...$normal"
 			cd $romdir
-			$p7z e $romzip system.new.dat system.transfer.list vendor.new.dat vendor.transfer.list boot.img >> $logs/zip.log
+			$p7z e $romzip system.new.dat system.transfer.list vendor.new.dat vendor.transfer.list boot.img 2>/dev/null >> $logs/zip.log
 			clear
 			banner
 			echo "${bluet}Converting to system.img ...$normal"
@@ -3747,7 +3749,7 @@ extract_new() {
 				mv system.img system_old.img
 			fi
 			cd $romdir
-			$p7z e $romzip system_new.img system.img vendor_new.img vendor.img boot.img >> $logs/zip.log
+			$p7z e $romzip system_new.img system.img vendor_new.img vendor.img boot.img 2>/dev/null >> $logs/zip.log
 			if [[ -f system_new.img ]]; then
 				mv system_new.img system.img
 			fi
@@ -3760,7 +3762,7 @@ extract_new() {
 			clear
 			banner
 			echo "${bluet}Extracting system.ext4.tar.a and boot.img ...$normal"
-			$p7z e $romzip system.ext4.tar.a boot.img >> $logs/zip.log
+			$p7z e $romzip system.ext4.tar.a boot.img 2>/dev/null >> $logs/zip.log
 			romzip=""
 			romtar="system.ext4.tar.a"
 		fi			
@@ -3768,7 +3770,7 @@ extract_new() {
 			clear
 			banner
 			echo "${bluet}Extracting $romzip in $romname$normal"
-			$p7z x $romzip >> $logs/zip.log
+			$p7z x $romzip 2>/dev/null >> $logs/zip.log
 			rm -rf $romdir/META-INF/*.RSA
 			rm -rf $romdir/META-INF/*.SF
 			rm -rf $romdir/META-INF/*.MF
@@ -3887,9 +3889,9 @@ extract_new() {
 		cd $romdir
 		echo "$romwin" | while read line; do				
 			if [[ $tosystem = "1" ]]; then
-				tar -xf $line -C system >/dev/null 2>&1 >> $logs/zip.log
+				tar -xf $line -C system >/dev/null 2>/dev/null >> $logs/zip.log
 			else 
-				tar -xf $line >/dev/null 2>&1 >> $logs/zip.log
+				tar -xf $line >/dev/null 2>/dev/null >> $logs/zip.log
 			fi
 		done
 	fi
@@ -3917,9 +3919,9 @@ extract_new() {
 		cd $romdir
 		if [[ ! $(tar -tf $romtar -P 2>&1 | grep -o -m 1 system/) = "system/" ]]; then
 			mkdir system
-			tar -xf $romtar -C system >/dev/null 2>&1 >> $logs/zip.log
+			tar -xf $romtar -C system 2>/dev/null >> $logs/zip.log
 		else 
-			tar -xf $romtar >/dev/null 2>&1 >> $logs/zip.log
+			tar -xf $romtar 2>/dev/null >> $logs/zip.log
 		fi
 	fi
 	if [[ ! $romimg = "" || ! $romwin = "" || ! $romtar = "" ]] && [[ ! $romimg = "cache.img" && ! $romimg = "hidden.img" && ! $romimg = "data.img" && ! $romimg = "vendor.img" && ! $romimg = "generic.img" ]]; then
@@ -3942,7 +3944,7 @@ extract_new() {
 							cscdir=$(echo $cscfull | rev | cut -d"/" -f2- | rev)
 							csczip=$(echo $cscfull | rev | cut -d"/" -f1 | rev)
 							cd $cscdir
-							$p7z x $csczip 2>&1 >> $logs/zip.log
+							$p7z x $csczip 2>/dev/null >> $logs/zip.log
 							cd system
 							line=""
 							find . -type d | sed 's/^.\///' | while read line; do
@@ -4467,7 +4469,7 @@ grab_devices() {
 	clear
 	banner		
 	echo "${bluet}Building devices zip in Kitchen root ...$normal"
-	$p7z a -mx7 DEVICES-$timestamp.zip tools/devices >> $logs/zip.log
+	$p7z a -mx7 DEVICES-$timestamp.zip tools/devices 2>/dev/null >> $logs/zip.log
 	clear
 	banner
 	echo "${greent}The devices zip has been created:"
@@ -4745,7 +4747,7 @@ isknoxstatus() {
 }
 isodexstatus() {
 	if [[ -d $romdir ]]; then
-		if [[ $(ls $romdir/system -R | grep .odex$) = "" && ! -f $romdir/system/odex.sqsh ]]; then
+		if [[ $(ls $romdir/system -R | grep -v 00_project_files | grep .odex$) = "" && ! -f $romdir/system/odex.sqsh ]]; then
 			odexstatus="Deodexed"
 			odexstatus1=$(echo "${greent}Deodexed${normal}")
 		else
