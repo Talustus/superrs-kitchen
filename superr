@@ -30,7 +30,7 @@ assert_devices() {
 		rom_tools
 		return 1
 	fi
-	while [[ ! $assertch = "m" && ! $assertch = "q" && $assertch -lt "1" || $assertch -gt "2" ]] ; do
+	while [[ ! $assertch = "m" && ! $assertch = "q" && $assertch -lt "1" || $assertch -gt "3" ]] ; do
 		clear
 		banner
 		echo "${bluet}ASSERT MENU: $greent$romname$normal"
@@ -39,6 +39,7 @@ assert_devices() {
 		echo ""
 		echo "1) Add/Remove Device asserts"
 		echo "2) Add Custom assert"
+		echo "3) Reset asserts to default"
 		echo "${yellowt}m = Main menu"
 		echo "${magentat}q = Quit$normal"
 		echo ""
@@ -105,6 +106,17 @@ assert_devices() {
 		cd $assertdir
 		cat $tools/updater/custom/assertcustom >> assertcustom
 		sed -i "s/#PROPNAME/$propname/g; s/#PROPVALUE/$propvalue/g" assertcustom
+	# START Reset asserts to default
+	elif [[ $assertch = "3" ]]; then
+		cd $assertdir
+		rm -rf assert assertcustom assertdevice
+		cat $tools/updater/custom/assert >> assert
+		cat $tools/updater/custom/abort >> assert
+		sed -i "s/#DEVICENAME/$devicename/g" assert
+		sed -i '/#ASSERT/ r assert' $romdir/META-INF/com/google/android/updater-script
+		assertch=""
+		rom_tools
+		return 1
 	# START Main menu
 	elif [[ $assertch = "m" ]]; then
 		cd $base
@@ -3385,7 +3397,7 @@ dozipalign() {
 	zipalign="$tools/zipalign"
 	cd $romdir
 	line=""
-	find . -type f | grep .apk | sed 's/^\.\///' | grep -v /framework/ | sort | while read line; do
+	find . -type f | grep .apk | grep -v "/framework/\|00_project_files" | sed 's/^\.\///' | sort | while read line; do
 		app=$(basename $line)
 		echo "Zipaligning $app ..."
 		$zipalign -f 4 $line $line-2 >/dev/null 2>&1
@@ -3399,7 +3411,7 @@ dozipalign() {
 	echo ""
 	if [[ $choice = "y" ]]; then
 		line=""
-		find system/framework -type f | grep .apk | sed 's/^\.\///' | while read line; do
+		find system/framework -type f | grep -v "00_project_files" | grep .apk | sed 's/^\.\///' | while read line; do
 			app=$(basename $line)
 			echo "Zipaligning $app ..."
 			$zipalign -f 4 $line $line-2 >/dev/null 2>&1
@@ -5301,7 +5313,7 @@ rom_tools() {
 		else
 			echo "5) Change perm type (${bluet}CURRENT: $greent$permtype$normal)"
 		fi
-		echo "${yellowt}6) Asserts: Add/Change$normal (${bluet}CURRENT: $greent$assertdevices$normal)"
+		echo "${yellowt}6) Asserts Menu$normal (${bluet}CURRENT: $greent$assertdevices$normal)"
 		echo "${yellowt}7) Debloat Menu"
 		echo "8) Build Menu"
 		echo "m = Main menu"

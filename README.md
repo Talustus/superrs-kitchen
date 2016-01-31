@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v1.0.2.3 **#
+#** SuperR's Kitchen v1.0.2.4 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -58,6 +58,7 @@
 **Create system.img**  
 **Device database for mmcblk devices (currently very small, but will grow over time)**  
 **Add devices to the assert**  
+**Add custom asserts**  
 **Zipalign apks**  
 **Debloat ROM**  
 **Custom Debloat list support**  
