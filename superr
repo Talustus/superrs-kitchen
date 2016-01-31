@@ -30,47 +30,99 @@ assert_devices() {
 		rom_tools
 		return 1
 	fi
-	rm -rf $assertdir/assertdevice
-	rm -rf $assertdir/assert
-	clear
-	banner
-	echo "${bluet}CURRENT ASSERTS: $greent$assertdevices$normal"
-	echo ""
-	echo "$redb$yellowt${bold}WARNING:$normal"
-	echo "${redt}The asserts allow/deny the flashing of ROMs. If you"
-	echo "allow a ROM to be flashed on the wrong device it can"
-	echo "have serious consequences. You have been warned :)$normal"
-	echo ""
-	echo "Please enter the comma separated device asserts. The"
-	echo "current device should already be in the list but make"
-	echo "sure it is. Press ENTER when finished."
-	echo ""
-	echo "${greenb}Example:$normal"
-	echo ""
-	echo "${yellowt}surnia,surnia_cdma,xt1526$normal"
-	echo ""
-	read -e -i "$devicename" -p "" assertdevice2
-	clear
-	banner
-	echo "${bluet}Preparing asserts ...$normal"
-	assertdevice=$(echo "$assertdevice2" | sed 's/\ //g')
-	echo "$assertdevice" | tr , '\n' > $assertdir/assertdevice
+	while [[ ! $assertch = "m" && ! $assertch = "q" && $assertch -lt "1" || $assertch -gt "2" ]] ; do
+		clear
+		banner
+		echo "${bluet}ASSERT MENU: $greent$romname$normal"
+		echo ""
+		echo "${yellowb}${redt}Choose assert type$normal"
+		echo ""
+		echo "1) Add/Remove Device asserts"
+		echo "2) Add Custom assert"
+		echo "${yellowt}m = Main menu"
+		echo "${magentat}q = Quit$normal"
+		echo ""
+		read -n 1 -p "Please enter your choice:" assertch
+	done
 	grep "getprop(" updater-script > $assertdir/assert_original
 	grep -v "getprop(" updater-script > updater-script2
-	mv updater-script2 updater-script	
-	cd $assertdir
-	cat $tools/updater/custom/assert >> assert
-	firstdevice=$(head -1 assertdevice)
-	sed -i "s/#DEVICENAME/$firstdevice/g" assert
-	cat assertdevice | while read line; do
-		if [[ $(grep -o "\"$line\"" assert) = "" ]]; then
-			cat $tools/updater/custom/device >> assert
-			sed -i "s/#DEVICENAME/$line/g" assert
-		fi
-	done
-	cat $tools/updater/custom/abort2 >> assert
-	sed -i "s/#ASSERTDEVICE/$assertdevice/g" assert	
+	mv updater-script2 updater-script
+	# START Add/Remove Device asserts
+	if [[ $assertch = "1" ]]; then
+		rm -rf $assertdir/assertdevice
+		rm -rf $assertdir/assert
+		clear
+		banner
+		echo "${bluet}CURRENT DEVICE ASSERTS: $greent$assertdevices$normal"
+		echo ""
+		echo "$redb$yellowt${bold}WARNING:$normal"
+		echo "${redt}Device asserts allow/deny the flashing of ROMs. If you"
+		echo "allow a ROM to be flashed on the wrong device it can"
+		echo "have serious consequences. You have been warned :)$normal"
+		echo ""
+		echo "Please enter the comma separated device asserts. The"
+		echo "current device should already be in the list but make"
+		echo "sure it is. Press ENTER when finished."
+		echo ""
+		echo "${greenb}Example:$normal"
+		echo ""
+		echo "${yellowt}surnia,surnia_cdma,xt1526$normal"
+		echo ""
+		read -e -i "$devicename" -p "" assertdevice2
+		clear
+		banner
+		echo "${bluet}Preparing device asserts ...$normal"
+		assertdevice=$(echo "$assertdevice2" | sed 's/\ //g')
+		echo "$assertdevice" | tr , '\n' > $assertdir/assertdevice
+		cd $assertdir
+		cat $tools/updater/custom/assert >> assert
+		firstdevice=$(head -1 assertdevice)
+		sed -i "s/#DEVICENAME/$firstdevice/g" assert
+		cat assertdevice | while read line; do
+			if [[ $(grep -o "\"$line\"" assert) = "" ]]; then
+				cat $tools/updater/custom/device >> assert
+				sed -i "s/#DEVICENAME/$line/g" assert
+			fi
+		done
+		cat $tools/updater/custom/abort2 >> assert
+		sed -i "s/#ASSERTDEVICE/$assertdevice/g" assert
+	# START Add Custom assert
+	elif [[ $assertch = "2" ]]; then
+		clear
+		banner
+		echo "Type your custom assert below. Press ENTER when finished."
+		echo ""
+		echo "${greenb}Example:$normal"
+		echo ""
+		echo "${yellowt}ro.baseband=1.09.20.1112$normal"
+		echo ""
+		read -e -p "" assertcustom
+		clear
+		banner
+		echo "${bluet}Preparing custom assert ...$normal"
+		propname=$(echo "$assertcustom" | cut -d"=" -f1)
+		propvalue=$(echo "$assertcustom" | cut -d"=" -f2)
+		cd $assertdir
+		cat $tools/updater/custom/assertcustom >> assertcustom
+		sed -i "s/#PROPNAME/$propname/g; s/#PROPVALUE/$propvalue/g" assertcustom
+	# START Main menu
+	elif [[ $assertch = "m" ]]; then
+		cd $base
+		exec ./superr
+		return 1
+	# START Quit
+	elif [[ $assertch = "q" ]]; then
+		echo ""
+		echo ""
+		exit
+	fi
+	if [[ -f assertcustom ]]; then
+		grep "ro.product.device" assert > assert-2
+		mv assert-2 assert
+		cat assertcustom >> assert
+	fi
 	sed -i '/#ASSERT/ r assert' $romdir/META-INF/com/google/android/updater-script
+	assertch=""
 }
 boot_dmverity() {
 	clear
@@ -750,6 +802,7 @@ boot_tools() {
 			cat $tools/updater/custom/assert >> assert
 			cat $tools/updater/custom/abort >> assert
 			sed -i "s/#DEVICENAME/$devicename/g" assert
+			assertch="1"
 			assert_devices
 		else	
 			cd $prfiles
@@ -1018,6 +1071,7 @@ build_custom_zip() {
 			cat $tools/updater/custom/assert >> assert
 			cat $tools/updater/custom/abort >> assert
 			sed -i "s/#DEVICENAME/$devicename/g" assert
+			assertch="1"
 			assert_devices
 		else	
 			sed -i '/#ASSERT/ r assert' $romdir/META-INF/com/google/android/updater-script
@@ -3329,42 +3383,28 @@ deodex_sqsh() {
 }
 dozipalign() {
 	zipalign="$tools/zipalign"
-	if [[ $api -lt "21" ]]; then
-		cd $appdir
-		app=""
-		ls $appdir | while read app ; do
+	cd $romdir
+	line=""
+	find . -type f | grep .apk | sed 's/^\.\///' | grep -v /framework/ | sort | while read line; do
+		app=$(basename $line)
+		echo "Zipaligning $app ..."
+		$zipalign -f 4 $line $line-2 >/dev/null 2>&1
+		mv $line-2 $line
+	done
+	clear
+	banner
+	choice=""
+	read -n 1 -p "Would you like to zipalign the apk files in /framework?  y/n  " choice
+	echo ""
+	echo ""
+	if [[ $choice = "y" ]]; then
+		line=""
+		find system/framework -type f | grep .apk | sed 's/^\.\///' | while read line; do
+			app=$(basename $line)
 			echo "Zipaligning $app ..."
-			$zipalign -f 4 $app $app-2 >/dev/null 2>&1
-			mv $app-2 $app
-		done		
-		if [[ -d $privdir ]]; then
-			cd $privdir
-			privapp=""
-			ls $privdir | while read privapp ; do
-				echo "Zipaligning $privapp ..."
-				$zipalign -f 4 $privapp $privapp-2 >/dev/null 2>&1
-				mv $privapp-2 $privapp
-			done
-		fi
-	elif [[ $api -ge "21" ]]; then
-		cd $appdir
-		app=""
-		ls $appdir | while read app ; do
-			echo "Zipaligning $app.apk ..."
-			cd $appdir/$app
-			$zipalign -f 4 $app.apk $app.apk-2 >/dev/null 2>&1
-			mv $app.apk-2 $app.apk
-		done		
-		if [[ -d $privdir ]]; then
-			cd $privdir
-			privapp=""
-			ls $privdir | while read privapp ; do
-				echo "Zipaligning $privapp.apk ..."
-				cd $privdir/$privapp
-				$zipalign -f 4 $privapp.apk $privapp.apk-2 >/dev/null 2>&1
-				mv $privapp.apk-2 $privapp.apk
-			done
-		fi
+			$zipalign -f 4 $line $line-2 >/dev/null 2>&1
+			mv $line-2 $line
+		done
 	fi
 }
 elf_unpack() {
@@ -5261,7 +5301,7 @@ rom_tools() {
 		else
 			echo "5) Change perm type (${bluet}CURRENT: $greent$permtype$normal)"
 		fi
-		echo "6) Asserts: Add/Change devices (${bluet}CURRENT: $greent$assertdevices$normal)"
+		echo "${yellowt}6) Asserts: Add/Change$normal (${bluet}CURRENT: $greent$assertdevices$normal)"
 		echo "${yellowt}7) Debloat Menu"
 		echo "8) Build Menu"
 		echo "m = Main menu"
@@ -5866,6 +5906,11 @@ update_project() {
 		cat $tools/updater/custom/assert >> assert
 		cat $tools/updater/custom/abort >> assert
 		sed -i "s/#DEVICENAME/$devicename/g" assert
+		if [[ -f assertcustom ]]; then
+			grep "ro.product.device" assert > assert-2
+			mv assert-2 assert
+			cat assertcustom >> assert
+		fi
 	fi
 	if [[ $(grep "getprop(" $romdir/META-INF/com/google/android/updater-script) = "" ]]; then	
 		sed -i '/#ASSERT/ r assert' $romdir/META-INF/com/google/android/updater-script
