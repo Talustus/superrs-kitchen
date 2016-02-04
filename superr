@@ -30,7 +30,7 @@ assert_devices() {
 		rom_tools
 		return 1
 	fi
-	while [[ ! $assertch = "m" && ! $assertch = "q" && $assertch -lt "1" || $assertch -gt "3" ]] ; do
+	while [[ ! $assertch = "m" && ! $assertch = "q" && $assertch -lt "1" || $assertch -gt "3" ]]; do
 		clear
 		banner
 		echo "${bluet}ASSERT MENU: $greent$romname$normal"
@@ -584,7 +584,7 @@ boot_tools() {
 	elif [[ -f $romdir/recovery.img && ! -f $romdir/boot.img ]]; then
 		chosenimg="recovery"
 	elif [[ -f $romdir/boot.img && -f $romdir/recovery.img ]]; then
-		while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "2" ]] ; do
+		while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "2" ]]; do
 			clear
 			banner
 			echo "${bluet}CURRENT PROJECT: $greent$romname$normal"
@@ -621,7 +621,7 @@ boot_tools() {
 	fi
 	if [[ -d $romdir/${chosenimg}img ]]; then
 		choice=""
-		while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "6" ]] ; do
+		while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "6" ]]; do
 			clear
 			banner
 			echo "${bluet}CURRENT PROJECT: $greent$romname$normal"
@@ -721,7 +721,7 @@ boot_tools() {
 	fi
 	if [[ ! $chosenimg = "" ]]; then
 		choice=""
-		while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "3" ]] ; do
+		while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "3" ]]; do
 			clear
 			banner
 			echo "${bluet}CURRENT PROJECT: $greent$romname$normal"
@@ -769,7 +769,7 @@ boot_tools() {
 			mkdir -p $base/superr_$romname/00_project_files/logs
 		fi
 		get_devicename
-		if [ $devicename = "" ]; then
+		if [[ $devicename = "" ]]; then
 			clear
 			banner
 			echo "${redb}${yellowt}ERROR:$normal"
@@ -1028,7 +1028,7 @@ build_custom_zip() {
 		clear
 		banner
 		choice=""
-		while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "7" ]] ; do
+		while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "7" ]]; do
 			clear
 			banner
 			echo "${bluet}CURRENT PROJECT: $greent$romname$normal"
@@ -1581,7 +1581,7 @@ build_rom_zip() {
 }
 build_zip() {
 	choice=""
-	while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "4" ]] ; do
+	while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "4" ]]; do
 		clear
 		banner
 		echo "${bluet}CURRENT PROJECT: $greent$romname$normal"
@@ -1671,7 +1671,7 @@ change_permtype() {
 		fi
 	fi
 	choice=""
-	while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "5" ]] ; do
+	while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "5" ]]; do
 		clear
 		banner
 		echo "${bluet}CURRENT PROJECT: $greent$romname$normal"
@@ -1920,7 +1920,7 @@ debloat_rom() {
 	isdebloatcustomstatus
 	isknoxstatus
 	choice=""
-	while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "6" ]] ; do
+	while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "6" ]]; do
 		clear
 		banner
 		echo "${bluet}CURRENT PROJECT: $greent$romname$normal"
@@ -1969,7 +1969,7 @@ debloat_rom() {
 		banner
 		echo "${bluet}Removing bloat ...$normal"
 		debloat=""
-		cat $prfiles/debloat_list | while read debloat ; do 
+		cat $prfiles/debloat_list | while read debloat; do
 			debloatdir=$(echo $debloat | rev | cut -d"/" -f2- | rev) 
 			mkdir -p $prfiles/debloated_files/$debloatdir
 			mv $romdir/$debloat $prfiles/debloated_files/$debloatdir
@@ -2025,7 +2025,7 @@ debloat_rom() {
 		banner
 		echo "${bluet}Removing bloat ...$normal"
 		debloat=""
-		cat $prfiles/debloat_custom | while read debloat ; do 
+		cat $prfiles/debloat_custom | while read debloat; do
 			debloatdir=$(echo $debloat | rev | cut -d"/" -f2- | rev) 
 			mkdir -p $prfiles/debloated_files/$debloatdir
 			mv $romdir/$debloat $prfiles/debloated_files/$debloatdir
@@ -2069,7 +2069,7 @@ debloat_rom() {
 		banner
 		echo "${bluet}Removing knox ...$normal"
 		debloat=""
-		cat $prfiles/debloat_knox | while read debloat ; do 
+		cat $prfiles/debloat_knox | while read debloat; do
 			debloatdir=$(echo $debloat | rev | cut -d"/" -f2- | rev) 
 			mkdir -p $prfiles/debloated_files/$debloatdir
 			mv $romdir/$debloat $prfiles/debloated_files/$debloatdir
@@ -2325,11 +2325,10 @@ deodex_l() {
 	echo ""
 	cd $romdir
 	find . -name *.odex | sed 's/.\///' | grep -v "system/framework/$arch/\|system/framework/$arch2/\|system/app/\|system/priv-app/\|00_project_files" | rev | cut -d"/" -f3- | rev | sort -u >> $logs/extraodex.txt
-	extraodex=$(cat $logs/extraodex.txt)
-	if [[ ! $extraodex = "" ]]; then
+	if [[ -s $logs/extraodex.txt ]]; then
 		extraapp=""
 		line=""
-		echo "$extraodex" | while read line; do
+		cat $logs/extraodex.txt | while read line; do
 			if [[ ! $(echo "$line" | rev | cut -d"/" -f1 | rev | grep "^\.") = "" ]]; then
 				newapp=$(ls $line | grep .apk | cut -d"." -f1)
 				newappdir=$(echo "$line" | rev | cut -d"/" -f2- | rev)/$newapp
@@ -2438,7 +2437,7 @@ deodex_l() {
 		done
 	fi
 
-	if [[ -f $logs/extraodex.txt && ! $(cat $logs/extraodex.txt) = "" ]]; then
+	if [[ -s $logs/extraodex.txt ]]; then
 		extraapp=""
 		line=""
 		cat $logs/extraodex.txt | while read line; do
@@ -2446,7 +2445,7 @@ deodex_l() {
 			mv $romdir/system/app/$extraapp $romdir/$line
 		done
 		line=""
-		if [[ ! $(cat $logs/extramv.txt) = "" ]]; then
+		if [[ -s $logs/extramv.txt ]]; then
 			cat $logs/extramv.txt | while read line; do
 				mv $line
 			done
@@ -2502,7 +2501,7 @@ deodex_l() {
 	cd $tools
 	privapp=""
 	for privapp in $( ls $privdir ); do
-		if [ -d "$privdir/$privapp/$arch" ]; then
+		if [[ -d "$privdir/$privapp/$arch" ]]; then
 			if [[ $($p7z l $privdir/$privapp/$privapp.apk | grep classes.dex) = "" ]]; then
 				echo ""
 				echo "... Deodexing $privapp"
@@ -2547,7 +2546,7 @@ deodex_l() {
 					echo ""
 					echo "$privapp is already deodexed ..."
 					echo ""
-					rm -rf $appdir/$privapp/$arch2
+					rm -rf $privdir/$privapp/$arch2
 				fi
 			fi
 		done
@@ -2584,7 +2583,7 @@ deodex_l() {
 	cd $tools
 	frame=""
 	for frame in $( ls $framedir/$arch | grep .odex | rev | cut -c 6- | rev ); do
-		if [[ $($p7z l $framedir/$frame.jar | grep classes.dex) = "" ]]; then
+		if [[ $(echo $frame | grep classes) = "" && $($p7z l $framedir/$frame.jar | grep classes.dex) = "" ]]; then
 			echo ""
 			echo "... Deodexing $frame"
 			echo ""
@@ -2611,7 +2610,7 @@ deodex_l() {
 	done
 	frame2=""
 	for frame2 in $( ls $framedir/$arch/dex | grep .dex | rev | cut -c 5- | rev ); do
-		if [[ $($p7z l $framedir/$frame2.jar | grep classes.dex) = "" ]]; then
+		if [[ $(echo $frame2 | grep classes) = "" && $($p7z l $framedir/$frame2.jar | grep classes.dex) = "" ]]; then
 			if [[ $frame2 != *"classes"* ]]; then
 				echo ""
 				echo "... Deodexing $frame2"
@@ -2757,7 +2756,7 @@ deodex_m() {
 	echo ""
 	cd $romdir
 	find . -name *.odex | sed 's/.\///' | grep -v "system/framework/oat/\|system/framework/$arch/\|system/framework/$arch2/\|system/app/\|system/priv-app/\|00_project_files" | rev | cut -d"/" -f4- | rev | sort -u >> $logs/extraodex.txt
-	if [[ ! $(cat $logs/extraodex.txt) = "" ]]; then
+	if [[ -s $logs/extraodex.txt ]]; then
 		extraapp=""
 		line=""
 		cat $logs/extraodex.txt | while read line; do
@@ -2903,7 +2902,7 @@ deodex_m() {
 			fi
 		done
 	fi
-	if [[ -f $logs/extraodex.txt && ! $(cat $logs/extraodex.txt) = "" ]]; then
+	if [[ -s $logs/extraodex.txt ]]; then
 		extraapp=""
 		line=""
 		cat $logs/extraodex.txt | while read line; do
@@ -2911,7 +2910,7 @@ deodex_m() {
 			mv $romdir/system/app/$extraapp $romdir/$line
 		done
 		line=""
-		if [[ ! $(cat $logs/extramv.txt) = "" ]]; then
+		if [[ -s $logs/extramv.txt ]]; then
 			cat $logs/extramv.txt | while read line; do
 				mv $line
 			done
@@ -3226,10 +3225,9 @@ deodex_old() {
 	echo ""
 	cd $romdir
 	find . -name *.odex | sed 's/.\///' | grep -v "system/framework\|system/app/\|system/priv-app/\|00_project_files" | rev | cut -d"." -f2- | rev >> $logs/extraodex.txt
-	extraodex=$(cat $logs/extraodex.txt)
-	if [[ ! $extraodex = "" ]]; then
+	if [[ -s $logs/extraodex.txt ]]; then
 		line=""
-		echo "$extraodex" | while read line; do
+		cat $logs/extraodex.txt | while read line; do
 			( exec mv $romdir/$line* $romdir/system/app/ 2<&1 ) > /dev/null
 		done
 	fi
@@ -3237,7 +3235,7 @@ deodex_old() {
 
 	app=""
 	for app in $( ls $appdir | grep .apk | rev | cut -c 5- | rev ); do
-		if [ -f "$appdir/$app.odex" ]; then
+		if [[ -f "$appdir/$app.odex" ]]; then
 			if [[ $($p7z l $appdir/$app.apk | grep classes.dex) = "" ]]; then
 				echo ""
 				echo "... Deodexing $app"
@@ -3256,10 +3254,10 @@ deodex_old() {
 			fi
 		fi
 	done
-	if [[ -f $logs/extraodex.txt && ! $extraodex = "" ]]; then
+	if [[ -s $logs/extraodex.txt ]]; then
 		extraapp=""
 		line=""
-		echo "$extraodex" | while read line; do
+		cat $logs/extraodex.txt | while read line; do
 			extraapp=$(echo $line | rev | cut -d"/" -f1 | rev)
 			mv $romdir/system/app/$extraapp.apk $romdir/$line.apk
 		done
@@ -3275,7 +3273,7 @@ deodex_old() {
 	
 	privapp=""
 	for privapp in $( ls $privdir | grep .apk | rev | cut -c 5- | rev ); do
-		if [ -f "$privdir/$privapp.odex" ]; then
+		if [[ -f "$privdir/$privapp.odex" ]]; then
 			if [[ $($p7z l $privdir/$privapp.apk | grep classes.dex) = "" ]]; then
 				echo ""
 				echo "... Deodexing $privapp"
@@ -3304,7 +3302,7 @@ deodex_old() {
 	
 	frame=""
 	for frame in $( ls $framedir | grep .jar | rev | cut -c 5- | rev ); do
-		if [ -f "$framedir/$frame.odex" ]; then
+		if [[ -f "$framedir/$frame.odex" ]]; then
 			if [[ $($p7z l $framedir/$frame.jar | grep classes.dex) = "" ]]; then
 				echo ""
 				echo "... Deodexing $frame"
@@ -3324,7 +3322,7 @@ deodex_old() {
 	done
 	frame2=""
 	for frame2 in $( ls $framedir | grep -E .apk | rev | cut -c 5- | rev ); do
-		if [ -f "$framedir/$frame2.odex" ]; then
+		if [[ -f "$framedir/$frame2.odex" ]]; then
 			if [[ $($p7z l $framedir/$frame2.apk | grep classes.dex) = "" ]]; then
 				echo ""
 				echo "... Deodexing $frame2"
@@ -3504,21 +3502,21 @@ extract_new() {
 				rm -rf $prfiles/findextract
 				exit
 			else 
-				if [[ ! $(echo $project | grep .zip) = "" ]] ; then
+				if [[ ! $(echo $project | grep .zip) = "" ]]; then
 					romzip="$project"
-				elif [[ ! $(echo $project | grep .tar) = "" ]] ; then
+				elif [[ ! $(echo $project | grep .tar) = "" ]]; then
 					romtar="$project"
-				elif [[ ! $(echo $project | grep .win) = "" ]] ; then
+				elif [[ ! $(echo $project | grep .win) = "" ]]; then
 					romwin="$project"
-				elif [[ ! $(echo $project | grep chunk) = "" ]] ; then
+				elif [[ ! $(echo $project | grep chunk) = "" ]]; then
 					romchunk="$project"
-				elif [[ ! $(echo $project | grep .img) = "" ]] ; then
+				elif [[ ! $(echo $project | grep .img) = "" ]]; then
 					romimg="$project"
 					if [[ $romimg = "system.img.ext4" ]]; then
 						mv $romdir/system.img.ext4 $romdir/system.img
 						romimg="system.img"
 					fi
-				elif [[ ! $(echo $project | grep system.ext4$) = "" ]] ; then
+				elif [[ ! $(echo $project | grep system.ext4$) = "" ]]; then
 					romimg="$project"
 					if [[ $romimg = "system.ext4" ]]; then
 						mv $romdir/system.ext4 $romdir/system.img
@@ -3531,7 +3529,7 @@ extract_new() {
 	fi
 	if [[ $romzip = "" && $romtar = "" && $romimg = "" && $romwin = "" && $romchunk = "" ]]; then	
 		choice=""
-		while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "2" ]] ; do
+		while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "2" ]]; do
 			clear
 			banner
 			echo "${bluet}CURRENT PROJECT: $greent$romname$normal"
@@ -3554,7 +3552,7 @@ extract_new() {
 		# START Pull system, vendor, boot, and recovery images from device
 		elif [[ $choice = "2" ]]; then
 			choice=""
-			while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "2" ]] ; do
+			while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "2" ]]; do
 				clear
 				banner
 				echo "$yellowb${redt}Choose option to extract images$normal"
@@ -3979,6 +3977,10 @@ extract_new() {
 			tar -xf $romtar 2>/dev/null >> $logs/zip.log
 		fi
 	fi
+	if [[ -f $romdir/system/system/build.prop ]]; then
+		mv $romdir/system/system/* $romdir/system/
+		rm -rf $romdir/system/system
+	fi
 	if [[ ! $romimg = "" || ! $romwin = "" || ! $romtar = "" ]] && [[ ! $romimg = "cache.img" && ! $romimg = "hidden.img" && ! $romimg = "data.img" && ! $romimg = "vendor.img" && ! $romimg = "generic.img" ]]; then
 		if [[ -d $romdir/system ]]; then
 			if [[ -f cache.img ]]; then
@@ -4100,7 +4102,7 @@ findimgsize() {
 		export ${imgfile}size=$(cat $deviceloc/${imgfile}imgsize)
 	else
 		choice=""
-		while [[ ! $choice = "q" && $choice -lt "1" || $choice -gt "4" ]] ; do
+		while [[ ! $choice = "q" && $choice -lt "1" || $choice -gt "4" ]]; do
 			clear
 			banner
 			echo "$yellowb${redt}Choose $whatimg partition detection method$normal"
@@ -4238,7 +4240,7 @@ findimgsize() {
 get_byname() {
 	if [[ ! -s $deviceloc/superr_byname ]]; then
 		choice=""
-		while [[ $choice -lt "1" || $choice -gt "4" ]] ; do
+		while [[ $choice -lt "1" || $choice -gt "4" ]]; do
 			clear
 			banner
 			echo "How would you like to get your partition info?"
@@ -4644,7 +4646,7 @@ isdebloatstatus() {
 	if [[ ! -f $prfiles/debloat_list ]]; then
 		cd $romdir
 		debloat=""
-		cat $tools/root/bloat | while read debloat ; do
+		cat $tools/root/bloat | while read debloat; do
 			( find $debloat -maxdepth 0 2>/dev/null | sed 's/^\.\///' ) >> $prfiles/debloat_list
 		done
 	fi
@@ -4664,7 +4666,7 @@ isdebloatcustomstatus() {
 		if [[ ! -f $prfiles/debloat_custom && -s $tools/root/bloat_custom ]]; then
 			cd $romdir
 			debloatcustom=""
-			cat $tools/root/bloat_custom | while read debloatcustom ; do
+			cat $tools/root/bloat_custom | while read debloatcustom; do
 				( find $debloatcustom -maxdepth 0 2>/dev/null | sed 's/^\.\///' ) >> $prfiles/debloat_custom
 			done
 		fi
@@ -4788,7 +4790,7 @@ isknoxstatus() {
 	if [[ ! -f $prfiles/debloat_knox ]]; then
 		cd $romdir
 		debloat=""
-		cat $tools/root/knox | while read debloat ; do
+		cat $tools/root/knox | while read debloat; do
 			( find $debloat -maxdepth 0 2>/dev/null | sed 's/^\.\///' ) >> $prfiles/debloat_knox
 		done
 	fi	
@@ -5080,7 +5082,7 @@ partadd() {
 				fi
 				mv updater-script2 updater-script
 				choice=""
-				while [[ $choice -lt "1" || $choice -gt "2" ]] ; do
+				while [[ $choice -lt "1" || $choice -gt "2" ]]; do
 					clear
 					banner
 					echo "${yellowb}${redt}Data perm type:$normal"
@@ -5296,7 +5298,7 @@ rom_tools() {
 		fi
 	fi
 	choice=""
-	while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "8" ]] ; do
+	while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "8" ]]; do
 		clear
 		banner
 		echo "${bluet}CURRENT PROJECT: $greent$romname$normal"
@@ -5579,25 +5581,25 @@ rootrem() {
 		mv $romdir/system/bin/app_process64.orig $romdir/system/bin/app_process64
 	fi
 	remrootscript=""	
-	cat $tools/root/root_files | while read remrootscript ; do 
+	cat $tools/root/root_files | while read remrootscript; do
 		grep -v "$remrootscript" symlinks.orig > symlinks.orig2
 		mv symlinks.orig2 symlinks.orig
 	done
 	if [[ ! $permtype = "sparse_dat" && ! $permtype = "raw_img" ]]; then
 		remrootscript=""
-		cat $tools/root/root_files | while read remrootscript ; do 
+		cat $tools/root/root_files | while read remrootscript; do
 			grep -v "$remrootscript" $permtype > $permtype-2
 			mv $permtype-2 $permtype
 		done
 	fi
 	remrootscript=""
 	cd $romdir/META-INF/com/google/android
-	cat $tools/root/root_files | while read remrootscript ; do 
+	cat $tools/root/root_files | while read remrootscript; do
 		grep -v "$remrootscript" updater-script > updater-script2
 		mv updater-script2 updater-script
 	done
 	rootfile=""
-	cat $tools/root/root_files | while read rootfile ; do
+	cat $tools/root/root_files | while read rootfile; do
 		rm -rf $romdir/$rootfile
 	done
 }
@@ -5694,7 +5696,7 @@ update_project() {
 		if [[ $permtype = "" ]]; then
 			api=$(grep "ro.build.version.sdk" $romdir/system/build.prop | cut -d"=" -f2)
 			choice=""
-			while [[ $choice -lt "1" || $choice -gt "4" ]] ; do
+			while [[ $choice -lt "1" || $choice -gt "4" ]]; do
 				clear
 				banner
 				echo "Which perm type would you like to use?"
@@ -5997,7 +5999,7 @@ if [[ ! -f $tools/depmet ]]; then
 		echo ""
 		debinstall
 	fi
-	if [ $(java -version 2>&1 | sed 's/java version "\(.*\)\.\(.*\)\..*"/\1\2/; 1q') -lt "17" ]; then
+	if [[ $(java -version 2>&1 | sed 's/java version "\(.*\)\.\(.*\)\..*"/\1\2/; 1q') -lt "17" ]]; then
 		debpkg="openjdk-7-jre"
 		clear
 		banner
