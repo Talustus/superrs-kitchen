@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v1.0.2.7 **#
+#** SuperR's Kitchen v1.0.2.8 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -99,4 +99,3 @@ Double-click the superr file and choose "Run in Terminal" if your OS supports it
 ##**DEPENDENCIES:**##
 
 * Java 7 (or higher)
-* p7zip-full (to run 7za commands)

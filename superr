@@ -540,6 +540,25 @@ boot_tools() {
 	insecurestatus1=""
 	initdstatus1=""
 	islg=""
+	if [[ -f $romdir/system/build.prop ]]; then
+		api=$(grep "ro.build.version.sdk" $romdir/system/build.prop | cut -d"=" -f2)
+		androidversion=$(grep "ro.build.version.release" $romdir/system/build.prop | cut -d"=" -f2)
+	elif [[ -f $romdir/build.prop ]]; then
+		api=$(grep "ro.build.version.sdk" $romdir/build.prop | cut -d"=" -f2)
+		androidversion=$(grep "ro.build.version.release" $romdir/build.prop | cut -d"=" -f2)
+	else
+		clear
+		banner
+		echo "${redb}${yellowt}${bold}ERROR:$normal"
+		echo "${redt}The Android version can't be determined. Please extract"
+		echo "your Android system, or add the matching build.prop to"
+		echo "the rom directory and try again.$normal"
+		echo ""
+		read -p "Press ENTER to return to Main Menu"
+		cd $base
+		exec ./superr
+		exit
+	fi
 	if [[ -f $tools/open_bump.py ]]; then
 		if [[ -f $romdir/system/build.prop ]]; then
 			islg=$(grep "ro.product.brand" $romdir/system/build.prop | cut -d"=" -f2)
@@ -588,9 +607,7 @@ boot_tools() {
 			clear
 			banner
 			echo "${bluet}CURRENT PROJECT: $greent$romname$normal"
-			if [[ -f $romdir/system/build.prop ]]; then
-				echo "${bluet}ANDROID VERSION: $greent$androidversion$normal"
-			fi
+			echo "${bluet}ANDROID VERSION: $greent$androidversion$normal"
 			echo ""
 			echo "${yellowb}${redt}Choose boot or recovery img$normal"
 			echo ""
@@ -625,9 +642,7 @@ boot_tools() {
 			clear
 			banner
 			echo "${bluet}CURRENT PROJECT: $greent$romname$normal"
-			if [[ -f $romdir/system/build.prop ]]; then
-				echo "${bluet}ANDROID VERSION: $greent$androidversion$normal"
-			fi
+			echo "${bluet}ANDROID VERSION: $greent$androidversion$normal"
 			echo ""
 			echo "${yellowb}${redt}Boot/Recovery Tools Menu$normal"
 			echo ""
@@ -725,9 +740,7 @@ boot_tools() {
 			clear
 			banner
 			echo "${bluet}CURRENT PROJECT: $greent$romname$normal"
-			if [[ -f $romdir/system/build.prop ]]; then
-				echo "${bluet}ANDROID VERSION: $greent$androidversion$normal"
-			fi
+			echo "${bluet}ANDROID VERSION: $greent$androidversion$normal"
 			echo ""
 			echo "${yellowb}${redt}Boot/Recovery Tools Menu$normal"
 			echo ""
@@ -1094,7 +1107,7 @@ build_custom_zip() {
 		sed -i "s/#DEVICENAME/$devicename/g" $romdir/META-INF/com/google/android/updater-script	
 		if [[ $choice = "1" || $choice = "2" || $choice = "4" ]]; then
 			cd $romdir
-			find . | sed 's/\.//' | grep "^\/system\|^\/vendor" | grep -v "system\.img\|vendor\.img" | sort > $prfiles/all_files.txt
+			find . \( -path ./bootimg -o -path ./recoveryimg \) -prune -o -print | sed 's/\.//' | grep "^\/system\|^\/vendor" | grep -v "system\.img\|vendor\.img" | sort > $prfiles/all_files.txt
 			cd $prfiles
 			rm -rf symlinks
 			cp symlinks.orig symlinks
@@ -2324,7 +2337,7 @@ deodex_l() {
 	echo "----------------------------------------------------"
 	echo ""
 	cd $romdir
-	find . -name *.odex | sed 's/.\///' | grep -v "system/framework/$arch/\|system/framework/$arch2/\|system/app/\|system/priv-app/\|00_project_files" | rev | cut -d"/" -f3- | rev | sort -u >> $logs/extraodex.txt
+	find . \( -path ./bootimg -o -path ./recoveryimg \) -prune -o -print | grep .odex | sed 's/.\///' | grep -v "system/framework/$arch/\|system/framework/$arch2/\|system/app/\|system/priv-app/\|00_project_files" | rev | cut -d"/" -f3- | rev | sort -u >> $logs/extraodex.txt
 	if [[ -s $logs/extraodex.txt ]]; then
 		extraapp=""
 		line=""
@@ -2771,7 +2784,7 @@ deodex_m() {
 	echo "----------------------------------------------------"
 	echo ""
 	cd $romdir
-	find . -name *.odex | sed 's/.\///' | grep -v "system/framework/oat/\|system/framework/$arch/\|system/framework/$arch2/\|system/app/\|system/priv-app/\|00_project_files" | rev | cut -d"/" -f4- | rev | sort -u >> $logs/extraodex.txt
+	find . \( -path ./bootimg -o -path ./recoveryimg \) -prune -o -print | grep .odex | sed 's/.\///' | grep -v "system/framework/oat/\|system/framework/$arch/\|system/framework/$arch2/\|system/app/\|system/priv-app/\|00_project_files" | rev | cut -d"/" -f4- | rev | sort -u >> $logs/extraodex.txt
 	if [[ -s $logs/extraodex.txt ]]; then
 		extraapp=""
 		line=""
@@ -3288,7 +3301,7 @@ deodex_old() {
 	echo "----------------------------------------------------"
 	echo ""
 	cd $romdir
-	find . -name *.odex | sed 's/.\///' | grep -v "system/framework\|system/app/\|system/priv-app/\|00_project_files" | rev | cut -d"." -f2- | rev >> $logs/extraodex.txt
+	find . \( -path ./bootimg -o -path ./recoveryimg \) -prune -o -print | grep .odex | sed 's/.\///' | grep -v "system/framework\|system/app/\|system/priv-app/\|00_project_files" | rev | cut -d"." -f2- | rev >> $logs/extraodex.txt
 	if [[ -s $logs/extraodex.txt ]]; then
 		line=""
 		cat $logs/extraodex.txt | while read line; do
@@ -3459,7 +3472,7 @@ dozipalign() {
 	zipalign="$tools/zipalign"
 	cd $romdir
 	line=""
-	find . -type f | grep .apk | grep -v "/framework/\|00_project_files" | sed 's/^\.\///' | sort | while read line; do
+	find . \( -path ./bootimg -o -path ./recoveryimg \) -prune -o -print | grep .apk | grep -v "/framework/\|00_project_files" | sed 's/^\.\///' | sort | while read line; do
 		app=$(basename $line)
 		echo "Zipaligning $app ..."
 		$zipalign -f 4 $line $line-2 >/dev/null 2>&1
@@ -6025,7 +6038,22 @@ italic=$(tput sitm)
 stand=$(tput smso)
 underline=$(tput smul)
 normal=$(tput sgr0)
-
+if [[ ! $(which id) = "" ]]; then
+	if [[ $(id -u) = "0" ]]; then
+		userid="root"
+	fi
+elif [[ $EUID = "0" ]]; then
+	userid="root"
+fi
+if [[ $userid = "root" ]]; then
+	clear
+	banner
+	echo "${redb}${yellowt}${bold}ERROR:$normal"
+	echo "${redt}The kitchen should not be run as root$normal"
+	echo ""
+	read -p "Press ENTER to exit"
+	exit
+fi
 if [[ ! $(echo $SHELL | grep -o -m 1 bash$) = "bash" ]]; then
 	clear
 	banner
