@@ -140,37 +140,21 @@ boot_dmverity() {
 	clear
 	banner
 	echo "${bluet}Removing dm-verity ...$normal"
-	if [[ $api -ge "23" ]]; then
-		if [[ ! $(sudo grep ",verify=${byname}\/metadata" $fstab) = "" ]]; then
-			sudo sed -i "s/,verify=${byname}\/metadata//" $fstab
-		elif [[ ! $(sudo grep ",verify=${byname}" $fstab) = "" ]]; then
-			sudo sed -i "s/,verify=${byname}//" $fstab
-		elif [[ ! $(sudo grep ",verify" $fstab) = "" ]]; then
-			sudo sed -i 's/,verify//' $fstab
-		elif [[ ! $(sudo grep "verify" $fstab) = "" ]]; then
-			sudo sed -i 's/verify//' $fstab
-		fi
-	else
-		if [[ ! $(grep ",verify=${byname}\/metadata" $fstab) = "" ]]; then
-			sed -i "s/,verify=${byname}\/metadata//" $fstab
-		elif [[ ! $(grep ",verify=${byname}" $fstab) = "" ]]; then
-			sed -i "s/,verify=${byname}//" $fstab
-		elif [[ ! $(grep ",verify" $fstab) = "" ]]; then
-			sed -i 's/,verify//' $fstab
-		elif [[ ! $(grep "verify" $fstab) = "" ]]; then
-			sed -i 's/verify//' $fstab
-		fi
+	if [[ ! $(${usesudo}grep ",verify=${byname}\/metadata" $fstab) = "" ]]; then
+		${usesudo}sed -i "s/,verify=${byname}\/metadata//" $fstab
+	elif [[ ! $(${usesudo}grep ",verify=${byname}" $fstab) = "" ]]; then
+		${usesudo}sed -i "s/,verify=${byname}//" $fstab
+	elif [[ ! $(${usesudo}grep ",verify" $fstab) = "" ]]; then
+		${usesudo}sed -i 's/,verify//' $fstab
+	elif [[ ! $(${usesudo}grep "verify" $fstab) = "" ]]; then
+		${usesudo}sed -i 's/verify//' $fstab
 	fi
 }
 boot_forcee() {
 	clear
 	banner
 	echo "${bluet}Removing forceencrypt ...$normal"
-	if [[ $api -ge "23" ]]; then
-		sudo sed -i "s/forceencrypt/encryptable/" $fstab
-	else
-		sed -i "s/forceencrypt/encryptable/" $fstab
-	fi
+	${usesudo}sed -i "s/forceencrypt/encryptable/" $fstab
 }
 boot_initd() {
 	if [[ $chosenimg = "recovery" ]]; then
@@ -185,13 +169,8 @@ boot_initd() {
 	fi
 	if [[ $initdstatus = "No" ]]; then
 		cd $tools/boot
-		if [[ $api -ge "23" ]]; then
-			sudo cp -r ./initd/* $romdir
-			sudo sed -i '1iimport /init.d_support.sh' $romdir/bootimg/ramdisk/init.rc
-		else
-			cp -r ./initd/* $romdir
-			sed -i '1iimport /init.d_support.sh' $romdir/bootimg/ramdisk/init.rc
-		fi
+		${usesudo}cp -r ./initd/* $romdir
+		${usesudo}sed -i '1iimport /init.d_support.sh' $romdir/bootimg/ramdisk/init.rc
 		mkdir -p $romdir/system/etc/init.d
 		touch $romdir/system/etc/init.d/placeholder
 		if [[ -d $prfiles/init.d ]]; then
@@ -222,25 +201,14 @@ boot_initd() {
 			fi
 			cd $romdir/bootimg/ramdisk
 			rm -rf $romdir/system/etc/init.d
-			if [[ $api -ge "23" ]]; then
-				sudo rm -rf $romdir/bootimg/ramdisk/sbin/sysinit.sh
-				sudo rm -rf $romdir/bootimg/ramdisk/init.d_support.sh
-				sudo grep -v "init.d_support" init.rc > init.rc2
-				sudo mv init.rc2 init.rc
-				sudo sed -i "s/[[:blank:]]*$//" init.rc
-				sudo gawk 'BEGIN{x=1} /init.d/{x=!x;next} x{print}' init.rc > init.rc2
-				sudo sed -i '${/^$/d;}' init.rc2
-				sudo mv init.rc2 init.rc
-			else
-				rm -rf $romdir/bootimg/ramdisk/sbin/sysinit.sh
-				rm -rf $romdir/bootimg/ramdisk/init.d_support.sh
-				grep -v "init.d_support" init.rc > init.rc2
-				mv init.rc2 init.rc
-				sed -i "s/[[:blank:]]*$//" init.rc
-				gawk 'BEGIN{x=1} /init.d/{x=!x;next} x{print}' init.rc > init.rc2
-				sed -i '${/^$/d;}' init.rc2
-				mv init.rc2 init.rc
-			fi
+			${usesudo}rm -rf $romdir/bootimg/ramdisk/sbin/sysinit.sh
+			${usesudo}rm -rf $romdir/bootimg/ramdisk/init.d_support.sh
+			${usesudo}grep -v "init.d_support" init.rc > init.rc2
+			${usesudo}mv init.rc2 init.rc
+			${usesudo}sed -i "s/[[:blank:]]*$//" init.rc
+			${usesudo}gawk 'BEGIN{x=1} /init.d/{x=!x;next} x{print}' init.rc > init.rc2
+			${usesudo}sed -i '${/^$/d;}' init.rc2
+			${usesudo}mv init.rc2 init.rc
 			isinitd
 			if [[ $initdstatus = "Yes" ]]; then
 				clear
@@ -277,32 +245,17 @@ boot_insecure() {
 		return 1
 	fi
 	if [[ $insecurestatus = "No" ]]; then
-		if [[ $api -ge "23" ]]; then
-			if [[ ! $(sudo grep "ro.secure=1" $romdir/bootimg/ramdisk/default.prop) = "" ]]; then
-				sudo sed -i 's/ro\.secure=1/ro\.secure=0/' $romdir/bootimg/ramdisk/default.prop
-			else
-				sudo gawk 'a=/^#/{b=1}b&&!a{print "ro\.secure=0";b=0}1' $romdir/bootimg/ramdisk/default.prop > $romdir/bootimg/ramdisk/default.prop2
-				sudo mv $romdir/bootimg/ramdisk/default.prop2 $romdir/bootimg/ramdisk/default.prop
-			fi
-			if [[ ! $(sudo grep "ro.adb.secure=1" $romdir/bootimg/ramdisk/default.prop) = "" ]]; then
-				sudo sed -i 's/ro\.adb\.secure=1/ro\.adb\.secure=0/' $romdir/bootimg/ramdisk/default.prop
-			else
-				sudo gawk 'a=/ro\.secure=0/{b=1}b&&!a{print "ro\.adb\.secure=0";b=0}1' $romdir/bootimg/ramdisk/default.prop > $romdir/bootimg/ramdisk/default.prop2
-				sudo mv $romdir/bootimg/ramdisk/default.prop2 $romdir/bootimg/ramdisk/default.prop
-			fi
+		if [[ ! $(${usesudo}grep "ro.secure=1" $romdir/bootimg/ramdisk/default.prop) = "" ]]; then
+			${usesudo}sed -i 's/ro\.secure=1/ro\.secure=0/' $romdir/bootimg/ramdisk/default.prop
 		else
-			if [[ ! $(grep "ro.secure=1" $romdir/bootimg/ramdisk/default.prop) = "" ]]; then
-				sed -i 's/ro\.secure=1/ro\.secure=0/' $romdir/bootimg/ramdisk/default.prop
-			else
-				gawk 'a=/^#/{b=1}b&&!a{print "ro\.secure=0";b=0}1' $romdir/bootimg/ramdisk/default.prop > $romdir/bootimg/ramdisk/default.prop2
-				mv $romdir/bootimg/ramdisk/default.prop2 $romdir/bootimg/ramdisk/default.prop
-			fi
-			if [[ ! $(grep "ro.adb.secure=1" $romdir/bootimg/ramdisk/default.prop) = "" ]]; then
-				sed -i 's/ro\.adb\.secure=1/ro\.adb\.secure=0/' $romdir/bootimg/ramdisk/default.prop
-			else
-				gawk 'a=/ro\.secure=0/{b=1}b&&!a{print "ro\.adb\.secure=0";b=0}1' $romdir/bootimg/ramdisk/default.prop > $romdir/bootimg/ramdisk/default.prop2
-				mv $romdir/bootimg/ramdisk/default.prop2 $romdir/bootimg/ramdisk/default.prop
-			fi
+			${usesudo}gawk 'a=/^#/{b=1}b&&!a{print "ro\.secure=0";b=0}1' $romdir/bootimg/ramdisk/default.prop > $romdir/bootimg/ramdisk/default.prop2
+			${usesudo}mv $romdir/bootimg/ramdisk/default.prop2 $romdir/bootimg/ramdisk/default.prop
+		fi
+		if [[ ! $(${usesudo}grep "ro.adb.secure=1" $romdir/bootimg/ramdisk/default.prop) = "" ]]; then
+			${usesudo}sed -i 's/ro\.adb\.secure=1/ro\.adb\.secure=0/' $romdir/bootimg/ramdisk/default.prop
+		else
+			${usesudo}gawk 'a=/ro\.secure=0/{b=1}b&&!a{print "ro\.adb\.secure=0";b=0}1' $romdir/bootimg/ramdisk/default.prop > $romdir/bootimg/ramdisk/default.prop2
+			${usesudo}mv $romdir/bootimg/ramdisk/default.prop2 $romdir/bootimg/ramdisk/default.prop
 		fi
 		clear
 		banner
@@ -320,13 +273,8 @@ boot_insecure() {
 		echo ""
 		echo ""
 		if [[ $REPLY = "y" ]]; then
-			if [[ $api -ge "23" ]]; then
-				sudo sed -i 's/ro\.secure=0/ro\.secure=1/' $romdir/bootimg/ramdisk/default.prop
-				sudo sed -i 's/ro\.adb\.secure=0/ro\.adb\.secure=1/' $romdir/bootimg/ramdisk/default.prop
-			else
-				sed -i 's/ro\.secure=0/ro\.secure=1/' $romdir/bootimg/ramdisk/default.prop
-				sed -i 's/ro\.adb\.secure=0/ro\.adb\.secure=1/' $romdir/bootimg/ramdisk/default.prop
-			fi
+			${usesudo}sed -i 's/ro\.secure=0/ro\.secure=1/' $romdir/bootimg/ramdisk/default.prop
+			${usesudo}sed -i 's/ro\.adb\.secure=0/ro\.adb\.secure=1/' $romdir/bootimg/ramdisk/default.prop
 			clear
 			banner
 			echo "${greent}The boot.img is now secure$normal"
@@ -377,23 +325,11 @@ boot_repack() {
 	else	
 		cd $romdir/${chosenimg}img
 		if [[ -d ramdisk2 ]]; then
-			if [[ $api -ge "23" ]]; then
-				sudo rm -rf ramdisk2/sbin/ramdisk.cpio
-			else
-				rm -rf ramdisk2/sbin/ramdisk.cpio
-			fi
+			${usesudo}rm -rf ramdisk2/sbin/ramdisk.cpio
 			cd ramdisk
-			if [[ $api -ge "23" ]]; then
-				( sudo find . | sudo cpio -o -H newc -O ../ramdisk2/sbin/ramdisk.cpio ) 2>&1 >/dev/null
-			else
-				( find . | cpio -o -H newc -O ../ramdisk2/sbin/ramdisk.cpio ) 2>&1 >/dev/null
-			fi
+			( ${usesudo}find . | sudo cpio -o -H newc -O ../ramdisk2/sbin/ramdisk.cpio ) 2>&1 >/dev/null
 			cd $romdir/${chosenimg}img
-			if [[ $api -ge "23" ]]; then
-				sudo rm -rf ramdisk
-			else
-				rm -rf ramdisk
-			fi
+			${usesudo}rm -rf ramdisk
 			mv ramdisk2 ramdisk
 		fi
 		if [[ -d $romdir/${chosenimg}img/ramdisk ]]; then
@@ -413,11 +349,7 @@ boot_repack() {
 				return 1
 			fi
 			cd $romdir/${chosenimg}img/ramdisk
-			if [[ $api -ge "23" ]]; then
-				( sudo find . | sudo cpio -o -H newc | $comp > ../${chosenimg}.img-ramdisk-NEW.gz ) 2>&1 >/dev/null
-			else
-				( find . | cpio -o -H newc | $comp > ../${chosenimg}.img-ramdisk-NEW.gz ) 2>&1 >/dev/null
-			fi
+			( ${usesudo}find . | sudo cpio -o -H newc | $comp > ../${chosenimg}.img-ramdisk-NEW.gz ) 2>&1 >/dev/null
 			cd $romdir/${chosenimg}img
 			isdtb=()
 			if [[ -f ${chosenimg}.img-dtb ]]; then
@@ -446,19 +378,11 @@ boot_repack() {
 				mv temp.img $romdir/${chosenimg}.img
 				cd $romdir
 				if [[ $repackk = "" ]]; then
-					if [[ $api -ge "23" ]]; then
-						sudo rm -rf $romdir/${chosenimg}img
-					else
-						rm -rf $romdir/${chosenimg}img
-					fi
+					${usesudo}rm -rf $romdir/${chosenimg}img
 				fi
 			else
 				if [[ $repackk = "" ]]; then
-					if [[ $api -ge "23" ]]; then
-						sudo rm -rf $romdir/${chosenimg}img
-					else
-						rm -rf $romdir/${chosenimg}img
-					fi
+					${usesudo}rm -rf $romdir/${chosenimg}img
 				fi
 				clear
 				banner
@@ -473,11 +397,7 @@ boot_repack() {
 				return 1
 			fi
 		else
-			if [[ $api -ge "23" ]]; then
-				sudo rm -rf $romdir/${chosenimg}img
-			else
-				rm -rf $romdir/${chosenimg}img
-			fi
+			${usesudo}rm -rf $romdir/${chosenimg}img
 			clear
 			banner
 			echo "${redb}${yellowt}${bold}ERROR:$normal"
@@ -493,11 +413,7 @@ boot_repack() {
 	fi
 	cd $romdir
 	if [[ $repackk = "" ]]; then
-		if [[ $api -ge "23" ]]; then
-			sudo rm -rf ${chosenimg}img
-		else
-			rm -rf ${chosenimg}img
-		fi
+		${usesudo}rm -rf ${chosenimg}img
 	fi
 	if [[ $bootext = "" ]]; then	
 		clear
@@ -682,7 +598,7 @@ boot_tools() {
 		elif [[ $choice = "5" ]]; then
 			cd $romdir/bootimg/ramdisk
 			findfstab
-			if [[ $(grep "verify" $fstab) = "" ]]; then
+			if [[ $(${usesudo}grep "verify" $fstab) = "" ]]; then
 				clear
 				banner
 				echo "${redb}${yellowt}${bold}NOTICE:$normal"
@@ -704,7 +620,7 @@ boot_tools() {
 		elif [[ $choice = "6" ]]; then
 			cd $romdir/bootimg/ramdisk
 			findfstab
-			if [[ $(grep "forceencrypt" $fstab) = "" ]]; then
+			if [[ $(${usesudo}grep "forceencrypt" $fstab) = "" ]]; then
 				clear
 				banner
 				echo "${redb}${yellowt}${bold}NOTICE:$normal"
@@ -933,11 +849,7 @@ boot_unpack() {
 			fi
 			if [[ -f ${chosenimg}.img-compression ]]; then
 				cd $romdir/${chosenimg}img/ramdisk
-				if [[ $api -ge "23" ]]; then
-					( $compex $romdir/${chosenimg}img/${chosenimg}.img-ramdisk.gz | sudo cpio -i ) 2>&1 >/dev/null
-				else
-					( $compex $romdir/${chosenimg}img/${chosenimg}.img-ramdisk.gz | cpio -i ) 2>&1 >/dev/null
-				fi
+				( $compex $romdir/${chosenimg}img/${chosenimg}.img-ramdisk.gz | ${usesudo}cpio -i ) 2>&1 >/dev/null
 			fi
 		fi
 		if [[ -f $romdir/${chosenimg}img/ramdisk/sbin/ramdisk.cpio ]]; then
@@ -945,11 +857,7 @@ boot_unpack() {
 			mv ramdisk ramdisk2
 			mkdir -p ramdisk
 			cd ramdisk
-			if [[ $api -ge "23" ]]; then
-				( sudo cpio -i -F ../ramdisk2/sbin/ramdisk.cpio ) 2>&1 >/dev/null
-			else
-				( cpio -i -F ../ramdisk2/sbin/ramdisk.cpio ) 2>&1 >/dev/null
-			fi
+			( ${usesudo}cpio -i -F ../ramdisk2/sbin/ramdisk.cpio ) 2>&1 >/dev/null
 		fi
 		if [[ ! -f $romdir/${chosenimg}img/ramdisk/default.prop && ! $(xxd -p $romdir/$chosenimg.img | grep 88168858) = "" ]]; then
 			cd $romdir/${chosenimg}img
@@ -1433,11 +1341,7 @@ build_rom_zip() {
 				chosenimg="boot"
 				bootext="1"
 				boot_unpack
-				if [[ $api -ge "23" ]]; then
-					sudo rm -rf $romdir/bootimg
-				else
-					rm -rf $romdir/bootimg
-				fi
+				${usesudo}rm -rf $romdir/bootimg
 			else
 				clear
 				banner
@@ -1514,11 +1418,7 @@ build_rom_zip() {
 				chosenimg="boot"
 				bootext="1"
 				boot_unpack
-				if [[ $api -ge "23" ]]; then
-					sudo rm -rf $romdir/bootimg
-				else
-					rm -rf $romdir/bootimg
-				fi
+				${usesudo}rm -rf $romdir/bootimg
 			else
 				clear
 				banner
@@ -1625,11 +1525,7 @@ build_zip() {
 				chosenimg="boot"
 				bootext="1"
 				boot_unpack
-				if [[ $api -ge "23" ]]; then
-					sudo rm -rf $romdir/bootimg
-				else
-					rm -rf $romdir/bootimg
-				fi
+				${usesudo}rm -rf $romdir/bootimg
 			fi
 		fi
 		whatimg="system"
@@ -4166,11 +4062,7 @@ extract_new() {
 	return 1
 }
 findfstab() {
-	if [[ $api -ge "23" ]]; then
-		fstab=$(sudo find ! -type l | grep -v "goldfish\|ranchu" | grep -m 1 fstab | sed 's/\.\///')
-	else
-		fstab=$(find ! -type l | grep -v "goldfish\|ranchu" | grep -m 1 fstab | sed 's/\.\///')
-	fi
+		fstab=$(${usesudo}find ! -type l | grep -v "goldfish\|ranchu" | grep -m 1 fstab | sed 's/\.\///')
 }
 findimgsize() {	
 	cd $romdir
@@ -4442,11 +4334,7 @@ get_byname() {
 			mv $deviceloc/superr_byname2 $deviceloc/superr_byname
 			byname=$(cat $deviceloc/superr_byname)
 			rm -rf $prfiles/permtype_old
-			if [[ $api -ge "23" ]]; then
-				sudo rm -rf $romdir/bootimg
-			else
-				rm -rf $romdir/bootimg
-			fi
+			${usesudo}rm -rf $romdir/bootimg
 			if [[ $byname = "" ]]; then
 				clear
 				banner
@@ -4763,22 +4651,12 @@ isdmverity() {
 	if [[ -d $romdir/bootimg/ramdisk ]]; then
 		cd $romdir/bootimg/ramdisk
 		findfstab
-		if [[ $api -ge "23" ]]; then
-			if [[ ! $(sudo grep "verify" $fstab) = "" ]]; then
-				dmveritystatus="Yes"
-				dmveritystatus1="${redt}Enabled$normal"
-			else
-				dmveritystatus="No"
-				dmveritystatus1="${greent}Disabled$normal"
-			fi
+		if [[ ! $(${usesudo}grep "verify" $fstab) = "" ]]; then
+			dmveritystatus="Yes"
+			dmveritystatus1="${redt}Enabled$normal"
 		else
-			if [[ ! $(grep "verify" $fstab) = "" ]]; then
-				dmveritystatus="Yes"
-				dmveritystatus1="${redt}Enabled$normal"
-			else
-				dmveritystatus="No"
-				dmveritystatus1="${greent}Disabled$normal"
-			fi
+			dmveritystatus="No"
+			dmveritystatus1="${greent}Disabled$normal"
 		fi
 	fi
 }
@@ -4786,22 +4664,12 @@ isforcee() {
 	if [[ -d $romdir/bootimg/ramdisk ]]; then
 		cd $romdir/bootimg/ramdisk
 		findfstab
-		if [[ $api -ge "23" ]]; then
-			if [[ ! $(sudo grep "forceencrypt" $fstab) = "" ]]; then
-				forceestatus="Yes"
-				forceestatus1="${redt}Enabled$normal"
-			else
-				forceestatus="No"
-				forceestatus1="${greent}Disabled$normal"
-			fi
+		if [[ ! $(${usesudo}grep "forceencrypt" $fstab) = "" ]]; then
+			forceestatus="Yes"
+			forceestatus1="${redt}Enabled$normal"
 		else
-			if [[ ! $(grep "forceencrypt" $fstab) = "" ]]; then
-				forceestatus="Yes"
-				forceestatus1="${redt}Enabled$normal"
-			else
-				forceestatus="No"
-				forceestatus1="${greent}Disabled$normal"
-			fi
+			forceestatus="No"
+			forceestatus1="${greent}Disabled$normal"
 		fi
 	fi
 }
@@ -4821,45 +4689,23 @@ isfullrom() {
 isinitd() {
 	if [[ -d $romdir/bootimg/ramdisk ]]; then
 		cd $romdir/bootimg/ramdisk
-		if [[ $api -ge "23" ]]; then
-			if [[ ! $(sudo grep -r "init.d" . | grep -v "lge_fota" | grep -v "chargerlogo") = "" ]]; then
-				initdstatus="Yes"
-				initdstatus1="${greent}Enabled$normal"
-			else
-				initdstatus="No"
-				initdstatus1="${redt}Disabled$normal"
-			fi
+		if [[ ! $(${usesudo}grep -r "init.d" . | grep -v "lge_fota" | grep -v "chargerlogo") = "" ]]; then
+			initdstatus="Yes"
+			initdstatus1="${greent}Enabled$normal"
 		else
-			if [[ ! $(grep -r "init.d" . | grep -v "lge_fota" | grep -v "chargerlogo") = "" ]]; then
-				initdstatus="Yes"
-				initdstatus1="${greent}Enabled$normal"
-			else
-				initdstatus="No"
-				initdstatus1="${redt}Disabled$normal"
-			fi
+			initdstatus="No"
+			initdstatus1="${redt}Disabled$normal"
 		fi
 	fi
 }
 isinsecure() {
-	if [[ $api -ge "23" ]]; then
-		if [[ -f $romdir/bootimg/ramdisk/default.prop ]]; then
-			if [[ $(sudo grep "ro.secure=0" $romdir/bootimg/ramdisk/default.prop) = "" ]]; then
-				insecurestatus="No"
-				insecurestatus1=$(echo "${redt}Secure$normal")
-			else
-				insecurestatus="Yes"
-				insecurestatus1=$(echo "${greent}Insecure$normal")
-			fi
-		fi
-	else
-		if [[ -f $romdir/bootimg/ramdisk/default.prop ]]; then
-			if [[ $(grep "ro.secure=0" $romdir/bootimg/ramdisk/default.prop) = "" ]]; then
-				insecurestatus="No"
-				insecurestatus1=$(echo "${redt}Secure$normal")
-			else
-				insecurestatus="Yes"
-				insecurestatus1=$(echo "${greent}Insecure$normal")
-			fi
+	if [[ -f $romdir/bootimg/ramdisk/default.prop ]]; then
+		if [[ $(${usesudo}grep "ro.secure=0" $romdir/bootimg/ramdisk/default.prop) = "" ]]; then
+			insecurestatus="No"
+			insecurestatus1=$(echo "${redt}Secure$normal")
+		else
+			insecurestatus="Yes"
+			insecurestatus1=$(echo "${greent}Insecure$normal")
 		fi
 	fi
 }
@@ -5893,11 +5739,7 @@ update_project() {
 						chosenimg="boot"
 						bootext="1"
 						boot_unpack
-						if [[ $api -ge "23" ]]; then
-							sudo rm -rf $romdir/bootimg
-						else
-							rm -rf $romdir/bootimg
-						fi
+						${usesudo}rm -rf $romdir/bootimg
 					else
 						clear
 						banner
@@ -6212,6 +6054,11 @@ else
 fi
 if [[ -f $romdir/build.prop ]]; then
 	api=$(grep "ro.build.version.sdk" $romdir/build.prop | cut -d"=" -f2)
+fi
+if [[ $api -ge "23" ]]; then
+	export usesudo="sudo "
+else
+	export usesudo=""
 fi
 isfullrom
 choice=""
