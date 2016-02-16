@@ -2176,7 +2176,7 @@ deodex_l() {
 			echo ""
 			echo "Type the arch of your device and press ENTER."
 			echo ""
-			read arch 
+			read arch
 		done
 	fi
 
@@ -2189,7 +2189,7 @@ deodex_l() {
 		echo "${bluet}ARCH: $greent$arch$normal"
 		if [[ ! $arch2 = "" ]]; then
 			echo "${bluet}ARCH2: $greent$arch2$normal"
-		fi  
+		fi
 		echo ""
 		read -n 1 -p "Would you like to continue deodexing? y/n  "
 		if [[ ! $REPLY = "y" ]]; then
@@ -2589,14 +2589,14 @@ deodex_m() {
 	arm64test=$(ls -d */ | sed 's/\///' | grep -m 1 arm64$)
 	x86test=$(ls -d */ | sed 's/\///' | grep -m 1 x86$)
 	x86_64test=$(ls -d */ | sed 's/\///' | grep -m 1 x86_64$)
-	if [[ $arm64test = "arm64" && -f $framedir/arm64/boot.oat ]]; then	
+	if [[ $arm64test = "arm64" && -f $framedir/arm64/boot.oat ]]; then
 		arch="arm64"
-		if [[ $armtest = "arm" && -f $framedir/arm/boot.oat ]]; then 
+		if [[ $armtest = "arm" && -f $framedir/arm/boot.oat ]]; then
 			arch2="arm"
 		fi
-	elif [[ $x86_64test = "x86_64" && -f $framedir/x86_64/boot.oat ]]; then	
+	elif [[ $x86_64test = "x86_64" && -f $framedir/x86_64/boot.oat ]]; then
 		arch="x86_64"
-		if [[ $x86test = "x86" && -f $framedir/x86/boot.oat ]]; then 
+		if [[ $x86test = "x86" && -f $framedir/x86/boot.oat ]]; then
 			arch2="x86"
 		fi
 	elif [[ $armtest = "arm" && -f $framedir/$armtest/boot.oat ]]; then
@@ -2769,7 +2769,7 @@ deodex_m() {
 						for line in $(cat $appdir/$app/oat/$arch/classes.log); do
 							java -jar $baksmali -x -d $framedir/$arch -c boot.oat:$app.odex -d $appdir/$app/oat/$arch/ $appdir/$app/oat/$arch/$app.odex -e /system/app/$app/$line -o $appdir/$app/oat/$arch/smali
 							java -jar $smali -a $api $appdir/$app/oat/$arch/smali -o $appdir/$app/oat/$arch/$line.dex
-							rm -rf $appdir/$app/oat/$arch/smali					
+							rm -rf $appdir/$app/oat/$arch/smali
 						done
 					fi
 					cd $appdir/$app/oat/$arch
@@ -2826,7 +2826,7 @@ deodex_m() {
 							for line in $(cat $appdir/$app/oat/$arch2/classes.log); do
 								java -jar $baksmali -x -d $framedir/$arch2 -c boot.oat:$app.odex -d $appdir/$app/oat/$arch2/ $appdir/$app/oat/$arch2/$app.odex -e /system/app/$app/$line -o $appdir/$app/oat/$arch2/smali
 								java -jar $smali -a $api $appdir/$app/oat/$arch2/smali -o $appdir/$app/oat/$arch2/$line.dex
-								rm -rf $appdir/$app/oat/$arch2/smali					
+								rm -rf $appdir/$app/oat/$arch2/smali
 							done
 						fi
 						cd $appdir/$app/oat/$arch2
@@ -2945,7 +2945,7 @@ deodex_m() {
 						for line in $(cat $privdir/$privapp/oat/$arch/classes.log); do
 							java -jar $baksmali -x -d $framedir/$arch -c boot.oat:$privapp.odex -d $privdir/$privapp/oat/$arch/ $privdir/$privapp/oat/$arch/$privapp.odex -e /system/priv-app/$privapp/$line -o $privdir/$privapp/oat/$arch/smali
 							java -jar $smali -a $api $privdir/$privapp/oat/$arch/smali -o $privdir/$privapp/oat/$arch/$line.dex
-							rm -rf $privdir/$privapp/oat/$arch/smali					
+							rm -rf $privdir/$privapp/oat/$arch/smali
 						done
 					fi
 					cd $privdir/$privapp/oat/$arch
@@ -3001,7 +3001,7 @@ deodex_m() {
 							for line in $(cat $privdir/$privapp/oat/$arch2/classes.log); do
 								java -jar $baksmali -x -d $framedir/$arch2 -c boot.oat:$privapp.odex -d $privdir/$privapp/oat/$arch2/ $privdir/$privapp/oat/$arch2/$privapp.odex -e /system/priv-app/$privapp/$line -o $privdir/$privapp/oat/$arch2/smali
 								java -jar $smali -a $api $privdir/$privapp/oat/$arch2/smali -o $privdir/$privapp/oat/$arch2/$line.dex
-								rm -rf $privdir/$privapp/oat/$arch2/smali					
+								rm -rf $privdir/$privapp/oat/$arch2/smali
 							done
 						fi
 						cd $privdir/$privapp/oat/$arch2
@@ -3155,7 +3155,541 @@ deodex_m() {
 	if [[ ! $arch2 = "" ]]; then
 		rm -rf $framedir/$arch2
 	fi
-	stillodexed=$(find $romdir -name *.odex | grep -v 00_project_files)
+	cd $romdir
+	stillodexed=$(find . \( -path ./bootimg -o -path ./recoveryimg \) -prune -o -print | grep .odex | grep -v 00_project_files)
+	if [[ "$stillodexed" = "" ]]; then
+		clear
+		banner
+		echo "${greent}Deodexing complete$normal"
+		echo ""
+		echo ""
+		read -p "Press ENTER to return to ROM Tools"
+		rom_tools
+		return 1
+	else
+		clear
+		banner
+		echo "${redt}The following odex files are still in your ROM"
+		echo ""
+		echo "$yellowt$stillodexed$normal"
+		echo ""
+		read -p "Press ENTER to return to ROM Tools"
+		rom_tools
+		return 1
+	fi
+}
+deodex_m2() {
+	arch=""
+	arch2=""
+	cd $framedir
+	armtest=$(ls -d */ | sed 's/\///' | grep -m 1 arm$)
+	arm64test=$(ls -d */ | sed 's/\///' | grep -m 1 arm64$)
+	x86test=$(ls -d */ | sed 's/\///' | grep -m 1 x86$)
+	x86_64test=$(ls -d */ | sed 's/\///' | grep -m 1 x86_64$)
+	if [[ $arm64test = "arm64" && -f $framedir/arm64/boot.oat ]]; then
+		arch="arm64"
+		if [[ $armtest = "arm" && -f $framedir/arm/boot.oat ]]; then
+			arch2="arm"
+		fi
+	elif [[ $x86_64test = "x86_64" && -f $framedir/x86_64/boot.oat ]]; then
+		arch="x86_64"
+		if [[ $x86test = "x86" && -f $framedir/x86/boot.oat ]]; then
+			arch2="x86"
+		fi
+	elif [[ $armtest = "arm" && -f $framedir/$armtest/boot.oat ]]; then
+		arch="arm"
+	elif [[ $x86test = "x86" && -f $framedir/$x86test/boot.oat ]]; then
+		arch="x86"
+	else
+		while [[ ! -f $framedir/$arch/boot.oat ]]; do
+			clear
+			banner
+			echo "Configure the arch of your device."
+			echo ""
+			echo "HINT:"
+			echo "Check the framework directory, you should see"
+			echo "another directory inside. The name of it should go"
+			echo "here (ex. arm, arm64, x86)."
+			echo ""
+			echo "If you can't get past this part, check the"
+			echo "following:"
+			echo ""
+			echo "1. Make sure this is a Marshmallow rom."
+			echo "2. Make sure you typed the arch variable correctly."
+			echo "3. Make sure your rom is not already deodexed."
+			echo ""
+			echo "Type the arch of your device and press ENTER."
+			echo ""
+			read arch
+		done
+	fi
+
+	if [[ -f $framedir/$arch/boot.oat ]]; then
+		clear
+		bootoat="$framedir/$arch/boot.oat"
+		banner
+		echo "${bluet}CURRENT PROJECT: $greent$romname"
+		echo "${bluet}ANDROID VERSION: $greent$androidversion"
+		echo "${bluet}API LEVEL: $greent$api"
+		echo "${bluet}ARCH: $greent$arch$normal"
+		if [[ ! $arch2 = "" ]]; then
+			echo "${bluet}ARCH2: $greent$arch2$normal"
+		fi
+		echo ""
+		read -n 1 -p "Would you like to continue deodexing? y/n  "
+		if [[ ! $REPLY = "y" ]]; then
+			rom_tools
+			return 1
+		fi
+	else
+		clear
+		banner
+		echo "${redb}${yellowt}${bold}WARNING:$normal"
+		echo "${redt}Something went wrong. Sorry for the inconvenience.$normal"
+		echo ""
+		read -p "Press ENTER to return to ROM Tools"
+		rom_tools
+		return 1
+	fi
+
+	rm -rf $logs/*.log
+
+	clear
+	echo ""
+	echo "----------------------------------------------------"
+	echo "Start deodexing /system/app ..."
+	echo "----------------------------------------------------"
+	echo ""
+	cd $romdir
+	find . -name *.odex | sed 's/.\///' | grep -v "system/framework/oat/\|system/framework/$arch/\|system/framework/$arch2/\|system/app/\|system/priv-app/\|00_project_files" | rev | cut -d"/" -f4- | rev | sort -u >> $logs/extraodex.txt
+	if [[ -s $logs/extraodex.txt ]]; then
+		extraapp=""
+		line=""
+		cat $logs/extraodex.txt | while read line; do
+			if [[ ! $(echo "$line" | rev | cut -d"/" -f1 | rev | grep "^\.") = "" ]]; then
+				newapp=$(ls $line | grep .apk | cut -d"." -f1)
+				newappdir=$(echo "$line" | rev | cut -d"/" -f2- | rev)/$newapp
+				mv $line $newappdir
+				echo "$romdir/$newappdir $romdir/$line" >> $logs/extramv.txt
+				line2=$(echo $line | sed 's:\/:\\/:g')
+				newappdir2=$(echo $newappdir | sed 's:\/:\\/:g')
+				sed -i "s/$line2/$newappdir2/" $logs/extraodex.txt
+				line="$newappdir"
+			fi
+			extraapp=$(echo $line | rev | cut -d"/" -f1 | rev)
+			mv $romdir/$line $romdir/system/app/$extraapp
+		done
+	fi
+	cd $tools
+	app=""
+	for app in $( ls $appdir ); do
+		if [[ ! $arch2 = "" && -d $appdir/$app/oat/$arch && -d $appdir/$app/oat/$arch2 ]]; then
+			rm -rf $appdir/$app/oat/$arch2
+		fi
+		if [[ -f "$appdir/$app/oat/$arch/$app.odex.gz" ]]; then
+			cd $appdir/$app/oat/$arch
+			echo ""
+			echo "... Extracting $app.odex.gz"
+			echo ""
+			$p7z e "$appdir/$app/oat/$arch/$app.odex.gz" 2>/dev/null >> $logs/zip.log
+		elif [[ -f "$appdir/$app/oat/$arch/$app.odex.xz" ]]; then
+			cd $appdir/$app/oat/$arch
+			echo ""
+			echo "... Extracting $app.odex.xz"
+			echo ""
+			$p7z e "$appdir/$app/oat/$arch/$app.odex.xz" 2>/dev/null >> $logs/zip.log
+		fi
+	done
+	if [[ ! $arch2 = "" ]]; then
+		app=""
+		for app in $( ls $appdir ); do
+			if [[ -f "$appdir/$app/oat/$arch2/$app.odex.gz" ]]; then
+				cd $appdir/$app/oat/$arch2
+				echo ""
+				echo "... Extracting $app.odex.gz"
+				echo ""
+				$p7z e "$appdir/$app/oat/$arch2/$app.odex.gz" 2>/dev/null >> $logs/zip.log
+			elif [[ -f "$appdir/$app/oat/$arch2/$app.odex.xz" ]]; then
+				cd $appdir/$app/oat/$arch2
+				echo ""
+				echo "... Extracting $app.odex.xz"
+				echo ""
+				$p7z e "$appdir/$app/oat/$arch2/$app.odex.xz" 2>/dev/null >> $logs/zip.log
+			fi
+		done
+	fi
+
+	cd $tools
+	app=""
+	for app in $( ls $appdir ); do
+		if [[ -d "$appdir/$app/oat/$arch" ]]; then
+			if [[ $($p7z l $appdir/$app/$app.apk | grep classes.dex) = "" ]]; then
+				echo ""
+				echo "... Deodexing $app"
+				echo ""
+				( java -jar $baksmali -x -d $framedir/$arch -c boot.oat:$app.odex -d $appdir/$app/oat/$arch/ $appdir/$app/oat/$arch/$app.odex -o $appdir/$app/oat/$arch/smali 2>&1 ) >> $appdir/$app/oat/$arch/classes.log
+				if [[ $(grep classes2 $appdir/$app/oat/$arch/classes.log) = "" ]]; then
+					java -jar $smali -a $api $appdir/$app/oat/$arch/smali -o $appdir/$app/oat/$arch/classes.dex >> $logs/main.log
+					rm -rf $appdir/$app/oat/$arch/smali
+				else
+					grep "/system/app" $appdir/$app/oat/$arch/classes.log | sed "s/\/system\/app\/$app\///g" >> $appdir/$app/oat/$arch/classes2.log
+					mv $appdir/$app/oat/$arch/classes2.log $appdir/$app/oat/$arch/classes.log
+					line=""
+					for line in $(cat $appdir/$app/oat/$arch/classes.log); do
+						java -jar $baksmali -x -d $framedir/$arch -c boot.oat:$app.odex -d $appdir/$app/oat/$arch/ $appdir/$app/oat/$arch/$app.odex -e /system/app/$app/$line -o $appdir/$app/oat/$arch/smali
+						java -jar $smali -a $api $appdir/$app/oat/$arch/smali -o $appdir/$app/oat/$arch/$line.dex
+						rm -rf $appdir/$app/oat/$arch/smali
+					done
+				fi
+				cd $appdir/$app/oat/$arch
+				if [[ -f "$app.apk.dex" ]]; then
+					mv $app.apk.dex classes.dex
+				fi
+				if [[ -f "$app.apk:classes2.dex.dex" ]]; then
+					mv $app.apk:classes2.dex.dex classes2.dex
+				fi
+				if [[ -f "$app.apk:classes3.dex.dex" ]]; then
+					mv $app.apk:classes3.dex.dex classes3.dex
+				fi
+				$p7z u -tzip $appdir/$app/$app.apk classes*.dex 2>/dev/null >> $logs/zip.log
+				rm -rf $appdir/$app/oat
+				cd $tools
+			else
+				echo ""
+				echo "$app is already deodexed ..."
+				echo ""
+				rm -rf $appdir/$app/oat
+			fi
+		fi
+	done
+
+	cd $tools
+	if [[ ! $arch2 = "" ]]; then
+		app=""
+		for app in $( ls $appdir ); do
+			if [[ -d "$appdir/$app/oat/$arch2" ]]; then
+				if [[ $($p7z l $appdir/$app/$app.apk | grep classes.dex) = "" ]]; then
+					echo ""
+					echo "... Deodexing $app"
+					echo ""
+					( java -jar $baksmali -x -d $framedir/$arch2 -c boot.oat:$app.odex -d $appdir/$app/oat/$arch2/ $appdir/$app/oat/$arch2/$app.odex -o $appdir/$app/oat/$arch2/smali 2>&1 ) >> $appdir/$app/oat/$arch2/classes.log
+					if [[ $(grep classes2 $appdir/$app/oat/$arch2/classes.log) = "" ]]; then
+						java -jar $smali -a $api $appdir/$app/oat/$arch2/smali -o $appdir/$app/oat/$arch2/classes.dex >> $logs/main.log
+						rm -rf $appdir/$app/oat/$arch2/smali
+					else
+						grep "/system/app" $appdir/$app/oat/$arch2/classes.log | sed "s/\/system\/app\/$app\///g" >> $appdir/$app/oat/$arch2/classes2.log
+						mv $appdir/$app/oat/$arch2/classes2.log $appdir/$app/oat/$arch2/classes.log
+						line=""
+						for line in $(cat $appdir/$app/oat/$arch2/classes.log); do
+							java -jar $baksmali -x -d $framedir/$arch2 -c boot.oat:$app.odex -d $appdir/$app/oat/$arch2/ $appdir/$app/oat/$arch2/$app.odex -e /system/app/$app/$line -o $appdir/$app/oat/$arch2/smali
+							java -jar $smali -a $api $appdir/$app/oat/$arch2/smali -o $appdir/$app/oat/$arch2/$line.dex
+							rm -rf $appdir/$app/oat/$arch2/smali
+						done
+					fi
+					cd $appdir/$app/oat/$arch2
+					if [[ -f "$app.apk.dex" ]]; then
+						mv $app.apk.dex classes.dex
+					fi
+					if [[ -f "$app.apk:classes2.dex.dex" ]]; then
+						mv $app.apk:classes2.dex.dex classes2.dex
+					fi
+					if [[ -f "$app.apk:classes3.dex.dex" ]]; then
+						mv $app.apk:classes3.dex.dex classes3.dex
+					fi
+					$p7z u -tzip $appdir/$app/$app.apk classes*.dex 2>/dev/null >> $logs/zip.log
+					rm -rf $appdir/$app/oat
+					cd $tools
+				else
+					echo ""
+					echo "$app is already deodexed ..."
+					echo ""
+					rm -rf $appdir/$app/oat
+				fi
+			fi
+		done
+	fi
+	if [[ -s $logs/extraodex.txt ]]; then
+		extraapp=""
+		line=""
+		cat $logs/extraodex.txt | while read line; do
+			extraapp=$(echo $line | rev | cut -d"/" -f1 | rev)
+			mv $romdir/system/app/$extraapp $romdir/$line
+		done
+		line=""
+		if [[ -s $logs/extramv.txt ]]; then
+			cat $logs/extramv.txt | while read line; do
+				mv $line
+			done
+		fi
+	fi
+	rm -rf $logs/extraodex.txt
+	rm -rf $logs/extramv.txt
+	clear
+	echo ""
+	echo "----------------------------------------------------"
+	echo "Start deodexing /system/priv-app ..."
+	echo "----------------------------------------------------"
+	echo ""
+	cd $tools
+	privapp=""
+	for privapp in $( ls $privdir ); do
+		if [[ ! $arch2 = "" && -d $privdir/$privapp/oat/$arch && -d $privdir/$privapp/oat/$arch2 ]]; then
+			rm -rf $privdir/$privapp/oat/$arch2
+		fi
+		if [[ -f "$privdir/$privapp/oat/$arch/$privapp.odex.gz" ]]; then
+			cd $privdir/$privapp/oat/$arch
+			echo ""
+			echo "... Extracting $privapp.odex.gz"
+			echo ""
+			$p7z e "$privdir/$privapp/oat/$arch/$privapp.odex.gz" 2>/dev/null >> $logs/zip.log
+		elif [[ -f "$privdir/$privapp/oat/$arch/$privapp.odex.xz" ]]; then
+			cd $privdir/$privapp/oat/$arch
+			echo ""
+			echo "... Extracting $privapp.odex.xz"
+			echo ""
+			$p7z e "$privdir/$privapp/oat/$arch/$privapp.odex.xz" 2>/dev/null >> $logs/zip.log
+		fi
+	done
+	if [[ ! $arch2 = "" ]]; then
+		privapp=""
+		for privapp in $( ls $privdir ); do
+			if [[ -f "$privdir/$privapp/oat/$arch2/$privapp.odex.gz" ]]; then
+				cd $privdir/$privapp/oat/$arch2
+				echo ""
+				echo "... Extracting $privapp.odex.gz"
+				echo ""
+				$p7z e "$privdir/$privapp/oat/$arch2/$privapp.odex.gz" 2>/dev/null >> $logs/zip.log
+			elif [[ -f "$privdir/$privapp/oat/$arch2/$privapp.odex.xz" ]]; then
+				cd $privdir/$privapp/oat/$arch2
+				echo ""
+				echo "... Extracting $privapp.odex.xz"
+				echo ""
+				$p7z e "$privdir/$privapp/oat/$arch2/$privapp.odex.xz" 2>/dev/null >> $logs/zip.log
+			fi
+		done
+	fi
+	cd $tools
+	privapp=""
+	for privapp in $( ls $privdir ); do
+		if [[ -d "$privdir/$privapp/oat/$arch" ]]; then
+			if [[ $($p7z l $privdir/$privapp/$privapp.apk | grep classes.dex) = "" ]]; then
+				echo ""
+				echo "... Deodexing $privapp"
+				echo ""
+				( java -jar $baksmali -x -d $framedir/$arch -c boot.oat:$privapp.odex -d $privdir/$privapp/oat/$arch/ $privdir/$privapp/oat/$arch/$privapp.odex -o $privdir/$privapp/oat/$arch/smali 2>&1 ) >> $privdir/$privapp/oat/$arch/classes.log
+				if [[ $(grep classes2 $privdir/$privapp/oat/$arch/classes.log) = "" ]]; then
+					java -jar $smali -a $api $privdir/$privapp/oat/$arch/smali -o $privdir/$privapp/oat/$arch/classes.dex >> $logs/main.log
+					rm -rf $privdir/$privapp/oat/$arch/smali
+				else
+					grep "/system/priv-app" $privdir/$privapp/oat/$arch/classes.log | sed "s/\/system\/priv-app\/$privapp\///g" >> $privdir/$privapp/oat/$arch/classes2.log
+					mv $privdir/$privapp/oat/$arch/classes2.log $privdir/$privapp/oat/$arch/classes.log
+					line=""
+					for line in $(cat $privdir/$privapp/oat/$arch/classes.log); do
+						java -jar $baksmali -x -d $framedir/$arch -c boot.oat:$privapp.odex -d $privdir/$privapp/oat/$arch/ $privdir/$privapp/oat/$arch/$privapp.odex -e /system/priv-app/$privapp/$line -o $privdir/$privapp/oat/$arch/smali
+						java -jar $smali -a $api $privdir/$privapp/oat/$arch/smali -o $privdir/$privapp/oat/$arch/$line.dex
+						rm -rf $privdir/$privapp/oat/$arch/smali
+					done
+				fi
+				cd $privdir/$privapp/oat/$arch
+				if [[ -f "$privapp.apk.dex" ]]; then
+					mv $privapp.apk.dex classes.dex
+				fi
+				if [[ -f "$privapp.apk:classes2.dex.dex" ]]; then
+					mv $privapp.apk:classes2.dex.dex classes2.dex
+				fi
+				if [[ -f "$privapp.apk:classes3.dex.dex" ]]; then
+					mv $privapp.apk:classes3.dex.dex classes3.dex
+				fi
+				$p7z u -tzip $privdir/$privapp/$privapp.apk classes*.dex 2>/dev/null >> $logs/zip.log
+				rm -rf $privdir/$privapp/oat
+				cd $tools
+			else
+				echo ""
+				echo "$privapp is already deodexed ..."
+				echo ""
+				rm -rf $privdir/$privapp/oat
+			fi
+		fi
+	done
+	cd $tools
+	if [[ ! $arch2 = "" ]]; then
+		privapp=""
+		for privapp in $( ls $privdir ); do
+			if [[ -d "$privdir/$privapp/oat/$arch2" ]]; then
+				if [[ $($p7z l $privdir/$privapp/$privapp.apk | grep classes.dex) = "" ]]; then
+					echo ""
+					echo "... Deodexing $privapp"
+					echo ""
+					( java -jar $baksmali -x -d $framedir/$arch2 -c boot.oat:$privapp.odex -d $privdir/$privapp/oat/$arch2/ $privdir/$privapp/oat/$arch2/$privapp.odex -o $privdir/$privapp/oat/$arch2/smali 2>&1 ) >> $privdir/$privapp/oat/$arch2/classes.log
+					if [[ $(grep classes2 $privdir/$privapp/oat/$arch2/classes.log) = "" ]]; then
+						java -jar $smali -a $api $privdir/$privapp/oat/$arch2/smali -o $privdir/$privapp/oat/$arch2/classes.dex >> $logs/main.log
+						rm -rf $privdir/$privapp/oat/$arch2/smali
+					else
+						grep "/system/priv-app" $privdir/$privapp/oat/$arch2/classes.log | sed "s/\/system\/priv-app\/$privapp\///g" >> $privdir/$privapp/oat/$arch2/classes2.log
+						mv $privdir/$privapp/oat/$arch2/classes2.log $privdir/$privapp/oat/$arch2/classes.log
+						line=""
+						for line in $(cat $privdir/$privapp/oat/$arch2/classes.log); do
+							java -jar $baksmali -x -d $framedir/$arch2 -c boot.oat:$privapp.odex -d $privdir/$privapp/oat/$arch2/ $privdir/$privapp/oat/$arch2/$privapp.odex -e /system/priv-app/$privapp/$line -o $privdir/$privapp/oat/$arch2/smali
+							java -jar $smali -a $api $privdir/$privapp/oat/$arch2/smali -o $privdir/$privapp/oat/$arch2/$line.dex
+							rm -rf $privdir/$privapp/oat/$arch2/smali
+						done
+					fi
+					cd $privdir/$privapp/oat/$arch2
+					if [[ -f "$privapp.apk.dex" ]]; then
+						mv $privapp.apk.dex classes.dex
+					fi
+					if [[ -f "$privapp.apk:classes2.dex.dex" ]]; then
+						mv $privapp.apk:classes2.dex.dex classes2.dex
+					fi
+					if [[ -f "$privapp.apk:classes3.dex.dex" ]]; then
+						mv $privapp.apk:classes3.dex.dex classes3.dex
+					fi
+					$p7z u -tzip $privdir/$privapp/$privapp.apk classes*.dex 2>/dev/null >> $logs/zip.log
+					rm -rf $privdir/$privapp/oat
+					cd $tools
+				else
+					echo ""
+					echo "$privapp is already deodexed ..."
+					echo ""
+					rm -rf $privdir/$privapp/oat
+				fi
+			fi
+		done
+	fi
+	clear
+	echo ""
+	echo "----------------------------------------------------"
+	echo "Start deodexing /system/framework ..."
+	echo "----------------------------------------------------"
+	echo ""
+	cd $framedir/oat/$arch
+	if [[ ! $(ls | grep .gz | rev | cut -c 9- | rev) = "" ]]; then
+		frame=""
+		for frame in $(ls | grep .gz | rev | cut -c 9- | rev); do
+			echo ""
+			echo "... Extracting $frame.odex.gz"
+			echo ""
+			$p7z e "$frame.odex.gz" 2>/dev/null >> $logs/zip.log
+			rm -rf "$frame.odex.gz"
+		done
+	elif [[ ! $(ls | grep .xz | rev | cut -c 9- | rev) = "" ]]; then
+		frame=""
+		for frame in $(ls | grep .xz | rev | cut -c 9- | rev); do
+			echo ""
+			echo "... Extracting $frame.odex.xz"
+			echo ""
+			$p7z e $frame.odex.xz 2>/dev/null >> $logs/zip.log
+			rm -rf $frame.odex.xz
+		done
+	fi
+	cd $tools
+	( java -jar $baksmali $framedir/$arch/boot.oat 2>&1 ) | grep "/system/framework" | sed "s/\/system\/framework\///" >> $framedir/$arch/classes.log
+	cd $framedir
+	mkdir temp
+	line=""
+	for line in $(grep -v .dex$ $framedir/$arch/classes.log); do
+		if [[ -f $line ]]; then
+			mv $line temp/
+		fi
+	done
+	cd $tools
+	frame=""
+	for frame in $( ls $framedir | grep .jar$ | rev | cut -d"." -f2- | rev ); do
+		if [[ -d "$framedir/oat/$arch" ]]; then
+			if [[ $($p7z l $framedir/$frame.jar | grep classes.dex) = "" && -f $framedir/oat/$arch/$frame.odex ]]; then
+				echo ""
+				echo "... Deodexing $frame"
+				echo ""
+				( java -jar $baksmali -x -d $framedir/$arch -c boot.oat:$frame.odex -d $framedir/oat/$arch/ $framedir/oat/$arch/$frame.odex -o $framedir/oat/$arch/smali 2>&1 ) > $framedir/oat/$arch/classes2.log
+				if [[ $(grep classes2 $framedir/oat/$arch/classes2.log) = "" ]]; then
+					java -jar $smali -a $api $framedir/oat/$arch/smali -o $framedir/oat/$arch/classes.dex >> $logs/main.log
+					rm -rf $framedir/oat/$arch/smali
+				else
+					grep "/system/framework" $framedir/oat/$arch/classes2.log | sed "s/\/system\/framework\///" >> $framedir/oat/$arch/classes3.log
+					mv $framedir/oat/$arch/classes3.log $framedir/oat/$arch/classes2.log
+					line=""
+					for line in $(cat $framedir/oat/$arch/classes2.log); do
+						java -jar $baksmali -x -d $framedir/$arch -c boot.oat:$frame.odex -d $framedir/oat/$arch/ $framedir/oat/$arch/$frame.odex -e /system/framework/$line -o $framedir/oat/$arch/smali >> $logs/main.log
+						java -jar $smali -a $api $framedir/oat/$arch/smali -o $framedir/oat/$arch/$line.dex >> $logs/main.log
+						rm -rf $framedir/oat/$arch/smali
+					done
+				fi
+				cd $framedir/oat/$arch
+				if [[ -f "$frame.jar.dex" ]]; then
+					mv $frame.jar.dex classes.dex
+				fi
+				if [[ -f "$frame.jar:classes2.dex.dex" ]]; then
+					mv $frame.jar:classes2.dex.dex classes2.dex
+				fi
+				if [[ -f "$frame.jar:classes3.dex.dex" ]]; then
+					mv $frame.jar:classes3.dex.dex classes3.dex
+				fi
+				$p7z u -tzip $framedir/$frame.jar classes*.dex 2>/dev/null >> $logs/zip.log
+				rm -rf classes2.log
+				rm -rf classes*.dex
+				cd $tools
+			else
+				echo ""
+				echo "$frame is already deodexed ..."
+				echo ""
+				rm -rf $framedir/oat/$frame.odex
+			fi
+		fi
+	done
+	cd $tools
+	if [[ -f "$framedir/$arch/boot.oat" ]]; then
+		line=""
+		for line in $(cat $framedir/$arch/classes.log); do
+			line2=$(echo "$line" | rev | cut -d"." -f2- | rev)
+			if [[ ! -f $framedir/temp/$line || $($p7z l $framedir/temp/$line | grep classes.dex) = "" ]]; then
+				echo ""
+				echo "... Deodexing $line2"
+				echo ""
+				java -jar $baksmali -x -c boot.oat -d $framedir/$arch -e /system/framework/$line $framedir/$arch/boot.oat -o $framedir/temp/smali >> $logs/main.log
+				java -jar $smali -a $api $framedir/temp/smali -o $framedir/temp/$line.tmp >> $logs/main.log
+				cd $framedir/temp
+				if [[ $(echo "$line" | grep classes) = "" ]]; then
+					mv $line.tmp classes.dex
+					$p7z u -tzip $line classes.dex 2>/dev/null >> $logs/zip.log
+				elif [[ ! $(echo "$line" | grep classes2) = "" ]]; then
+					frame=$(echo "$line" | cut -d":" -f1)
+					mv $line.tmp classes2.dex
+					$p7z u -tzip $frame classes2.dex 2>/dev/null >> $logs/zip.log
+				elif [[ ! $(echo "$line" | grep classes3) = "" ]]; then
+					frame=$(echo "$line" | cut -d":" -f1)
+					mv $line.tmp classes3.dex
+					$p7z u -tzip $frame classes3.dex 2>/dev/null >> $logs/zip.log
+				fi
+				rm -rf classes*.dex
+				rm -rf smali
+				cd $tools
+			else
+				echo ""
+				echo "$line2 is already deodexed ..."
+				echo ""
+			fi
+		done
+		cd $framedir/temp
+		line=""
+		for line in $(grep -v .dex$ $framedir/$arch/classes.log); do
+			mv $line $framedir/
+		done
+	fi
+	clear
+	echo ""
+	echo "----------------------------------------------------"
+	echo "Cleaning up ..."
+	echo "----------------------------------------------------"
+	echo ""
+	echo ""
+	rm -rf $framedir/$arch
+	rm -rf $framedir/temp
+	rm -rf $framedir/oat
+	if [[ ! $arch2 = "" ]]; then
+		rm -rf $framedir/$arch2
+	fi
+	cd $romdir
+	stillodexed=$(find . \( -path ./bootimg -o -path ./recoveryimg \) -prune -o -print | grep .odex | grep -v 00_project_files)
 	if [[ "$stillodexed" = "" ]]; then
 		clear
 		banner
@@ -4811,7 +5345,11 @@ kitchen_update() {
 				echo ""
 				mkdir tmpkupdate
 				mv tools/devices tmpkupdate/
-				mv tools/updatecheck* tmpkupdate/
+				mv tools/7z tmpkupdate/
+				mv tools/7z.so tmpkupdate/
+				if [[ -f tools/updatecheck-no || -f tools/updatecheck-yes ]]; then
+					mv tools/updatecheck* tmpkupdate/
+				fi
 				if [[ -f tools/open_bump.py ]]; then
 					mv tools/open_bump.py tmpkupdate/
 				fi
@@ -4820,7 +5358,7 @@ kitchen_update() {
 				fi
 				rm -rf tools README.md superr
 				(wget $dlurl/$newzip 2>&1) >> tmpkupdate/temp.log
-				$p7z x -y $newzip 2>&1 >> tmpkupdate/temp.log
+				tmpkupdate/7z x -y $newzip 2>&1 >> tmpkupdate/temp.log
 				if [[ -f tmpkupdate/open_bump.py ]]; then
 					mv tmpkupdate/open_bump.py tools/
 				fi
@@ -4833,7 +5371,9 @@ kitchen_update() {
 						mv tools/devices/$line tmpkupdate/devices/
 					fi
 				done
-				mv tmpkupdate/updatecheck* tools/
+				if [[ -f tmpkupdate/updatecheck-no || -f tmpkupdate/updatecheck-yes ]]; then
+					mv tmpkupdate/updatecheck* tools/
+				fi
 				rm -rf $newzip 
 				rm -rf tools/devices
 				mv tmpkupdate/devices tools/
@@ -5287,7 +5827,11 @@ rom_tools() {
 			deodex_l
 			return 1
 		elif [[ $api -ge 23 ]]; then
-			deodex_m
+			if [[ -f $prfiles/deodex_m2 ]]; then
+				deodex_m2
+			else
+				deodex_m
+			fi
 			return 1
 		fi
 	# START Root/Unroot ROM
