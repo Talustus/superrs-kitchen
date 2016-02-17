@@ -2663,7 +2663,8 @@ deodex_m() {
 		rom_tools
 		return 1
 	fi
-
+	rm -rf $prfiles/deodex_*
+	touch $prfiles/deodex_m
 	rm -rf $logs/*.log
 
 	clear
@@ -2673,7 +2674,7 @@ deodex_m() {
 	echo "----------------------------------------------------"
 	echo ""
 
-	cd $tools
+	cd $tools/smali/current
 	if [[ ! -d "$framedir/$arch/odex" ]]; then
 		java -jar $oat2dex boot $framedir/$arch/boot.oat >> $logs/deodex.log
 	fi
@@ -2709,7 +2710,7 @@ deodex_m() {
 			mv $romdir/$line $romdir/system/app/$extraapp
 		done
 	fi
-	cd $tools
+	cd $tools/smali/current
 	app=""
 	for app in $( ls $appdir ); do
 		if [[ ! $arch2 = "" && -d $appdir/$app/oat/$arch && -d $appdir/$app/oat/$arch2 ]]; then
@@ -2748,7 +2749,7 @@ deodex_m() {
 		done 
 	fi
 
-	cd $tools
+	cd $tools/smali/current
 	app=""
 	for app in $( ls $appdir ); do
 		if [[ -d "$appdir/$app/oat/$arch" ]]; then	
@@ -2794,7 +2795,7 @@ deodex_m() {
 					fi
 					$p7z u -tzip $appdir/$app/$app.apk classes*.dex 2>/dev/null >> $logs/zip.log
 					rm -rf $appdir/$app/oat
-					cd $tools
+					cd $tools/smali/current
 				fi
 			else
 				echo ""
@@ -2851,7 +2852,7 @@ deodex_m() {
 						fi
 						$p7z u -tzip $appdir/$app/$app.apk classes*.dex 2>/dev/null >> $logs/zip.log
 						rm -rf $appdir/$app/oat
-						cd $tools
+						cd $tools/smali/current
 					fi
 				else
 					echo ""
@@ -2924,7 +2925,7 @@ deodex_m() {
 			fi
 		done
 	fi
-	cd $tools
+	cd $tools/smali/current
 	privapp=""
 	for privapp in $( ls $privdir ); do
 		if [[ -d "$privdir/$privapp/oat/$arch" ]]; then
@@ -2970,7 +2971,7 @@ deodex_m() {
 					fi
 					$p7z u -tzip $privdir/$privapp/$privapp.apk classes*.dex 2>/dev/null >> $logs/zip.log
 					rm -rf $privdir/$privapp/oat
-					cd $tools
+					cd $tools/smali/current
 				fi
 			else
 				echo ""
@@ -3026,7 +3027,7 @@ deodex_m() {
 						fi
 						$p7z u -tzip $privdir/$privapp/$privapp.apk classes*.dex 2>/dev/null >> $logs/zip.log
 						rm -rf $privdir/$privapp/oat
-						cd $tools
+						cd $tools/smali/current
 					fi
 				else
 					echo ""
@@ -3066,7 +3067,7 @@ deodex_m() {
 		done
 	fi
 
-	cd $tools
+	cd $tools/smali/current
 	frame=""
 	for frame in $( ls $framedir/oat/$arch | grep .odex | rev | cut -c 6- | rev ); do
 		if [[ $(echo $frame | grep classes) = "" && $($p7z l $framedir/$frame.jar | grep classes.dex) = "" ]]; then
@@ -3116,7 +3117,7 @@ deodex_m() {
 				$p7z u -tzip $framedir/$frame.jar classes*.dex 2>/dev/null >> $logs/zip.log
 				rm -rf classes2.log
 				rm -rf classes*.dex
-				cd $tools
+				cd $tools/smali/current
 			fi
 		else
 			echo ""
@@ -3262,7 +3263,8 @@ deodex_m2() {
 		rom_tools
 		return 1
 	fi
-
+	rm -rf $prfiles/deodex_*
+	touch $prfiles/deodex_m2
 	rm -rf $logs/*.log
 
 	clear
@@ -3291,7 +3293,7 @@ deodex_m2() {
 			mv $romdir/$line $romdir/system/app/$extraapp
 		done
 	fi
-	cd $tools
+	cd $tools/smali/current
 	app=""
 	for app in $( ls $appdir ); do
 		if [[ ! $arch2 = "" && -d $appdir/$app/oat/$arch && -d $appdir/$app/oat/$arch2 ]]; then
@@ -3330,7 +3332,7 @@ deodex_m2() {
 		done
 	fi
 
-	cd $tools
+	cd $tools/smali/current
 	app=""
 	for app in $( ls $appdir ); do
 		if [[ -d "$appdir/$app/oat/$arch" ]]; then
@@ -3364,7 +3366,7 @@ deodex_m2() {
 				fi
 				$p7z u -tzip $appdir/$app/$app.apk classes*.dex 2>/dev/null >> $logs/zip.log
 				rm -rf $appdir/$app/oat
-				cd $tools
+				cd $tools/smali/current
 			else
 				echo ""
 				echo "$app is already deodexed ..."
@@ -3374,7 +3376,7 @@ deodex_m2() {
 		fi
 	done
 
-	cd $tools
+	cd $tools/smali/current
 	if [[ ! $arch2 = "" ]]; then
 		app=""
 		for app in $( ls $appdir ); do
@@ -3409,7 +3411,7 @@ deodex_m2() {
 					fi
 					$p7z u -tzip $appdir/$app/$app.apk classes*.dex 2>/dev/null >> $logs/zip.log
 					rm -rf $appdir/$app/oat
-					cd $tools
+					cd $tools/smali/current
 				else
 					echo ""
 					echo "$app is already deodexed ..."
@@ -3441,7 +3443,7 @@ deodex_m2() {
 	echo "Start deodexing /system/priv-app ..."
 	echo "----------------------------------------------------"
 	echo ""
-	cd $tools
+	cd $tools/smali/current
 	privapp=""
 	for privapp in $( ls $privdir ); do
 		if [[ ! $arch2 = "" && -d $privdir/$privapp/oat/$arch && -d $privdir/$privapp/oat/$arch2 ]]; then
@@ -3479,7 +3481,7 @@ deodex_m2() {
 			fi
 		done
 	fi
-	cd $tools
+	cd $tools/smali/current
 	privapp=""
 	for privapp in $( ls $privdir ); do
 		if [[ -d "$privdir/$privapp/oat/$arch" ]]; then
@@ -3513,7 +3515,7 @@ deodex_m2() {
 				fi
 				$p7z u -tzip $privdir/$privapp/$privapp.apk classes*.dex 2>/dev/null >> $logs/zip.log
 				rm -rf $privdir/$privapp/oat
-				cd $tools
+				cd $tools/smali/current
 			else
 				echo ""
 				echo "$privapp is already deodexed ..."
@@ -3522,7 +3524,7 @@ deodex_m2() {
 			fi
 		fi
 	done
-	cd $tools
+	cd $tools/smali/current
 	if [[ ! $arch2 = "" ]]; then
 		privapp=""
 		for privapp in $( ls $privdir ); do
@@ -3557,7 +3559,7 @@ deodex_m2() {
 					fi
 					$p7z u -tzip $privdir/$privapp/$privapp.apk classes*.dex 2>/dev/null >> $logs/zip.log
 					rm -rf $privdir/$privapp/oat
-					cd $tools
+					cd $tools/smali/current
 				else
 					echo ""
 					echo "$privapp is already deodexed ..."
@@ -3593,7 +3595,7 @@ deodex_m2() {
 			rm -rf $frame.odex.xz
 		done
 	fi
-	cd $tools
+	cd $tools/smali/current
 	( java -jar $baksmali $framedir/$arch/boot.oat 2>&1 ) | grep "/system/framework" | sed "s/\/system\/framework\///" >> $framedir/$arch/classes.log
 	cd $framedir
 	mkdir temp
@@ -3603,7 +3605,7 @@ deodex_m2() {
 			mv $line temp/
 		fi
 	done
-	cd $tools
+	cd $tools/smali/current
 	frame=""
 	for frame in $( ls $framedir | grep .jar$ | rev | cut -d"." -f2- | rev ); do
 		if [[ -d "$framedir/oat/$arch" ]]; then
@@ -3638,7 +3640,7 @@ deodex_m2() {
 				$p7z u -tzip $framedir/$frame.jar classes*.dex 2>/dev/null >> $logs/zip.log
 				rm -rf classes2.log
 				rm -rf classes*.dex
-				cd $tools
+				cd $tools/smali/current
 			else
 				echo ""
 				echo "$frame is already deodexed ..."
@@ -3647,7 +3649,7 @@ deodex_m2() {
 			fi
 		fi
 	done
-	cd $tools
+	cd $tools/smali/current
 	if [[ -f "$framedir/$arch/boot.oat" ]]; then
 		line=""
 		for line in $(cat $framedir/$arch/classes.log); do
@@ -3673,7 +3675,7 @@ deodex_m2() {
 				fi
 				rm -rf classes*.dex
 				rm -rf smali
-				cd $tools
+				cd $tools/smali/current
 			else
 				echo ""
 				echo "$line2 is already deodexed ..."
@@ -3749,7 +3751,7 @@ deodex_old() {
 			( exec mv $romdir/$line* $romdir/system/app/ 2<&1 ) > /dev/null
 		done
 	fi
-	cd $tools
+	cd $tools/smali/old
 
 	app=""
 	for app in $( ls $appdir | grep .apk | rev | cut -c 5- | rev ); do
@@ -3758,8 +3760,8 @@ deodex_old() {
 				echo ""
 				echo "... Deodexing $app"
 				echo ""
-				java -jar $baksmali -a $api -d $framedir -x $appdir/$app.odex -o $appdir/smali  >> $logs/deodex.log
-				java -jar $smali -a $api $appdir/smali -o $appdir/classes.dex >> $logs/deodex.log
+				java -jar $baksmalio -a $api -d $framedir -x $appdir/$app.odex -o $appdir/smali  >> $logs/deodex.log
+				java -jar $smalio -a $api $appdir/smali -o $appdir/classes.dex >> $logs/deodex.log
 				$p7z u -tzip $appdir/$app.apk $appdir/classes.dex 2>/dev/null >> $logs/zip.log
 				rm -rf $appdir/$app.odex
 				rm -rf $appdir/smali
@@ -3780,7 +3782,7 @@ deodex_old() {
 			mv $romdir/system/app/$extraapp.apk $romdir/$line.apk
 		done
 	fi
-	cd $tools	
+	cd $tools/smali/old
 	clear
 	
 	echo ""
@@ -3796,8 +3798,8 @@ deodex_old() {
 				echo ""
 				echo "... Deodexing $privapp"
 				echo ""
-				java -jar $baksmali -a $api -d $framedir -x $privdir/$privapp.odex -o $privdir/smali  >> $logs/deodex.log
-				java -jar $smali -a $api $privdir/smali -o $privdir/classes.dex >> $logs/deodex.log
+				java -jar $baksmalio -a $api -d $framedir -x $privdir/$privapp.odex -o $privdir/smali  >> $logs/deodex.log
+				java -jar $smalio -a $api $privdir/smali -o $privdir/classes.dex >> $logs/deodex.log
 				$p7z u -tzip $privdir/$privapp.apk $privdir/classes.dex 2>/dev/null >> $logs/zip.log
 				rm -rf $privdir/$privapp.odex
 				rm -rf $privdir/smali
@@ -3825,8 +3827,8 @@ deodex_old() {
 				echo ""
 				echo "... Deodexing $frame"
 				echo ""
-				java -jar $baksmali -a $api -d $framedir -x $framedir/$frame.odex -o $framedir/smali  >> $logs/deodex.log
-				java -jar $smali -a $api $framedir/smali -o $framedir/classes.dex >> $logs/deodex.log
+				java -jar $baksmalio -a $api -d $framedir -x $framedir/$frame.odex -o $framedir/smali  >> $logs/deodex.log
+				java -jar $smalio -a $api $framedir/smali -o $framedir/classes.dex >> $logs/deodex.log
 				$p7z u -tzip $framedir/$frame.jar $framedir/classes.dex 2>/dev/null >> $logs/zip.log
 				rm -rf $framedir/smali
 				rm -rf $framedir/classes.dex
@@ -3845,8 +3847,8 @@ deodex_old() {
 				echo ""
 				echo "... Deodexing $frame2"
 				echo ""
-				java -jar $baksmali -a $api -d $framedir -x $framedir/$frame2.odex -o $framedir/smali  >> $logs/deodex.log
-				java -jar $smali -a $api $framedir/smali -o $framedir/classes.dex >> $logs/deodex.log
+				java -jar $baksmalio -a $api -d $framedir -x $framedir/$frame2.odex -o $framedir/smali  >> $logs/deodex.log
+				java -jar $smalio -a $api $framedir/smali -o $framedir/classes.dex >> $logs/deodex.log
 				$p7z u -tzip $framedir/$frame2.apk $framedir/classes.dex 2>/dev/null >> $logs/zip.log
 				rm -rf $framedir/smali
 				rm -rf $framedir/classes.dex
@@ -3912,6 +3914,11 @@ deodex_sqsh() {
 dozipalign() {
 	zipalign="$tools/zipalign"
 	cd $romdir
+	echo ""
+	choice=""
+	read -n 1 -p "Would you also like to zipalign the apk files in /framework?  y/n  " choice
+	echo ""
+	echo ""
 	line=""
 	find system vendor -name *.apk 2>/dev/null | grep -v "/framework/" | sed 's/^\.\///' | sort | while read line; do
 		app=$(basename $line)
@@ -3919,12 +3926,6 @@ dozipalign() {
 		$zipalign -f 4 $line $line-2 >/dev/null 2>&1
 		mv $line-2 $line
 	done
-	clear
-	banner
-	choice=""
-	read -n 1 -p "Would you like to zipalign the apk files in /framework?  y/n  " choice
-	echo ""
-	echo ""
 	if [[ $choice = "y" ]]; then
 		line=""
 		find system/framework -type f | grep -v "00_project_files" | grep .apk | sed 's/^\.\///' | while read line; do
@@ -5272,12 +5273,20 @@ isknoxstatus() {
 }
 isodexstatus() {
 	if [[ -d $romdir ]]; then
-		if [[ $(ls $romdir/system -R | grep -v 00_project_files | grep .odex$) = "" && ! -f $romdir/system/odex.sqsh ]]; then
+		if [[ $(find $romdir/system $romdir/vendor -name *.odex 2>/dev/null) = "" && ! -f $romdir/system/odex.sqsh ]]; then
+			mmode=""
+			if [[ $api -ge "23" ]]; then
+				if [[ -f $prfiles/deodex_m ]]; then
+					mmode=" - oat2dex"
+				elif [[ -f $prfiles/deodex_m2 ]]; then
+					mmode=" - smali/baksmali"
+				fi
+			fi
 			odexstatus="Deodexed"
-			odexstatus1=$(echo "${greent}Deodexed${normal}")
+			odexstatus1=$(echo "${greent}Deodexed$mmode$normal")
 		else
 			odexstatus="Odexed"
-			odexstatus1=$(echo "${redt}Odexed${normal}")
+			odexstatus1=$(echo "${redt}Odexed$normal")
 		fi
 	fi
 }
@@ -6427,9 +6436,11 @@ update_project() {
 }
 base=$(pwd)
 tools=$base/tools
-smali=$(ls $tools | grep ^smali)
-baksmali=$(ls $tools | grep baksmali)
-oat2dex=$(ls $tools | grep oat2dex)
+smali=$(ls $tools/smali/current | grep ^smali)
+smalio=$(ls $tools/smali/old | grep ^smali)
+baksmali=$(ls $tools/smali/current | grep baksmali)
+baksmalio=$(ls $tools/smali/old | grep baksmali)
+oat2dex=$(ls $tools/smali/current | grep oat2dex)
 p7z=$tools/7z
 superrv=$(grep "SuperR's Kitchen" README.md | gawk '{ print $4 }')
 redt=$(tput setaf 1)
