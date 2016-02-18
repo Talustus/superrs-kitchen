@@ -2225,7 +2225,7 @@ deodex_l() {
 	echo "Deoptimizing boot.oat ..."
 	echo "----------------------------------------------------"
 	echo ""
-	cd $tools
+	cd $tools/smali/current
 	if [[ ! -d "$framedir/$arch/odex" ]]; then
 		java -jar $oat2dex boot $framedir/$arch/boot.oat >> $logs/deodex.log
 	fi
@@ -2260,7 +2260,7 @@ deodex_l() {
 			mv $romdir/$line $romdir/system/app/$extraapp
 		done
 	fi
-	cd $tools
+	cd $tools/smali/current
 	app=""
 	for app in $( ls $appdir ); do
 		if [[ ! $arch2 = "" && -d $appdir/$app/$arch && -d $appdir/$app/$arch2 ]]; then
@@ -2299,7 +2299,7 @@ deodex_l() {
 		done 
 	fi
 
-	cd $tools
+	cd $tools/smali/current
 	app=""
 	for app in $( ls $appdir ); do
 		if [[ -d "$appdir/$app/$arch" ]]; then	
@@ -2415,7 +2415,7 @@ deodex_l() {
 			fi
 		done
 	fi
-	cd $tools
+	cd $tools/smali/current
 	privapp=""
 	for privapp in $( ls $privdir ); do
 		if [[ -d "$privdir/$privapp/$arch" ]]; then
@@ -2497,7 +2497,7 @@ deodex_l() {
 		done
 	fi
 
-	cd $tools
+	cd $tools/smali/current
 	frame=""
 	for frame in $( ls $framedir/$arch | grep .odex | rev | cut -c 6- | rev ); do
 		if [[ $(echo $frame | grep classes) = "" && $($p7z l $framedir/$frame.jar | grep classes.dex) = "" ]]; then
