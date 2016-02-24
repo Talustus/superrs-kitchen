@@ -4516,7 +4516,7 @@ extract_new() {
 						echo "Would you like to include the files from cache.img"
 						read -n 1 -p "in your rom? y/n  " choice
 						if [[ $choice = "y" ]]; then
-							cscfull=$(find ./cache -name *csc*.zip | sed 's/^\.\///')
+							cscfull=$(find cache -name *csc*.zip)
 							cscdir=$(echo $cscfull | rev | cut -d"/" -f2- | rev)
 							csczip=$(echo $cscfull | rev | cut -d"/" -f1 | rev)
 							cd $cscdir
@@ -4584,15 +4584,16 @@ extract_new() {
 				cp -r $tools/updater/META-INF $romdir
 			fi
 			cd $romdir
-			find . -type l -printf "%l\n" | sed 's/^/symlink(\"/; s/$/\", /' > $prfiles/sym1.txt
-			find . -type l | sed 's/\./\"/; s/$/\");/' > $prfiles/sym2.txt
-			cd $prfiles
-			paste -d '' sym1.txt sym2.txt > sym3.txt
-			sort sym3.txt > symlinks
-			cp symlinks symlinks.orig
-			rm -rf sym1.txt sym2.txt sym3.txt debloat_test debloat_test_custom
-			cd $romdir
-			find . -type l -exec rm -f {} \;		
+			link1=$(find system vendor -type l -printf "%l\n" 2>/dev/null | sed 's/^/symlink(\"/; s/$/\", /')
+			link2=$(find system vendor -type l 2>/dev/null | sed 's/^/\"\//; s/$/\");/')
+			paste -d '' <(echo "$link1") <(echo "$link2") | sort > $prfiles/symlinks
+			cp $prfiles/symlinks $prfiles/symlinks.orig
+			rm -rf debloat_test debloat_test_custom
+			if [[ -d vendor ]]; then
+				find system vendor -type l -exec rm -f {} \;
+			else
+				find system -type l -exec rm -f {} \;
+			fi
 			update_project
 		else
 			clear
@@ -4637,7 +4638,7 @@ findimgsize() {
 			adb=$tools/adb
 			clear
 			banner
-			echo "${bluet}** Enable usb debugging on your Android device in $whatimg settings"
+			echo "${bluet}** Enable usb debugging on your Android device in system settings"
 			echo "** Plug in your device$normal"
 			echo ""
 			echo "$redb${yellowt}This operation requires root.$normal"
@@ -4657,7 +4658,6 @@ findimgsize() {
 			if [[ -f $deviceloc/superr_mmc ]]; then
 				imgblock=$(grep $whatimg $deviceloc/superr_mmc | gawk '{ print $1 }' | cut -d"/" -f4)
 			else
-				$adb "wait-for-device"
 				if [[ -f $deviceloc/superr_appbyname ]]; then
 					if [[ $whatimg = "system" ]]; then
 						newname="APP"
@@ -4666,7 +4666,6 @@ findimgsize() {
 					elif [[ $whatimg = "data" ]]; then
 						newname="UDA"
 					fi
-					imgblock=$($adb shell su -C "ls -al $byname2" | grep $newname | gawk '{ print $8 }' | cut -d"/" -f4)
 				elif [[ -f $deviceloc/superr_capbyname ]]; then
 					if [[ $whatimg = "system" ]]; then
 						newname="SYSTEM"
@@ -4675,10 +4674,11 @@ findimgsize() {
 					elif [[ $whatimg = "data" ]]; then
 						newname="USERDATA"
 					fi
-					imgblock=$($adb shell su -C "ls -al $byname2" | grep $newname | gawk '{ print $8 }' | cut -d"/" -f4)
 				else
-					imgblock=$($adb shell su -C "ls -al $byname2" | grep $whatimg | gawk '{ print $8 }' | cut -d"/" -f4)
+					newname="$whatimg"
 				fi
+				$adb "wait-for-device"
+				imgblock=$($adb shell su -C "ls -al $byname2" | grep $newname | tr " " "\n" | grep mmcblk | cut -d"/" -f4)
 			fi
 			$adb "wait-for-device"
 			rawsize=$($adb shell "cat /proc/partitions" | grep "$imgblock" | gawk '{ print $3 }')
@@ -4865,16 +4865,16 @@ get_byname() {
 			fi
 			cd $romdir/bootimg/ramdisk
 			findfstab
-			if [[ ! $(grep "by-name/system" $fstab) = "" ]]; then
-				grep "by-name/system" $fstab | gawk '{ print $1 }' | sed 's/\/system//' > $deviceloc/superr_byname2
-			elif [[ ! $(grep "by-name/SYSTEM" $fstab) = "" ]]; then
-				grep "by-name/SYSTEM" $fstab | gawk '{ print $1 }' | sed 's/\/SYSTEM//' > $deviceloc/superr_byname2
+			if [[ ! $(${usesudo}grep "by-name/system" $fstab) = "" ]]; then
+				${usesudo}grep "by-name/system" $fstab | gawk '{ print $1 }' | sed 's/\/system//' > $deviceloc/superr_byname2
+			elif [[ ! $(${usesudo}grep "by-name/SYSTEM" $fstab) = "" ]]; then
+				${usesudo}grep "by-name/SYSTEM" $fstab | gawk '{ print $1 }' | sed 's/\/SYSTEM//' > $deviceloc/superr_byname2
 				touch $deviceloc/superr_capbyname
-			elif [[ ! $(grep "by-name/APP" $fstab) = "" ]]; then
-				grep "by-name/APP" $fstab | gawk '{ print $1 }' | sed 's/\/APP//' > $deviceloc/superr_byname2
+			elif [[ ! $(${usesudo}grep "by-name/APP" $fstab) = "" ]]; then
+				${usesudo}grep "by-name/APP" $fstab | gawk '{ print $1 }' | sed 's/\/APP//' > $deviceloc/superr_byname2
 				touch $deviceloc/superr_appbyname
-			elif [[ ! $(grep "by-name/userdata" $fstab) = "" ]]; then
-				grep "by-name/userdata" $fstab | gawk '{ print $1 }' | sed 's/\/userdata//' > $deviceloc/superr_byname2
+			elif [[ ! $(${usesudo}grep "by-name/userdata" $fstab) = "" ]]; then
+				${usesudo}grep "by-name/userdata" $fstab | gawk '{ print $1 }' | sed 's/\/userdata//' > $deviceloc/superr_byname2
 			fi
 			sed -i 's:/:\\/:g' $deviceloc/superr_byname2
 			mv $deviceloc/superr_byname2 $deviceloc/superr_byname
@@ -5676,7 +5676,11 @@ partimg() {
 			( $tools/make_ext4fs -T 0 -l $datsize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
 		fi
 	fi
-	find . -type l -exec rm -f {} \;
+	if [[ -d vendor ]]; then
+		find system vendor -type l -exec rm -f {} \;
+	else
+		find system -type l -exec rm -f {} \;
+	fi
 }
 part_setup() {	
 	if [[ -f $deviceloc/superr_mmc ]]; then
@@ -6314,7 +6318,13 @@ update_project() {
 		elif [[ $permtype = "set_metadata" ]]; then
 			if [[ ! -f $prfiles/file_contexts2 ]]; then
 				if [[ ! -f $prfiles/file_contexts ]]; then
-					if [[ -f $romdir/boot.img ]]; then
+					if [[ -f $romdir/bootimg/ramdisk/file_contexts ]]; then
+						${usesudo}cp $romdir/bootimg/ramdisk/file_contexts $prfiles/
+						if [[ $api -ge "23" ]]; then
+							myuser=$(echo "$(whoami | gawk '{ print $1 }')")
+							${usesudo}chown -h $myuser:$myuser $prfiles/file_contexts
+						fi
+					elif [[ -f $romdir/boot.img ]]; then
 						chosenimg="boot"
 						bootext="1"
 						boot_unpack
