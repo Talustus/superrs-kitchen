@@ -327,7 +327,7 @@ boot_repack() {
 		if [[ -d ramdisk2 ]]; then
 			${usesudo}rm -rf ramdisk2/sbin/ramdisk.cpio
 			cd ramdisk
-			( ${usesudo}find . | sudo cpio -o -H newc -O ../ramdisk2/sbin/ramdisk.cpio ) 2>&1 >/dev/null
+			( ${usesudo}find . | ${usesudo}cpio -o -H newc -O ../ramdisk2/sbin/ramdisk.cpio ) 2>&1 >/dev/null
 			cd $romdir/${chosenimg}img
 			${usesudo}rm -rf ramdisk
 			mv ramdisk2 ramdisk
@@ -349,7 +349,7 @@ boot_repack() {
 				return 1
 			fi
 			cd $romdir/${chosenimg}img/ramdisk
-			( ${usesudo}find . | sudo cpio -o -H newc | $comp > ../${chosenimg}.img-ramdisk-NEW.gz ) 2>&1 >/dev/null
+			( ${usesudo}find . | ${usesudo}cpio -o -H newc | $comp > ../${chosenimg}.img-ramdisk-NEW.gz ) 2>&1 >/dev/null
 			cd $romdir/${chosenimg}img
 			isdtb=()
 			if [[ -f ${chosenimg}.img-dtb ]]; then
@@ -361,7 +361,7 @@ boot_repack() {
 			fi
 			buildimg=1
 			buildimg=$(
-				$tools/mkbootimg --kernel ${chosenimg}.img-zImage \
+				$tools/mkbootimg${cyg} --kernel ${chosenimg}.img-zImage \
 				--ramdisk ${chosenimg}.img-ramdisk-NEW.gz \
 				--cmdline "$(cat ${chosenimg}.img-cmdline)" \
 				"${isboard[@]}" \
@@ -825,7 +825,7 @@ boot_unpack() {
 	fi		
 	if [[ -f $romdir/${chosenimg}.img ]]; then
 		mkdir -p $romdir/${chosenimg}img
-		$tools/unpackbootimg -i $romdir/${chosenimg}.img -o $romdir/${chosenimg}img 2>&1 >/dev/null
+		$tools/unpackbootimg${cyg} -i $romdir/${chosenimg}.img -o $romdir/${chosenimg}img 2>&1 >/dev/null
 		cd $romdir/${chosenimg}img
 		mkdir -p ramdisk
 		comp=""
@@ -907,12 +907,10 @@ boot_unpack() {
 	fi
 	bootext=""
 	if [[ ! -f $prfiles/file_contexts && -f $romdir/${chosenimg}img/ramdisk/file_contexts ]]; then
+		${usesudo}cp $romdir/${chosenimg}img/ramdisk/file_contexts $prfiles/
 		if [[ $api -ge "23" ]]; then
 			myuser=$(echo "$(whoami | gawk '{ print $1 }')")
-			sudo cp $romdir/${chosenimg}img/ramdisk/file_contexts $prfiles/
-			sudo chown -h $myuser:$myuser $prfiles/file_contexts
-		else
-			cp $romdir/${chosenimg}img/ramdisk/file_contexts $prfiles/
+			${usesudo}chown -h $myuser:$myuser $prfiles/file_contexts
 		fi
 	fi
 }
@@ -1794,7 +1792,7 @@ debinstall() {
 			banner
 			echo "${bluet}Installing dependencies ...$normal"
 			echo ""
-			sudo apt-get -qq -y install $debpkg
+			${usesudo2}apt-get -qq -y install $debpkg
 			rm -rf depinstall
 			if [[ ! $(echo $debpkg | grep build-essential) = "" ]]; then
 				touch $tools/depbuild
@@ -2123,7 +2121,7 @@ delete_project() {
 		if [[ $delapi -ge "23" ]] && [[ -d superr_$delrom/bootimg || -d superr_$delrom/recoveryimg ]]; then
 			echo ""
 			echo ""
-			sudo rm -rf superr_$delrom
+			${usesudo2}rm -rf superr_$delrom
 		else
 			rm -rf superr_$delrom
 		fi
@@ -3912,7 +3910,6 @@ deodex_sqsh() {
 	sqshdir=""
 }
 dozipalign() {
-	zipalign="$tools/zipalign"
 	cd $romdir
 	echo ""
 	choice=""
@@ -3973,7 +3970,6 @@ extract_new() {
 		exec ./superr
 		return 1			
 	fi
-	adb=$tools/adb
 	cd $romdir
 	romzip=""
 	romtar=""
@@ -4422,7 +4418,7 @@ extract_new() {
 		clear
 		banner
 		echo "${bluet}Converting sparse chunks to system.img ...$normal"
-		$tools/simg2img *chunk* system.img.raw
+		$tools/simg2img${cyg} *chunk* system.img.raw
 		offset=$(LANG=C grep -aobP -m1 '\x53\xEF' system.img.raw | head -1 | gawk '{print $1 - 1080}')
 		( dd if=system.img.raw of=system.img ibs=$offset skip=1 2>&1 ) > $logs/main.log
 		rm -rf system.img.raw
@@ -4635,7 +4631,6 @@ findimgsize() {
 		done
 		#START Device through adb shell
 		if [[ $choice = "1" ]]; then
-			adb=$tools/adb
 			clear
 			banner
 			echo "${bluet}** Enable usb debugging on your Android device in system settings"
@@ -4727,7 +4722,7 @@ findimgsize() {
 				clear
 				banner
 				echo "${bluet}Checking/Converting if $whatimg.img is sparse ...$normal"
-				$tools/simg2img $whatimg.img $whatimg.img-2 2>/dev/null
+				$tools/simg2img${cyg} $whatimg.img $whatimg.img-2 2>/dev/null
 				if [[ ! -s $whatimg.img-2 ]]; then
 					rm -rf $whatimg.img-2
 				else
@@ -5057,7 +5052,7 @@ imgextract() {
 	clear
 	banner
 	echo "${bluet}Checking/Converting if ${extractimg}.img is sparse ...$normal"
-	$tools/simg2img ${extractimg}.img ${extractimg}.img-2 2>/dev/null
+	$tools/simg2img${cyg} ${extractimg}.img ${extractimg}.img-2 2>/dev/null
 	if [[ ! -s ${extractimg}.img-2 ]]; then
 		rm -rf ${extractimg}.img-2
 	else
@@ -5068,14 +5063,14 @@ imgextract() {
 	echo "${bluet}Mounting ${extractimg}.img ...$normal"
 	mkdir output
 	echo ""
-	sudo mount -t ext4 -o loop ${extractimg}.img output/
+	${usesudo2}mount -t ext4 -o loop ${extractimg}.img output/
 	clear
 	banner
 	echo "${bluet}Copying files to ${extractimg} directory ...$normal"
 	mkdir ${extractimg}
-	sudo cp -r ./output/* $romdir/${extractimg}
-	sudo umount output/
-	sudo chown -hR $myuser:$myuser $romdir/${extractimg}
+	${usesudo2}cp -r ./output/* $romdir/${extractimg}
+	${usesudo2}umount output/
+	${usesudo2}chown -hR $myuser:$myuser $romdir/${extractimg}
 	rm -rf $romdir/output
 	find $romdir/${extractimg} ! -perm -g+r | grep -v lost+found | sed 's/^\.\///' | while read line; do
 		chmod 400 $line
@@ -5101,7 +5096,6 @@ install_binaries() {
 	rm -rf $tools/unpackbootimg
 	rm -rf $tools/boot/mtk-tools/mkbootimg
 	rm -rf $tools/simg2img
-	rm -rf $tools/img2simg
 	rm -rf $tools/make_ext4fs
 	rm -rf $tools/sepolicy-inject
 	(wget $dlurl/$osbit-bit_binaries.zip 2>&1) >/dev/null
@@ -5305,8 +5299,8 @@ isrootstatus() {
 }
 kitchen_update() {
 	cd $base
-	internet=$(ping -q -w 1 -c 1 $(/sbin/ip r | grep default | cut -d ' ' -f 3) > /dev/null && echo "ok" || echo "error")
-	if [[ $internet = "ok" ]]; then		
+	internet=$(wget -q --tries=10 --timeout=20 --spider http://google.com; echo $?)
+	if [[ $internet = "0" ]]; then		
 		clear
 		banner
 		echo "${bluet}Checking for updates ...$normal"
@@ -5350,7 +5344,6 @@ kitchen_update() {
 				rm -rf $tools/unpackbootimg
 				rm -rf $tools/boot/mtk-tools/mkbootimg
 				rm -rf $tools/simg2img
-				rm -rf $tools/img2simg
 				rm -rf $tools/make_ext4fs
 				git pull
 				clear
@@ -5630,7 +5623,7 @@ partsdat() {
 	mkdir -p $romdir/tmpsparse
 	mv ${whatpart}_new.img $romdir/tmpsparse/${whatpart}_new.img
 	cd $romdir/tmpsparse
-	( $tools/rimg2sdat ${whatpart}_new.img 2>&1 ) >> $logs/main.log
+	( $tools/rimg2sdat${cyg} ${whatpart}_new.img 2>&1 ) >> $logs/main.log
 	rm -rf ${whatpart}_new.img
 	touch $whatpart.patch.dat
 	if [[ ! $whatpart = "system" ]]; then
@@ -5660,20 +5653,20 @@ partimg() {
 	if [[ -f $prfiles/file_contexts ]]; then	
 		echo "${bluet}Creating raw $whatpart.img ...$normal"	
 		if [[ $whatpart = "system" ]]; then
-			( $tools/make_ext4fs -T 0 -S $prfiles/file_contexts -l $syssize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
+			( $tools/make_ext4fs${cyg} -T 0 -S $prfiles/file_contexts -l $syssize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
 		elif [[ $whatpart = "vendor" ]]; then
-			( $tools/make_ext4fs -T 0 -S $prfiles/file_contexts -l $vensize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
+			( $tools/make_ext4fs${cyg} -T 0 -S $prfiles/file_contexts -l $vensize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
 		elif [[ $whatpart = "data" ]]; then
-			( $tools/make_ext4fs -T 0 -S $prfiles/file_contexts -l $datsize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
+			( $tools/make_ext4fs${cyg} -T 0 -S $prfiles/file_contexts -l $datsize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
 		fi
 	else
 		echo "${bluet}Creating raw $whatpart.img ...$normal"	
 		if [[ $whatpart = "system" ]]; then
-			( $tools/make_ext4fs -T 0 -l $syssize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
+			( $tools/make_ext4fs${cyg} -T 0 -l $syssize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
 		elif [[ $whatpart = "vendor" ]]; then
-			( $tools/make_ext4fs -T 0 -l $vensize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
+			( $tools/make_ext4fs${cyg} -T 0 -l $vensize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
 		elif [[ $whatpart = "data" ]]; then
-			( $tools/make_ext4fs -T 0 -l $datsize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
+			( $tools/make_ext4fs${cyg} -T 0 -l $datsize -a $whatpart ${whatpart}_new.img ${whatpart}/ 2>&1 ) >> $logs/main.log
 		fi
 	fi
 	if [[ -d vendor ]]; then
@@ -6174,7 +6167,6 @@ update_project() {
 	if [[ -f $prfiles/permtype ]]; then
 		permtype=$(cat $prfiles/permtype)
 	fi
-	adb=$tools/adb
 	if [[ ! $(grep "#SIGNATURE" $romdir/META-INF/com/google/android/updater-script) = "" ]]; then
 		cd $prfiles
 		get_sig
@@ -6451,7 +6443,6 @@ smalio=$(ls $tools/smali/old | grep ^smali)
 baksmali=$(ls $tools/smali/current | grep baksmali)
 baksmalio=$(ls $tools/smali/old | grep baksmali)
 oat2dex=$(ls $tools/smali/current | grep oat2dex)
-p7z=$tools/7z
 superrv=$(grep "SuperR's Kitchen" README.md | gawk '{ print $4 }')
 redt=$(tput setaf 1)
 redb=$(tput setb 4)
@@ -6471,21 +6462,41 @@ italic=$(tput sitm)
 stand=$(tput smso)
 underline=$(tput smul)
 normal=$(tput sgr0)
-if [[ ! $(which id) = "" ]]; then
-	if [[ $(id -u) = "0" ]]; then
+if [[ ! $(uname -s | grep "CYGWIN\|cygwin\|Cygwin") = "" ]]; then
+	export usesudo2=""
+	rm -rf $tools/dependencies2
+	cp $tools/dependencies $tools/dependencies2
+	sed -i '/sudo/d; 1i7z' $tools/dependencies2
+	dependencies="dependencies2"
+	cyg=".exe"
+	adb=$tools/adb.exe
+	zipalign=$tools/zipalign.exe
+	p7z=7z
+else
+	cyg=""
+	dependencies="dependencies"
+	usesudo2="sudo "
+	adb=$tools/adb
+	zipalign=$tools/zipalign
+	p7z=$tools/7z
+fi
+if [[ $cyg = "" ]]; then
+	if [[ ! $(which id) = "" ]]; then
+		if [[ $(id -u) = "0" ]]; then
+			userid="root"
+		fi
+	elif [[ $EUID = "0" ]]; then
 		userid="root"
 	fi
-elif [[ $EUID = "0" ]]; then
-	userid="root"
-fi
-if [[ $userid = "root" ]]; then
-	clear
-	banner
-	echo "${redb}${yellowt}${bold}ERROR:$normal"
-	echo "${redt}The kitchen should not be run as root$normal"
-	echo ""
-	read -p "Press ENTER to exit"
-	exit
+	if [[ $userid = "root" ]]; then
+		clear
+		banner
+		echo "${redb}${yellowt}${bold}ERROR:$normal"
+		echo "${redt}The kitchen should not be run as root$normal"
+		echo ""
+		read -p "Press ENTER to exit"
+		exit
+	fi
 fi
 if [[ ! $(echo $SHELL | grep -o -m 1 bash$) = "bash" ]]; then
 	clear
@@ -6504,14 +6515,14 @@ if [[ ! -f $tools/depmet ]]; then
 	cd $tools
 	depcheck=""
 	line=""
-	for line in $(cat dependencies); do
+	for line in $(cat $dependencies); do
 		depcheck=$(which $line)
 		if [[ $depcheck = "" ]]; then
 			echo "$line " >> depinstall
 		fi
 	done
 	if [[ -s depinstall ]]; then
-		debpkg="binutils coreutils cpio e2fsprogs findutils gawk gcc grep gzip iproute2 iputils-ping libc-bin lzop make mount ncurses-bin perl-base sed tar util-linux vim-common xz-utils"
+		debpkg="binutils coreutils cpio e2fsprogs findutils gawk gcc grep gzip libc-bin lzop make mount ncurses-bin perl-base sed tar util-linux vim-common wget xz-utils"
 		depinstall=$(cat depinstall)
 		clear
 		banner
@@ -6520,7 +6531,14 @@ if [[ ! -f $tools/depmet ]]; then
 		echo ""
 		echo "$yellowt$depinstall$normal"
 		echo ""
-		debinstall
+		if [[ $cyg = "" ]]; then
+			debinstall
+		else
+			clear
+			banner
+			read -p "Press ENTER to exit"
+			exit
+		fi
 	fi
 	if [[ $(java -version 2>&1 | sed 's/java version "\(.*\)\.\(.*\)\..*"/\1\2/; 1q') -lt "17" ]]; then
 		debpkg="openjdk-7-jre"
@@ -6533,7 +6551,14 @@ if [[ ! -f $tools/depmet ]]; then
 		echo ""
 		echo "${yellowt}$debpkg$normal"
 		echo ""
-		debinstall
+		if [[ $cyg = "" ]]; then
+			debinstall
+		else
+			clear
+			banner
+			read -p "Press ENTER to exit"
+			exit
+		fi
 	fi
 	if [[ ! $(ldd rimg2sdat | grep "not found") = "" ]]; then
 		clear
@@ -6542,12 +6567,11 @@ if [[ ! -f $tools/depmet ]]; then
 		echo "${redt}sparse_dat will not work properly on 32-bit Linux.$normal"
 		echo ""
 		read -p "Press ENTER to continue"
-		exit
 	fi
 	touch depmet
 	cd $base
 fi
-if [[ ! -x $tools/mkbootimg || ! -x $tools/unpackbootimg || ! -x $tools/simg2img || ! -x $tools/img2simg || ! -x $tools/make_ext4fs ]]; then
+if [[ $cyg = "" ]] && [[ ! -x $tools/mkbootimg || ! -x $tools/unpackbootimg || ! -x $tools/simg2img || ! -x $tools/make_ext4fs ]]; then
 	clear
 	banner
 	echo "${bluet}Preparing tools ...$normal"
@@ -6557,11 +6581,10 @@ if [[ ! -x $tools/mkbootimg || ! -x $tools/unpackbootimg || ! -x $tools/simg2img
 	( make 2>&1 ) >/dev/null
 	( mv mkbootimg/mkbootimg $tools/ 2>&1 ) >/dev/null
 	( mv mkbootimg/unpackbootimg $tools/ 2>&1 ) >/dev/null
-	( mv core/libsparse/img2simg $tools/ 2>&1 ) >/dev/null
 	( mv core/libsparse/simg2img $tools/ 2>&1 ) >/dev/null
 	( mv extras/ext4_utils/make_ext4fs $tools/ 2>&1 ) >/dev/null
 	( make clean 2>&1 ) >/dev/null
-	if [[ ! -x $tools/mkbootimg || ! -x $tools/unpackbootimg || ! -x $tools/simg2img || ! -x $tools/img2simg || ! -x $tools/make_ext4fs ]]; then
+	if [[ ! -x $tools/mkbootimg || ! -x $tools/unpackbootimg || ! -x $tools/simg2img || ! -x $tools/make_ext4fs ]]; then
 		clear
 		banner
 		debpkg="bison gperf build-essential zlib1g-dev zlib1g-dev:i386 g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev libsepol1-dev dpkg-dev"
@@ -6581,6 +6604,19 @@ if [[ ! -x $tools/mkbootimg || ! -x $tools/unpackbootimg || ! -x $tools/simg2img
 	rm -rf $tools/boot/mtk-tools/mkbootimg
 	ln -s $tools/mkbootimg $tools/boot/mtk-tools/mkbootimg
 	cd $base
+fi
+if [[ ! $cyg = "" ]] && [[ ! -f $tools/mkbootimg.exe || ! -f $tools/unpackbootimg.exe || ! -f $tools/simg2img.exe || ! -f $tools/make_ext4fs.exe || ! -f $tools/rimg2sdat.exe || ! -f $tools/adb.exe || ! -f $tools/zipalign.exe || ! -f $tools/7z.exe ]]; then
+	clear
+	banner
+	echo "${redb}${yellowt}${bold}ERROR:$normal"
+	echo "${redt}You need to add the following cygwin compatible files to"
+	echo "${yellowt}$tools$normal"
+	echo ""
+	echo "mkbootimg.exe, unpackbootimg.exe, simg2img.exe, make_ext4fs.exe,"
+	echo "rimg2sdat.exe, adb.exe, zipalign.exe"
+	echo ""
+	read -p "Press ENTER to exit"
+	exit
 fi
 if [[ -f $tools/updatecheck-yes && $updatecheck = "" ]]; then
 	kitchen_update
@@ -6646,7 +6682,7 @@ fi
 if [[ -f $romdir/build.prop ]]; then
 	api=$(grep "ro.build.version.sdk" $romdir/build.prop | cut -d"=" -f2)
 fi
-if [[ $api -ge "23" ]]; then
+if [[ $api -ge "23" && $(uname -s | grep "CYGWIN\|cygwin\|Cygwin") = "" ]]; then
 	export usesudo="sudo "
 else
 	export usesudo=""
