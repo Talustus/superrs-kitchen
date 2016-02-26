@@ -5097,13 +5097,41 @@ install_binaries() {
 	rm -rf $tools/boot/mtk-tools/mkbootimg
 	rm -rf $tools/simg2img
 	rm -rf $tools/make_ext4fs
-	rm -rf $tools/sepolicy-inject
 	(wget $dlurl/$osbit-bit_binaries.zip 2>&1) >/dev/null
 	$p7z x -y $osbit-bit_binaries.zip 2>&1 >/dev/null
 	rm -rf $osbit-bit_binaries.zip
 	clear
 	banner
 	echo "${greent}$osbit-bit binaries have been installed$normal"
+	echo ""
+	read -p "Press ENTER to return to main menu"
+	exec ./superr
+	return 1
+}
+install_cygwin_binaries() {
+	cd $base
+	dlurl="https://bitbucket.org/superr/superrs-kitchen/downloads"
+	echo ""
+	read -n 1 -p "Would you like to install the cygwin binaries now? y/n  "	
+	if [[ ! $REPLY = "y" ]]; then
+		exit
+	fi
+	clear
+	banner
+	echo "${bluet}Installing cygwin binaries ...$normal"
+	rm -rf $tools/mkbootimg.exe
+	rm -rf $tools/unpackbootimg.exe
+	rm -rf $tools/simg2img.exe
+	rm -rf $tools/make_ext4fs.exe
+	rm -rf $tools/adb.exe
+	rm -rf $tools/zipalign.exe
+	rm -rf $tools/ring2sdat.exe
+	(wget $dlurl/cygwin_binaries.zip 2>&1) >/dev/null
+	$p7z x -y cygwin_binaries.zip 2>&1 >/dev/null
+	rm -rf cygwin_binaries.zip
+	clear
+	banner
+	echo "${greent}cygwin binaries have been installed$normal"
 	echo ""
 	read -p "Press ENTER to return to main menu"
 	exec ./superr
@@ -5371,7 +5399,11 @@ kitchen_update() {
 				fi
 				rm -rf tools README.md superr
 				(wget $dlurl/$newzip 2>&1) >> tmpkupdate/temp.log
-				tmpkupdate/7z x -y $newzip 2>&1 >> tmpkupdate/temp.log
+				if [[ $cyg = "" ]]; then
+					tmpkupdate/7z x -y $newzip 2>&1 >> tmpkupdate/temp.log
+				else
+					$p7z x -y $newzip 2>&1 >> tmpkupdate/temp.log
+				fi
 				if [[ -f tmpkupdate/open_bump.py ]]; then
 					mv tmpkupdate/open_bump.py tools/
 				fi
@@ -6560,7 +6592,7 @@ if [[ ! -f $tools/depmet ]]; then
 			exit
 		fi
 	fi
-	if [[ ! $(ldd rimg2sdat | grep "not found") = "" ]]; then
+	if [[ $cyg = "" && ! $(ldd rimg2sdat | grep "not found") = "" ]]; then
 		clear
 		banner
 		echo "${redb}${yellowt}${bold}WARNING:$normal"
@@ -6605,18 +6637,17 @@ if [[ $cyg = "" ]] && [[ ! -x $tools/mkbootimg || ! -x $tools/unpackbootimg || !
 	ln -s $tools/mkbootimg $tools/boot/mtk-tools/mkbootimg
 	cd $base
 fi
-if [[ ! $cyg = "" ]] && [[ ! -f $tools/mkbootimg.exe || ! -f $tools/unpackbootimg.exe || ! -f $tools/simg2img.exe || ! -f $tools/make_ext4fs.exe || ! -f $tools/rimg2sdat.exe || ! -f $tools/adb.exe || ! -f $tools/zipalign.exe || ! -f $tools/7z.exe ]]; then
+if [[ ! $cyg = "" ]] && [[ ! -f $tools/mkbootimg.exe || ! -f $tools/unpackbootimg.exe || ! -f $tools/simg2img.exe || ! -f $tools/make_ext4fs.exe || ! -f $tools/rimg2sdat.exe || ! -f $tools/adb.exe || ! -f $tools/zipalign.exe ]]; then
 	clear
 	banner
 	echo "${redb}${yellowt}${bold}ERROR:$normal"
-	echo "${redt}You need to add the following cygwin compatible files to"
+	echo "${redt}You need to add the following cygwin compatible binaries to"
 	echo "${yellowt}$tools$normal"
 	echo ""
 	echo "mkbootimg.exe, unpackbootimg.exe, simg2img.exe, make_ext4fs.exe,"
 	echo "rimg2sdat.exe, adb.exe, zipalign.exe"
 	echo ""
-	read -p "Press ENTER to exit"
-	exit
+	install_cygwin_binaries
 fi
 if [[ -f $tools/updatecheck-yes && $updatecheck = "" ]]; then
 	kitchen_update
@@ -6682,7 +6713,7 @@ fi
 if [[ -f $romdir/build.prop ]]; then
 	api=$(grep "ro.build.version.sdk" $romdir/build.prop | cut -d"=" -f2)
 fi
-if [[ $api -ge "23" && $(uname -s | grep "CYGWIN\|cygwin\|Cygwin") = "" ]]; then
+if [[ $api -ge "23" && $cyg = "" ]]; then
 	export usesudo="sudo "
 else
 	export usesudo=""
