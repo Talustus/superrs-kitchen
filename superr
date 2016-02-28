@@ -5385,43 +5385,32 @@ kitchen_update() {
 				echo "${bluet}Updating ...$normal"
 				echo ""
 				mkdir tmpkupdate
-				mv tools/devices tmpkupdate/
-				mv tools/7z tmpkupdate/
-				mv tools/7z.so tmpkupdate/
-				if [[ -f tools/updatecheck-no || -f tools/updatecheck-yes ]]; then
-					mv tools/updatecheck* tmpkupdate/
-				fi
-				if [[ -f tools/open_bump.py ]]; then
-					mv tools/open_bump.py tmpkupdate/
-				fi
-				if [[ -f tools/root/bloat_custom ]]; then
-					mv tools/root/bloat_custom tmpkupdate/
-				fi
-				rm -rf tools README.md superr
+				mv tools tmpkupdate/
+				rm -rf README.md superr
 				(wget $dlurl/$newzip 2>&1) >> tmpkupdate/temp.log
 				if [[ $cyg = "" ]]; then
-					tmpkupdate/7z x -y $newzip 2>&1 >> tmpkupdate/temp.log
+					tmpkupdate/tools/7z x -y $newzip 2>&1 >> tmpkupdate/temp.log
 				else
 					$p7z x -y $newzip 2>&1 >> tmpkupdate/temp.log
 				fi
-				if [[ -f tmpkupdate/open_bump.py ]]; then
-					mv tmpkupdate/open_bump.py tools/
+				if [[ -f tmpkupdate/tools/open_bump.py ]]; then
+					mv tmpkupdate/tools/open_bump.py tools/
 				fi
-				if [[ -f tmpkupdate/bloat_custom ]]; then
-					mv tmpkupdate/bloat_custom tools/root/
+				if [[ -s tmpkupdate/tools/root/bloat_custom ]]; then
+					mv tmpkupdate/tools/root/bloat_custom tools/root/
+				fi
+				if [[ -f tmpkupdate/tools/updatecheck-no || -f tmpkupdate/tools/updatecheck-yes ]]; then
+					mv tmpkupdate/tools/updatecheck* tools/
 				fi
 				line=""
 				for line in $(ls tools/devices | sort); do
-					if [[ ! -d tmpkupdate/devices/$line ]]; then
-						mv tools/devices/$line tmpkupdate/devices/
+					if [[ ! -d tmpkupdate/tools/devices/$line ]]; then
+						mv tools/devices/$line tmpkupdate/tools/devices/
 					fi
 				done
-				if [[ -f tmpkupdate/updatecheck-no || -f tmpkupdate/updatecheck-yes ]]; then
-					mv tmpkupdate/updatecheck* tools/
-				fi
 				rm -rf $newzip 
 				rm -rf tools/devices
-				mv tmpkupdate/devices tools/
+				mv tmpkupdate/tools/devices tools/
 				rm -rf tmpkupdate
 				clear
 				banner
@@ -6495,12 +6484,12 @@ stand=$(tput smso)
 underline=$(tput smul)
 normal=$(tput sgr0)
 if [[ ! $(uname -s | grep "CYGWIN\|cygwin\|Cygwin") = "" ]]; then
-	export usesudo2=""
 	rm -rf $tools/dependencies2
 	cp $tools/dependencies $tools/dependencies2
 	sed -i '/sudo/d; 1i7z' $tools/dependencies2
 	dependencies="dependencies2"
 	cyg=".exe"
+	usesudo2=""
 	adb=$tools/adb.exe
 	zipalign=$tools/zipalign.exe
 	p7z=7z
