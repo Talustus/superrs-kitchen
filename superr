@@ -4715,7 +4715,18 @@ findimgsize() {
 			imgsize=""
 			echo "Enter $whatimg partition size in bytes:"
 			read whatsize
-			export ${imgfile}size="$whatsize"
+			if [[ $whatsize = "" ]]; then
+				clear
+				banner
+				echo "$redb$yellowt${bold}ERROR:$normal"
+				echo "${redt}$whatimg partition size is empty. Please try again.$normal"
+				echo ""
+				read -p "Press ENTER to return to Build menu"
+				build_zip
+				return 1
+			else
+				export ${imgfile}size="$whatsize"
+			fi
 		#START $whatimg.img
 		elif [[ $choice = "4" ]]; then
 			if [[ -f $whatimg.img ]]; then
@@ -4733,7 +4744,7 @@ findimgsize() {
 				clear
 				banner
 				echo "$redb$yellowt${bold}ERROR:$normal"
-				echo "${redt}There is no $whatimg.img"
+				echo "${redt}There is no $whatimg.img$normal"
 				echo ""
 				read -p "Press ENTER to return to Build menu"
 				build_zip
@@ -4900,10 +4911,21 @@ get_byname() {
 			echo "${yellowt}/dev/block/bootdevice/by-name$normal"
 			echo ""
 			read -e byname2
-			echo "$byname2" > $deviceloc/superr_byname
-			sed -i 's:/:\\/:g' $deviceloc/superr_byname
-			byname=$(cat $deviceloc/superr_byname)
-			rm -rf $prfiles/permtype_old
+			if [[ $byname2 = "" ]]; then
+				clear
+				banner
+				echo "$redb$yellowt${bold}ERROR:$normal"
+				echo "${redt}by-name directory is empty.$normal"
+				echo ""
+				read -p "Press ENTER to continue"
+				get_byname
+				return 1
+			else
+				echo "$byname2" > $deviceloc/superr_byname
+				sed -i 's:/:\\/:g' $deviceloc/superr_byname
+				byname=$(cat $deviceloc/superr_byname)
+				rm -rf $prfiles/permtype_old
+			fi
 		fi
 		# START Create mmc from recovery.img
 		if [[ $choice = "4" ]]; then
@@ -5126,9 +5148,11 @@ install_cygwin_binaries() {
 	rm -rf $tools/adb.exe
 	rm -rf $tools/zipalign.exe
 	rm -rf $tools/ring2sdat.exe
+	rm -rf $tools/boot/mtk-tools/mkbootimg.exe
 	(wget $dlurl/cygwin_binaries.zip 2>&1) >/dev/null
 	$p7z x -y cygwin_binaries.zip 2>&1 >/dev/null
 	rm -rf cygwin_binaries.zip
+	ln -s $tools/mkbootimg.exe $tools/boot/mtk-tools/mkbootimg.exe
 	clear
 	banner
 	echo "${greent}cygwin binaries have been installed$normal"
@@ -5371,6 +5395,7 @@ kitchen_update() {
 				rm -rf $tools/mkbootimg
 				rm -rf $tools/unpackbootimg
 				rm -rf $tools/boot/mtk-tools/mkbootimg
+				rm -rf $tools/boot/mtk-tools/mkbootimg.exe
 				rm -rf $tools/simg2img
 				rm -rf $tools/make_ext4fs
 				git pull
@@ -6457,14 +6482,6 @@ update_project() {
 		partadd
 	fi
 }
-base=$(pwd)
-tools=$base/tools
-smali=$(ls $tools/smali/current | grep ^smali)
-smalio=$(ls $tools/smali/old | grep ^smali)
-baksmali=$(ls $tools/smali/current | grep baksmali)
-baksmalio=$(ls $tools/smali/old | grep baksmali)
-oat2dex=$(ls $tools/smali/current | grep oat2dex)
-superrv=$(grep "SuperR's Kitchen" README.md | gawk '{ print $4 }')
 redt=$(tput setaf 1)
 redb=$(tput setb 4)
 greent=$(tput setaf 2)
@@ -6483,6 +6500,26 @@ italic=$(tput sitm)
 stand=$(tput smso)
 underline=$(tput smul)
 normal=$(tput sgr0)
+if [[ ! $(echo $(pwd) | grep " ") = "" ]]; then
+	clear
+	banner
+	echo "${redb}${yellowt}${bold}ERROR:$normal"
+	echo "${redt}The kitchen must be run in a path without spaces.$normal"
+	echo ""
+	echo "${bluet}CURRENT PATH:"
+	echo "${yellowt}$(pwd)$normal"
+	echo ""
+	read -p "Press ENTER to exit"
+	exit
+fi
+base=$(pwd)
+tools=$base/tools
+smali=$(ls $tools/smali/current | grep ^smali)
+smalio=$(ls $tools/smali/old | grep ^smali)
+baksmali=$(ls $tools/smali/current | grep baksmali)
+baksmalio=$(ls $tools/smali/old | grep baksmali)
+oat2dex=$(ls $tools/smali/current | grep oat2dex)
+superrv=$(grep "SuperR's Kitchen" README.md | gawk '{ print $4 }')
 if [[ ! $(uname -s | grep "CYGWIN\|cygwin\|Cygwin") = "" ]]; then
 	rm -rf $tools/dependencies2
 	cp $tools/dependencies $tools/dependencies2
@@ -6561,7 +6598,7 @@ if [[ ! -f $tools/depmet ]]; then
 			exit
 		fi
 	fi
-	if [[ $(java -version 2>&1 | sed 's/java version "\(.*\)\.\(.*\)\..*"/\1\2/; 1q') -lt "17" ]]; then
+	if [[ $(which java) = "" || $(java -version 2>&1 | grep "java version" | cut -d'"' -f2 | cut -c 1,3) -lt "17" ]]; then
 		debpkg="openjdk-7-jre"
 		clear
 		banner
