@@ -60,17 +60,17 @@ int usage(void)
 {
     fprintf(stderr,"usage: mkbootimg\n"
             "       --kernel <filename>\n"
-            "       --ramdisk <filename>\n"
+            "       [ --ramdisk <filename> ]\n"
             "       [ --second <2ndbootloader-filename> ]\n"
             "       [ --cmdline <kernel-commandline> ]\n"
             "       [ --board <boardname> ]\n"
             "       [ --base <address> ]\n"
             "       [ --pagesize <pagesize> ]\n"
+            "       [ --dt <filename> ]\n"
             "       [ --kernel_offset <base offset> ]\n"
             "       [ --ramdisk_offset <base offset> ]\n"
             "       [ --second_offset <base offset> ]\n"
             "       [ --tags_offset <base offset> ]\n"
-            "       [ --dt <filename> ]\n"
             "       [ --id ]\n"
             "       -o|--output <filename>\n"
             );
@@ -207,11 +207,6 @@ int main(int argc, char **argv)
         return usage();
     }
 
-    if(ramdisk_fn == 0) {
-        fprintf(stderr,"error: no ramdisk image specified\n");
-        return usage();
-    }
-
     if(strlen(board) >= BOOT_NAME_SIZE) {
         fprintf(stderr,"error: board name too large\n");
         return usage();
@@ -241,7 +236,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if(!strcmp(ramdisk_fn,"NONE")) {
+    if(ramdisk_fn == 0) {
         ramdisk_data = 0;
         hdr.ramdisk_size = 0;
     } else {
@@ -314,7 +309,6 @@ int main(int argc, char **argv)
     if (get_id) {
         print_id((uint8_t *) hdr.id, sizeof(hdr.id));
     }
-
     return 0;
 
 fail:
