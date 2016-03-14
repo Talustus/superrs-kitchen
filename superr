@@ -843,6 +843,9 @@ boot_unpack() {
 			elif [[ $(lzma -t ${chosenimg}.img-ramdisk.gz 2>/dev/null; echo $?) = "0" ]]; then
 				comp="lzma -9"
 				compex="lzma -dc"
+			elif [[ ! $(file ${chosenimg}.img-ramdisk.gz | grep LZ4) = "" ]]; then
+				comp="lz4 -9"
+				compex="lz4 -dc"
 			fi
 			if [[ ! $comp = "" ]]; then
 				echo "$comp" > ${chosenimg}.img-compression
@@ -4321,7 +4324,7 @@ extract_new() {
 		moveoldfiles
 	fi
 	if [[ ! $romzip = "" ]]; then	
-		if [[ $($p7z l $romzip | grep "META-INF/com/google/android/updater-script") = "" && $($p7z l $romzip | grep "system.ext4.tar") = "" ]]; then
+		if [[ $($p7z l $romzip | grep "META-INF/com/google/android/updater-script") = "" && $($p7z l $romzip | grep "system.ext4.tar\|tar.md5") = "" ]]; then
 			clear
 			banner
 			echo "${redb}${yellowt}${bold}WARNING:$normal"
@@ -4378,6 +4381,33 @@ extract_new() {
 			$p7z e $romzip system.ext4.tar.a boot.img 2>/dev/null >> $logs/zip.log
 			romzip=""
 			romtar="system.ext4.tar.a"
+		elif [[ ! $($p7z l $romzip | grep tar.md5) = "" ]]; then
+			clear
+			banner
+			tarmd5=$($p7z l $romzip | grep tar.md5 | gawk '{ print $6 }')
+			tarnomd5=$(echo $tarmd5 | rev | cut -d"." -f2- | rev)
+			echo "${bluet}Extracting $tarnomd5 ...$normal"
+			$p7z e $romzip $tarmd5 2>/dev/null >> $logs/zip.log
+			mv $tarmd5 $tarnomd5
+			clear
+			banner
+			echo "${bluet}Extracting system.img and boot.img ...$normal"
+			tar -xf $tarnomd5 system.img boot.img 2>/dev/null >> $logs/zip.log
+			if [[ -f system.img ]]; then
+				rm -rf $tarnomd5
+			else
+				clear
+				banner
+				echo "$redb$yellowt${bold}ERROR:$normal"
+				echo "${redt}Something went wrong wiith the extraction.$normal"
+				echo ""
+				read -p "Press ENTER to return to Main Menu"
+				cd $base
+				exec ./superr
+				exit
+			fi
+			romzip=""
+			romimg="system.img"
 		fi			
 		if [[ ! $romzip = "" ]]; then	
 			clear
@@ -6640,7 +6670,7 @@ if [[ ! -f $tools/depmet ]]; then
 		fi
 	done
 	if [[ -s depinstall ]]; then
-		debpkg="binutils coreutils cpio e2fsprogs findutils gawk gcc grep gzip libc-bin lzop make mount ncurses-bin perl-base sed tar util-linux vim-common wget xz-utils"
+		debpkg="binutils coreutils cpio e2fsprogs findutils gawk gcc grep gzip libc-bin liblz4-tool lzop make mount ncurses-bin perl-base sed tar util-linux vim-common wget xz-utils"
 		depinstall=$(cat depinstall)
 		clear
 		banner
@@ -6658,7 +6688,7 @@ if [[ ! -f $tools/depmet ]]; then
 			exit
 		fi
 	fi
-	if [[ $(which java) = "" || $(java -version 2>&1 | grep "java version" | cut -d'"' -f2 | cut -c 1,3) -lt "17" ]]; then
+	if [[ $(which java) = "" || $(java -version 2>&1 | grep "java version\|openjdk version" | cut -d'"' -f2 | cut -c 1,3) -lt "17" ]]; then
 		debpkg="openjdk-7-jre"
 		clear
 		banner
