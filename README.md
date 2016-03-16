@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v1.0.4.0 **#
+#** SuperR's Kitchen v1.0.4.1 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -52,6 +52,7 @@
 * Option to check for updates when the kitchen starts  
 
 **Root/unroot**  
+**Deodex N Preview ROMs**  
 **Deodex Marshmallow ROMs**  
 **Deodex Lollipop ROMs**  
 **Deodex KitKat and earlier ROMs**  
