@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v1.0.4.1 **#
+#** SuperR's Kitchen v1.0.4.2 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -14,6 +14,8 @@
 * Sparse chunk files found in Moto and other factory firmware  
 * cm12 + roms with sparse dat files  
 * Zips that contain system.img and boot.img  
+* Samsung firmware zips that contain tar.md5 file  
+* Official Nexus firmware tgz  
 
 **Create flashable zips of many varieties including:**
 

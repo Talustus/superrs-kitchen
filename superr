@@ -4501,33 +4501,36 @@ extract_new() {
 	romchunk=""
 	romimg=""
 	romwin=""
-	ls | grep .zip >> $prfiles/findextract
-	ls | grep .tar | grep -m 1 .tar >> $prfiles/findextract
-	ls | grep .win | grep -v boot | grep -m 1 .win >> $prfiles/findextract
-	ls | grep -m 1 chunk >> $prfiles/findextract
-	ls | grep .img | grep -v "boot\|recovery\|chunk" >> $prfiles/findextract
+	ls | grep .zip$ >> $prfiles/findextract
+	ls | grep .tar$ | grep -m 1 .tar >> $prfiles/findextract
+	ls | grep .win$ | grep -v boot | grep -m 1 .win >> $prfiles/findextract
+	ls | grep -m 1 chunk$ >> $prfiles/findextract
+	ls | grep .img$ | grep -v "boot\|recovery\|chunk" >> $prfiles/findextract
 	ls | grep system.ext4$ >> $prfiles/findextract
+	ls | grep *-*-factory-*.tgz >> $prfiles/findextract
 	if [[ ! $(cat $prfiles/findextract | wc -l) -gt "1" ]]; then
-		if [[ ! $(grep .zip $prfiles/findextract) = "" ]]; then
+		if [[ ! $(grep .zip$ $prfiles/findextract) = "" ]]; then
 			romzip=$(cat $prfiles/findextract)
-		elif [[ ! $(grep .tar $prfiles/findextract) = "" ]]; then
+		elif [[ ! $(grep .tar$ $prfiles/findextract) = "" ]]; then
 			romtar=$(cat $prfiles/findextract)
-		elif [[ ! $(grep .win $prfiles/findextract) = "" ]]; then
+		elif [[ ! $(grep .win$ $prfiles/findextract) = "" ]]; then
 			romwin=$(cat $prfiles/findextract)
 		elif [[ ! $(grep chunk $prfiles/findextract) = "" ]]; then
 			romchunk=$(cat $prfiles/findextract)
-		elif [[ ! $(grep .img $prfiles/findextract) = "" ]]; then
+		elif [[ ! $(grep .img$ $prfiles/findextract) = "" ]]; then
 			romimg=$(cat $prfiles/findextract)
 		elif [[ ! $(grep system.ext4$ $prfiles/findextract) = "" ]]; then
 			mv system.ext4 system.img
 			romimg="system.img"
+		elif [[ ! $(grep *-*-factory-*.tgz $prfiles/findextract) = "" ]]; then
+			romtgz=$(cat $prfiles/findextract)
 		fi
 		rm -rf $prfiles/findextract
 	else
 		findproject=""
 		findproject=( $(cat $prfiles/findextract) )
 		prchoice="ext"
-		while [[ $romzip = "" && $romtar = "" && $romwin = "" && $romchunk = "" && $romimg = "" ]]; do
+		while [[ $romzip = "" && $romtar = "" && $romwin = "" && $romchunk = "" && $romimg = "" && $romtgz = "" ]]; do
 			banner
 			echo "${greenb}Extract Options:$normal"
 			echo ""
@@ -4541,15 +4544,15 @@ extract_new() {
 				rm -rf $prfiles/findextract
 				exit
 			else 
-				if [[ ! $(echo $project | grep .zip) = "" ]]; then
+				if [[ ! $(echo $project | grep .zip$) = "" ]]; then
 					romzip="$project"
-				elif [[ ! $(echo $project | grep .tar) = "" ]]; then
+				elif [[ ! $(echo $project | grep .tar$) = "" ]]; then
 					romtar="$project"
-				elif [[ ! $(echo $project | grep .win) = "" ]]; then
+				elif [[ ! $(echo $project | grep .win$) = "" ]]; then
 					romwin="$project"
 				elif [[ ! $(echo $project | grep chunk) = "" ]]; then
 					romchunk="$project"
-				elif [[ ! $(echo $project | grep .img) = "" ]]; then
+				elif [[ ! $(echo $project | grep .img$) = "" ]]; then
 					romimg="$project"
 					if [[ $romimg = "system.img.ext4" ]]; then
 						mv $romdir/system.img.ext4 $romdir/system.img
@@ -4561,12 +4564,14 @@ extract_new() {
 						mv $romdir/system.ext4 $romdir/system.img
 						romimg="system.img"
 					fi
+				elif [[ ! $(echo $project | grep .tgz$) = "" ]]; then
+					romtgz="$project"
 				fi
 				rm -rf $prfiles/findextract
 			fi
 		done
 	fi
-	if [[ $romzip = "" && $romtar = "" && $romimg = "" && $romwin = "" && $romchunk = "" ]]; then	
+	if [[ $romzip = "" && $romtar = "" && $romimg = "" && $romwin = "" && $romchunk = "" && $romtgz = "" ]]; then	
 		choice=""
 		while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "2" ]]; do
 			banner
@@ -4774,7 +4779,7 @@ extract_new() {
 		fi
 	fi
 	banner
-	read -n 1 -p "Should we extract $yellowt$romzip$romtar$romimg$romchunk$romwin$normal to ${greent}$romname$normal? y/n  "
+	read -n 1 -p "Should we extract $yellowt$romzip$romtar$romimg$romchunk$romwin$romtgz$normal to ${greent}$romname$normal? y/n  "
 	echo ""
 	echo ""
 	if [[ ! $REPLY = "y" ]]; then
@@ -4984,6 +4989,37 @@ extract_new() {
 				tar -xf $line >/dev/null 2>/dev/null >> $logs/zip.log
 			fi
 		done
+	fi
+	if [[ ! $romtgz = "" ]]; then
+		banner
+		echo "${bluet}Checking firmware package ...$normal"
+		tar -tzf $romtgz 2>&1 > $logs/tarlist
+		if [[ $(cat $logs/tarlist | grep "image-") = "" ]]; then
+			rm -rf $logs/tarlist
+			banner
+			echo "$yellowb$redt${bold}ERROR:$normal"
+			echo "${redt}The tgz file does not appear to be"
+			echo "official Nexus firmware.$normal"
+			echo ""
+			read -p "Press ENTER to return to Main Menu"
+			cd $base
+			exec ./superr
+			return 1
+		fi
+		eximage=$(cat $logs/tarlist | grep "image-")
+		exdir=$(dirname $eximage)
+		banner
+		echo "${bluet}Extracting files ...$normal"
+		tar -xf $romtgz $eximage 2>&1 > $logs/zip.log
+		mv $romdir/$exdir/* $romdir/
+		rm -rf $exdir
+		imagezip=$(ls | grep image-*.zip)
+		banner
+		echo "${bluet}Extracting images ...$normal"
+		$p7z e $imagezip system.img boot.img vendor.img 2>&1 > $logs/zip.log
+		rm -rf $imagezip $logs/tarlist
+		romtgz=""
+		romimg="system.img"
 	fi
 	if [[ ! $romimg = "" ]]; then
 		romimgdir=$(echo $romimg | rev | cut -d'.' -f2- | rev)
