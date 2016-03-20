@@ -33,6 +33,7 @@ rev
 rm
 sed
 sort
+strings
 sudo
 tar
 touch

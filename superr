@@ -868,8 +868,16 @@ boot_unpack() {
 		return 1
 	fi
 	bootext=""
-	if [[ ! -f $prfiles/file_contexts && -f $romdir/${chosenimg}img/ramdisk/file_contexts ]]; then
-		${usesudo}cp $romdir/${chosenimg}img/ramdisk/file_contexts $prfiles/
+	if [[ ! -f $prfiles/file_contexts ]] && [[ -f $romdir/${chosenimg}img/ramdisk/file_contexts || -f $romdir/${chosenimg}img/ramdisk/file_contexts.bin ]]; then
+		if [[ -f $romdir/${chosenimg}img/ramdisk/file_contexts ]]; then
+			${usesudo}cp $romdir/${chosenimg}img/ramdisk/file_contexts $prfiles/
+		elif [[ -f $romdir/${chosenimg}img/ramdisk/file_contexts.bin ]]; then
+			${usesudo}cp $romdir/${chosenimg}img/ramdisk/file_contexts.bin $prfiles/
+			strings $prfiles/file_contexts.bin | sed -n '/u:/,$p' | grep -B1 "/" | grep "/" > $prfiles/contextl
+			strings $prfiles/file_contexts.bin | sed -n '/u:/,$p' | grep -B1 "/" | grep "u:" > $prfiles/contextr
+			paste $prfiles/contextl $prfiles/contextr > $prfiles/file_contexts
+			rm -rf $prfiles/contextl $prfiles/contextr $prfiles/file_contexts.bin
+		fi
 		if [[ $api -ge "23" ]]; then
 			myuser=$(echo "$(whoami | gawk '{ print $1 }')")
 			${usesudo}chown -h $myuser:$myuser $prfiles/file_contexts
@@ -4504,10 +4512,11 @@ extract_new() {
 	ls | grep .zip$ >> $prfiles/findextract
 	ls | grep .tar$ | grep -m 1 .tar >> $prfiles/findextract
 	ls | grep .win$ | grep -v boot | grep -m 1 .win >> $prfiles/findextract
-	ls | grep -m 1 chunk$ >> $prfiles/findextract
+	ls | grep -m 1 chunk >> $prfiles/findextract
 	ls | grep .img$ | grep -v "boot\|recovery\|chunk" >> $prfiles/findextract
 	ls | grep system.ext4$ >> $prfiles/findextract
 	ls | grep *-*-factory-*.tgz >> $prfiles/findextract
+	ls | grep *-*-preview-*.tgz >> $prfiles/findextract
 	if [[ ! $(cat $prfiles/findextract | wc -l) -gt "1" ]]; then
 		if [[ ! $(grep .zip$ $prfiles/findextract) = "" ]]; then
 			romzip=$(cat $prfiles/findextract)
@@ -4523,6 +4532,8 @@ extract_new() {
 			mv system.ext4 system.img
 			romimg="system.img"
 		elif [[ ! $(grep *-*-factory-*.tgz $prfiles/findextract) = "" ]]; then
+			romtgz=$(cat $prfiles/findextract)
+		elif [[ ! $(grep *-*-preview-*.tgz $prfiles/findextract) = "" ]]; then
 			romtgz=$(cat $prfiles/findextract)
 		fi
 		rm -rf $prfiles/findextract

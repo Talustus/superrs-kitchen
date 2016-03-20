@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v1.0.4.2 **#
+#** SuperR's Kitchen v1.0.4.3 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -16,6 +16,7 @@
 * Zips that contain system.img and boot.img  
 * Samsung firmware zips that contain tar.md5 file  
 * Official Nexus firmware tgz  
+* Official Nexus preview tgz  
 
 **Create flashable zips of many varieties including:**
 
