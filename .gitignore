@@ -2,6 +2,8 @@
 /tools/boot/*.zip
 /tools/open_bump.py
 /tools/root/bloat_custom
+/tools/root/supersu/*
+!/tools/root/supersu/BETA-SuperSU-v2.68.zip
 /tools/depmet
 /tools/depbuild
 /tools/dependencies2

@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v1.0.4.3 **#
+#** SuperR's Kitchen v1.0.4.4 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -27,6 +27,18 @@
 * Media  
 * app, priv-app, and framework  
 
+**Deodex the following:**  
+
+* N Preview ROMs  
+* Marshmallow ROMs  
+* Lollipop ROMs  
+* KitKat and earlier ROMs  
+
+**Root features:**  
+
+* Root/unroot  
+* Choose SuperSU zip (add other versions to /tools/root/supersu directory)  
+
 **Boot features:**
 
 * Unpack/repack boot/recovery img (Big Thanks to @osm0sis for mkbootimg source!!!)  
@@ -54,11 +66,6 @@
 * wget zip and extract if kitchen zip was downloaded  
 * Option to check for updates when the kitchen starts  
 
-**Root/unroot**  
-**Deodex N Preview ROMs**  
-**Deodex Marshmallow ROMs**  
-**Deodex Lollipop ROMs**  
-**Deodex KitKat and earlier ROMs**  
 **Create system.img**  
 **Device database for mmcblk devices (currently very small, but will grow over time)**  
 **Add devices to the assert**  
@@ -73,8 +80,8 @@
 
 ##**USAGE:**##
 
-1. Run "superr" from it's location in terminal 
-2. Create new project using the menu
+1. Run "superr" from it's location in terminal  
+2. Create new project using the menu  
 3. Copy ROM zip into the superr_NAME directory of this tool (NAME = the name of your new project).  
    **OR**  
    Copy system.ext4.tar and boot.img into the superr_NAME directory of this tool.  
@@ -83,9 +90,13 @@
    **OR**  
    Copy system.img and boot.img into the superr_NAME directory of this tool.  
    **OR**  
-   Leave superr_NAME directory empty to extract from rooted device
-4. Extract for new ROM from the Main menu.
-5. Enjoy!
+   Copy official Nexus tgz into the superr_NAME directory of this tool.  
+   **OR**  
+   Copy Samsung firmware zip into the superr_NAME directory of this tool.  
+   **OR**  
+   Leave superr_NAME directory empty to extract from rooted device or custom recovery  
+4. Extract for new ROM from the Main menu.  
+5. Enjoy!  
 
 ##**EXAMPLE:**##
 

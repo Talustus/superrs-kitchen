@@ -4863,8 +4863,8 @@ extract_new() {
 			$p7z e $romzip $tarmd5 2>/dev/null >> $logs/zip.log
 			mv $tarmd5 $tarnomd5
 			banner
-			echo "${bluet}Extracting system.img and boot.img ...$normal"
-			tar -xf $tarnomd5 system.img boot.img 2>/dev/null >> $logs/zip.log
+			echo "${bluet}Extracting images ...$normal"
+			tar -xf $tarnomd5 system.img boot.img cache.img 2>/dev/null >> $logs/zip.log
 			if [[ -f system.img ]]; then
 				rm -rf $tarnomd5
 			else
@@ -6237,6 +6237,19 @@ partimg() {
 	else
 		find system -type l -exec rm -f {} \;
 	fi
+	if [[ ! -f ${whatpart}_new.img ]]; then
+		banner
+		echo "$redb$yellowt${bold}ERROR:$normal"
+		echo "${redt}Something went wrong building the $whatpart image."
+		echo ""
+		echo "${bluet}Make sure your $whatpart partition size is correct and"
+		echo "that the $whatpart directory is not too big to fit.$normal"
+		echo ""
+		read -p "Press ENTER to return to the Main Menu"
+		cd $base
+		exec ./superr
+		return 1
+	fi
 }
 part_setup() {	
 	if [[ -f $deviceloc/superr_mmc ]]; then
@@ -6568,7 +6581,26 @@ root() {
 		grep "install-recovery.sh" symlinks >> symunroot
 	fi
 	sed -i "/#ROOT/ r $tools/root/root_prog" $romdir/META-INF/com/google/android/updater-script
-	supersu=$(find $tools/root/supersu -name *.zip | rev | cut -d'/' -f1 | rev)
+	supersu=""
+	countroot=""
+	countroot=$(find $tools/root/supersu -name *.zip | wc -l)
+	if [[ $countroot = "1" ]]; then
+		export supersu=$(basename $(find $tools/root/supersu -name *.zip))
+	elif [[ $countroot -gt "1" ]]; then
+		while [[ $supersu = "" ]]; do
+			banner
+			echo "${greenb}Choose SuperSU version:$normal"
+			echo ""
+			findsupersu=""
+			findsupersu=$(find $tools/root/supersu -name *.zip | rev | cut -d"/" -f1 | rev)
+			choosepr ssucho in ${findsupersu[@]}
+			if [[ $REPLY = "q" ]]; then
+				exit
+			else
+				export supersu="$ssucho"
+			fi
+		done
+	fi
 	sed -i "s/#SUPERSU/$supersu/g" $romdir/META-INF/com/google/android/updater-script
 	mkdir -p $romdir/supersu
 	cp $tools/root/supersu/$supersu $romdir/supersu/
