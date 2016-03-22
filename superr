@@ -5888,7 +5888,7 @@ isrootstatus() {
 kitchen_update() {
 	cd $base
 	internet=$(wget -q --tries=10 --timeout=20 --spider http://google.com; echo $?)
-	if [[ $internet = "0" ]]; then		
+	if [[ $internet = "0" ]]; then
 		banner
 		echo "${bluet}Checking for updates ...$normal"
 		dlurl="https://bitbucket.org/superr/superrs-kitchen/downloads"
@@ -5907,70 +5907,94 @@ kitchen_update() {
 			return 1
 		fi 
 		if [[ "$currentv" -lt "$upcheck" ]]; then
-			banner
-			echo "${greenb}An update is available$normal"
-			echo ""
-			echo "${bluet}CURRENT VERSION: $redt$superrv"
-			echo "${bluet}NEW VERSION: $greent$newv$normal"
-			echo ""
-			read -n 1 -p "Would you like to update now? y/n  "	
-			if [[ ! $REPLY = "y" ]]; then
+			choice=""
+			while [[ ! $choice = "m" && ! $choice = "q" && $choice -lt "1" || $choice -gt "2" ]]; do
+				banner
+				echo "${greenb}An update is available$normal"
+				echo ""
+				echo "${bluet}CURRENT VERSION: $redt$superrv"
+				echo "${bluet}NEW VERSION: $greent$newv$normal"
+				echo ""
+				echo "1) Update now"
+				echo "2) View changelog"
+				echo "${yellowt}m = Main Menu"
+				echo "${magentat}q = Quit$normal"
+				echo ""
+				read -n 1 -p "Please enter your choice: " choice
+			done
+			
+			if [[ $choice = "m" ]]; then
 				exec ./superr
 				return 1
-			fi
-			if [[ -d ".git" ]]; then
-				banner
-				echo "${bluet}Updating ...$normal"
+			elif [[ $choice = "q" ]]; then
 				echo ""
-				rm -rf $tools/depmet
-				rm -rf $tools/depbuild
-				rm -rf $tools/mkbootimg
-				rm -rf $tools/unpackbootimg
-				rm -rf $tools/boot/mtk-tools/mkbootimg
-				rm -rf $tools/boot/mtk-tools/mkbootimg.exe
-				rm -rf $tools/simg2img
-				rm -rf $tools/make_ext4fs
-				git pull
-				banner
-				echo "${greent}SuperR's Kitchen has been updated$normal"
 				echo ""
-				read -p "Press ENTER to return to continue"
-			else
+				exit
+			elif [[ $choice = "2" ]]; then
 				banner
-				echo "${bluet}Updating ...$normal"
+				echo "${greenb}Changelog (last 3 versions):$normal"
 				echo ""
-				mkdir tmpkupdate
-				mv tools tmpkupdate/
-				rm -rf README.md superr
-				(wget $dlurl/$newzip 2>&1) >> tmpkupdate/temp.log
-				if [[ $cyg = "" ]]; then
-					tmpkupdate/tools/7z x -y $newzip 2>&1 >> tmpkupdate/temp.log
+				vchanges=$(wget -qO- https://bitbucket.org/superr/superrs-kitchen/commits/all | grep flex-content--primary | cut -d'"' -f4 | head -n 3)
+				echo "$yellowt$vchanges$normal"
+				echo ""
+				read -p "Press ENTER to return to Kitchen updater"
+				kitchen_update
+				return 1
+			elif [[ $choice = "1" ]]; then	
+				if [[ -d ".git" ]]; then
+					banner
+					echo "${bluet}Updating ...$normal"
+					echo ""
+					rm -rf $tools/depmet
+					rm -rf $tools/depbuild
+					rm -rf $tools/mkbootimg
+					rm -rf $tools/unpackbootimg
+					rm -rf $tools/boot/mtk-tools/mkbootimg
+					rm -rf $tools/boot/mtk-tools/mkbootimg.exe
+					rm -rf $tools/simg2img
+					rm -rf $tools/make_ext4fs
+					git pull
+					banner
+					echo "${greent}SuperR's Kitchen has been updated$normal"
+					echo ""
+					read -p "Press ENTER to return to continue"
 				else
-					$p7z x -y $newzip 2>&1 >> tmpkupdate/temp.log
-				fi
-				if [[ -f tmpkupdate/tools/open_bump.py ]]; then
-					mv tmpkupdate/tools/open_bump.py tools/
-				fi
-				if [[ -s tmpkupdate/tools/root/bloat_custom ]]; then
-					mv tmpkupdate/tools/root/bloat_custom tools/root/
-				fi
-				if [[ -f tmpkupdate/tools/updatecheck-no || -f tmpkupdate/tools/updatecheck-yes ]]; then
-					mv tmpkupdate/tools/updatecheck* tools/
-				fi
-				line=""
-				for line in $(ls tools/devices | sort); do
-					if [[ ! -d tmpkupdate/tools/devices/$line ]]; then
-						mv tools/devices/$line tmpkupdate/tools/devices/
+					banner
+					echo "${bluet}Updating ...$normal"
+					echo ""
+					mkdir tmpkupdate
+					mv tools tmpkupdate/
+					rm -rf README.md superr
+					(wget $dlurl/$newzip 2>&1) >> tmpkupdate/temp.log
+					if [[ $cyg = "" ]]; then
+						tmpkupdate/tools/7z x -y $newzip 2>&1 >> tmpkupdate/temp.log
+					else
+						$p7z x -y $newzip 2>&1 >> tmpkupdate/temp.log
 					fi
-				done
-				rm -rf $newzip 
-				rm -rf tools/devices
-				mv tmpkupdate/tools/devices tools/
-				rm -rf tmpkupdate
-				banner
-				echo "${greent}SuperR's Kitchen has been updated$normal"
-				echo ""
-				read -p "Press ENTER to continue"
+					if [[ -f tmpkupdate/tools/open_bump.py ]]; then
+						mv tmpkupdate/tools/open_bump.py tools/
+					fi
+					if [[ -s tmpkupdate/tools/root/bloat_custom ]]; then
+						mv tmpkupdate/tools/root/bloat_custom tools/root/
+					fi
+					if [[ -f tmpkupdate/tools/updatecheck-no || -f tmpkupdate/tools/updatecheck-yes ]]; then
+						mv tmpkupdate/tools/updatecheck* tools/
+					fi
+					line=""
+					for line in $(ls tools/devices | sort); do
+						if [[ ! -d tmpkupdate/tools/devices/$line ]]; then
+							mv tools/devices/$line tmpkupdate/tools/devices/
+						fi
+					done
+					rm -rf $newzip 
+					rm -rf tools/devices
+					mv tmpkupdate/tools/devices tools/
+					rm -rf tmpkupdate
+					banner
+					echo "${greent}SuperR's Kitchen has been updated$normal"
+					echo ""
+					read -p "Press ENTER to continue"
+				fi
 			fi
 		else
 			banner

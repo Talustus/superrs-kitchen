@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v1.0.4.4 **#
+#** SuperR's Kitchen v1.0.4.5 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -62,6 +62,7 @@
 
 **Kitchen updater:**
 
+* View the last 3 changelogs when an update is available.  
 * git pull if the kitchen was cloned  
 * wget zip and extract if kitchen zip was downloaded  
 * Option to check for updates when the kitchen starts  
