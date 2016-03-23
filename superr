@@ -1707,7 +1707,7 @@ change_permtype() {
 		exit
 	fi
 	update_project
-	if [[ -f $prfiles/root ]]; then
+	if [[ -f $prfiles/root && ! -f $prfiles/root_existing ]]; then
 		if [[ -f $romdir/system/xbin/su || -d $romdir/SuperSU || -d $romdir/supersu ]]; then
 			rootrem
 			root
@@ -5071,6 +5071,9 @@ extract_new() {
 		mv $romdir/system/system/* $romdir/system/
 		rm -rf $romdir/system/system
 	fi
+	if [[ -f $romdir/system/xbin/su || -f $romdir/system/bin/su ]]; then
+		touch $prfiles/root_existing
+	fi
 	if [[ ! $romimg = "" || ! $romwin = "" || ! $romtar = "" ]] && [[ ! $romimg = "cache.img" && ! $romimg = "hidden.img" && ! $romimg = "data.img" && ! $romimg = "vendor.img" && ! $romimg = "generic.img" ]]; then
 		if [[ -d $romdir/system ]]; then
 			if [[ -f cache.img ]]; then
@@ -6098,6 +6101,7 @@ partadd() {
 	banner
 	echo "${bluet}Adding $whatpart to the rom ...$normal"
 	permtype=$(cat $prfiles/permtype)
+	needpart=""
 	partbyname=""
 	if [[ -f $deviceloc/superr_mmc && ! $(grep "$whatpart" $deviceloc/superr_mmc) = "" ]]; then
 		partbyname=$(grep "$whatpart" $deviceloc/superr_mmc | gawk '{ print $1 }')
@@ -6203,6 +6207,9 @@ partadd() {
 		echo "partition info.$normal"
 		echo ""
 		read -p "Press ENTER to continue"
+		if [[ $whatpart = "data" ]]; then
+			needpart="1"
+		fi
 	fi
 	whatpart=""
 }
@@ -6381,7 +6388,7 @@ rom_tools() {
 		echo "1) Deodex ROM (${bluet}CURRENT: $greent$odexstatus1$normal)"
 		echo "2) Root/Unroot ROM (${bluet}CURRENT: $greent$rootstatus1$normal)"
 		echo "3) Busybox Add/Remove (${bluet}CURRENT: $greent$busyboxstatus1$normal)"
-		echo "4) User app support (${bluet}CURRENT: $greent$dataapp1$normal)"
+		echo "4) /data/app support (${bluet}CURRENT: $greent$dataapp1$normal)"
 		if [[ $permtype = "" ]]; then
 			echo "5) Change perm type (sparse_dat/set_perm/set_metadata)"
 		else
@@ -6525,25 +6532,29 @@ rom_tools() {
 		fi
 		rom_tools
 		return 1	
-	# START User app support (/data/app)
+	# START /data/app support (/data/app)
 	elif [[ $choice = "4" ]]; then
 		if [[ ! $dataapp = "Yes" ]]; then
 			banner
-			read -n 1 -p "Would you like to add user app support? y/n  "
+			read -n 1 -p "Would you like to add /data/app support? y/n  "
 			echo ""
 			echo ""
 			if [[ $REPLY = "y" ]]; then
 				data_app
-				banner
-				echo "${greent}User app support has been added. Place user apps in:"
-				echo ""
-				echo "$yellowt$romdir/data/app$normal"
-				echo ""
-				read -p "Press ENTER to return to ROM Tools"
+				if [[ $needpart = "1" ]]; then
+					rm -rf $romdir/data
+				else
+					banner
+					echo "${greent}/data/app support has been added. Place apps in:"
+					echo ""
+					echo "$yellowt$romdir/data/app$normal"
+					echo ""
+					read -p "Press ENTER to return to ROM Tools"
+				fi
 			fi
 		else
 			banner
-			echo "${greent}You already have user app support$normal"
+			echo "${greent}You already have /data/app support$normal"
 			echo ""
 			echo "${bluet}The /data directory in your project will remain.$normal"
 			echo ""
@@ -6631,6 +6642,7 @@ root() {
 }		
 rootrem() {
 	cd $prfiles
+	rm -rf $prfiles/root_existing
 	if [[ -f $prfiles/boot.noroot ]]; then
 		mv $prfiles/boot.noroot $romdir/boot.img
 	fi
