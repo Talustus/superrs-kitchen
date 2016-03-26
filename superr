@@ -4804,7 +4804,7 @@ extract_new() {
 		moveoldfiles
 	fi
 	if [[ ! $romzip = "" ]]; then	
-		if [[ $($p7z l $romzip | grep "META-INF/com/google/android/updater-script") = "" && $($p7z l $romzip | grep "system.ext4.tar\|tar.md5") = "" ]]; then
+		if [[ $($p7z l $romzip | grep "META-INF/com/google/android/updater-script") = "" && $($p7z l $romzip | grep "system.ext4.tar\|tar.md5\|chunk") = "" ]]; then
 			banner
 			echo "${redb}${yellowt}${bold}WARNING:$normal"
 			echo "${redt}This zip does not contain an updater-script"
@@ -4833,7 +4833,7 @@ extract_new() {
 			fi
 			romzip=""
 			romimg="system.img"
-		elif [[ ! $($p7z l $romdir/$romzip | grep "system_new.img\|system.img") = "" ]]; then
+		elif [[ ! $($p7z l $romdir/$romzip | grep "system_new.img\|system.img$") = "" ]]; then
 			banner
 			echo "${bluet}Extracting images from zip ...$normal"
 			if [[ -f system.img ]]; then
@@ -4879,6 +4879,12 @@ extract_new() {
 			fi
 			romzip=""
 			romimg="system.img"
+		elif [[ ! $($p7z l $romzip | grep chunk) = "" ]]; then
+			banner
+			echo "${bluet}Extracting sparsechunks and boot.img ...$normal"
+			$p7z e $romzip *chunk* boot.img 2>/dev/null >> $logs/zip.log
+			romzip=""
+			romchunk=$(ls | grep chunk)
 		fi			
 		if [[ ! $romzip = "" ]]; then
 			banner
@@ -5858,9 +5864,9 @@ isknoxstatus() {
 }
 isodexstatus() {
 	if [[ -d $romdir ]]; then
-		if [[ $(find $romdir/system $romdir/vendor -name *.odex 2>/dev/null) = "" && ! -f $romdir/system/odex.sqsh ]]; then
+		if [[ $(find $romdir/system $romdir/vendor -name *.odex 2>/dev/null) = "" && ! -f $romdir/system/odex.sqsh && $(find $framedir -name boot.oat) = "" ]]; then
 			mmode=""
-			if [[ $api -ge "23" ]]; then
+			if [[ $api -ge "23" && ! $androidversion = "N" ]]; then
 				if [[ -f $prfiles/deodex_m ]]; then
 					mmode=" - oat2dex"
 				elif [[ -f $prfiles/deodex_m2 ]]; then
@@ -6423,6 +6429,15 @@ rom_tools() {
 			read -p "Press ENTER to return to ROM Tools"
 			rom_tools
 			return 1
+		fi
+		if [[ $api -ge 21 && $(find $framedir -name boot.oat) = "" ]]; then
+			banner
+			echo "$redb${yellowt}ERROR:$normal"
+			echo "${redt}There is no boot.oat in this rom. It cannot be deodexed.$normal"
+			echo ""
+			read -p "Press ENTER to return to ROM Tools"
+			rom_tools
+			return 1
 		fi		
 		if [[ -f $romdir/system/odex.sqsh ]]; then
 			sqshfile="odex.sqsh"
@@ -6532,7 +6547,7 @@ rom_tools() {
 		fi
 		rom_tools
 		return 1	
-	# START /data/app support (/data/app)
+	# START /data/app support
 	elif [[ $choice = "4" ]]; then
 		if [[ ! $dataapp = "Yes" ]]; then
 			banner

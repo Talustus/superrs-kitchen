@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v1.0.4.6 **#
+#** SuperR's Kitchen v1.0.4.7 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -11,7 +11,7 @@
 * system.img/boot.img (and cache.img on Samsung devices)
 * system.ext4.tar/boot.img  
 * system.ext4.win/boot.emmc.win (including multi-file *.win000, *.win001, etc)  
-* Sparse chunk files found in Moto and other factory firmware  
+* Moto and other factory firmware zips containing sparsechunk files  
 * cm12 + roms with sparse dat files  
 * Zips that contain system.img and boot.img  
 * Samsung firmware zips that contain tar.md5 file  
