@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v1.0.4.7 **#
+#** SuperR's Kitchen v1.0.4.8 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -17,6 +17,7 @@
 * Samsung firmware zips that contain tar.md5 file  
 * Official Nexus firmware tgz  
 * Official Nexus preview tgz  
+* system directory that contains symlinks and boot.img  
 
 **Create flashable zips of many varieties including:**
 
@@ -94,6 +95,8 @@
    Copy official Nexus tgz into the superr_NAME directory of this tool.  
    **OR**  
    Copy Samsung firmware zip into the superr_NAME directory of this tool.  
+   **OR**  
+   Copy Moto firmware zip into the superr_NAME directory of this tool.  
    **OR**  
    Leave superr_NAME directory empty to extract from rooted device or custom recovery  
 4. Extract for new ROM from the Main menu.  

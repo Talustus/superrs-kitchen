@@ -160,8 +160,7 @@ boot_initd() {
 		return 1
 	fi
 	if [[ $initdstatus = "No" ]]; then
-		cd $tools/boot
-		${usesudo}cp -r ./initd/* $romdir
+		${usesudo}cp -r $tools/boot/initd/bootimg $romdir/
 		${usesudo}sed -i '1iimport /init.d_support.sh' $romdir/bootimg/ramdisk/init.rc
 		mkdir -p $romdir/system/etc/init.d
 		touch $romdir/system/etc/init.d/placeholder
@@ -1563,7 +1562,7 @@ change_permtype() {
 		echo "${bluet}CURRENT PROJECT: $greent$romname$normal"
 		echo "${bluet}ANDROID VERSION: $greent$androidversion$normal"
 		echo ""
-		echo "${yellowb}${redt}Change Perm Menu$normal"
+		echo "${yellowb}${redt}Change/Add Perm Menu$normal"
 		echo ""
 		if [[ $permtype = "set_metadata" ]]; then
 			echo "1) set_metadata (${bluet}CURRENT$normal)"
@@ -1599,6 +1598,46 @@ change_permtype() {
 		echo ""
 		read -n 1 -p "Please enter your choice:" choice
 	done
+	# START ROM Tools menu chosen
+	if [[ $choice = "5" ]]; then
+		rom_tools
+		return 1
+	# START Main menu chosen
+	elif [[ $choice = "m" ]]; then
+		cd $base
+		exec ./superr
+		return 1
+	# START Quit chosen
+	elif [[ $choice = "q" ]]; then
+		echo ""
+		echo ""
+		exit
+	fi
+	banner
+	echo "${bluet}Checking symlinks ...$normal"
+	if [[ ! -f $prfiles/symlinks && ! $(grep ^symlink $romdir/META-INF/com/google/android/updater-script 2>/dev/null) = "" ]]; then
+		cd $romdir/META-INF/com/google/android
+		get_symlinks
+	elif [[ ! -f $prfiles/symlinks && ! $(find $romdir/system $romdir/vendor -type l 2>/dev/null) = "" ]]; then
+		cd $romdir
+		link1=$(find system vendor -type l -printf "%l\n" 2>/dev/null | sed 's/^/symlink(\"/; s/$/\", /')
+		link2=$(find system vendor -type l 2>/dev/null | sed 's/^/\"\//; s/$/\");/')
+		paste -d '' <(echo "$link1") <(echo "$link2") | sort > $prfiles/symlinks
+		cp $prfiles/symlinks $prfiles/symlinks.orig
+		if [[ -d vendor ]]; then
+			find system vendor -type l -exec rm -f {} \;
+		else
+			find system -type l -exec rm -f {} \;
+		fi
+	elif [[ ! -f $prfiles/symlinks ]]; then
+		banner
+		echo "${redb}${yellowt}${bold}ERROR:$normal"
+		echo "${redt}The kitchen can't find any symlinks so the ROM will not work correctly.$normal"
+		echo ""
+		read -p "Press ENTER to return to ROM Tools menu"
+		rom_tools
+		return 1
+	fi
 	banner	
 	# set_metadata chosen
 	if [[ $choice = "1" ]]; then
@@ -1612,6 +1651,11 @@ change_permtype() {
 			return 1
 		fi
 		echo "${bluet}Changing perm type ...$normal"
+		if [[ ! -d $romdir/META-INF ]]; then
+			permtype="set_metadata"
+			echo "set_metadata" > $prfiles/permtype
+			cp -r $tools/updater/META-INF $romdir
+		fi
 		if [[ -s $prfiles/$permtype ]]; then
 			cd $romdir/META-INF/com/google/android
 			permtest=$(gawk '/#PERM/,/set_progress/' updater-script | grep $permtype)
@@ -1635,6 +1679,11 @@ change_permtype() {
 	# set_perm chosen
 	elif [[ $choice = "2" ]]; then
 		echo "${bluet}Changing perm type ...$normal"
+		if [[ ! -d $romdir/META-INF ]]; then
+			permtype="set_perm"
+			echo "set_perm" > $prfiles/permtype
+			cp -r $tools/updater/META-INF $romdir
+		fi
 		if [[ -s $prfiles/$permtype ]]; then
 			cd $romdir/META-INF/com/google/android
 			permtest=$(gawk '/#PERM/,/set_progress/' updater-script | grep $permtype)
@@ -1668,8 +1717,8 @@ change_permtype() {
 		fi
 		echo "${bluet}Changing perm type ...$normal"
 		rm -rf $romdir/META-INF
-		cd $tools/updater
-		cp -r ./META-INF-DAT/* $romdir
+		cp -r $tools/updater/META-INF-DAT/META-INF $romdir/
+		cp -r $tools/updater/META-INF-DAT/install $romdir/
 		cd $prfiles
 		rm -rf permtype set_metadata set_perm
 		permtype="sparse_dat"
@@ -1681,8 +1730,7 @@ change_permtype() {
 	elif [[ $choice = "4" ]]; then
 		echo "${bluet}Changing perm type ...$normal"
 		rm -rf $romdir/META-INF
-		cd $tools/updater
-		cp -r ./META-INF-IMG/* $romdir
+		cp -r $tools/updater/META-INF-IMG/META-INF $romdir/
 		cp $tools/updater/META-INF/com/google/android/update-binary $romdir/META-INF/com/google/android/
 		cd $prfiles
 		rm -rf permtype set_metadata set_perm
@@ -1691,20 +1739,6 @@ change_permtype() {
 			mv $prfiles/permtype $prfiles/permtype_old
 		fi
 		echo "$permtype" > $prfiles/permtype
-	# START ROM Tools menu chosen
-	elif [[ $choice = "5" ]]; then
-		rom_tools
-		return 1
-	# START Main menu chosen
-	elif [[ $choice = "m" ]]; then
-		cd $base
-		exec ./superr
-		return 1
-	# START Quit chosen
-	elif [[ $choice = "q" ]]; then
-		echo ""
-		echo ""
-		exit
 	fi
 	update_project
 	if [[ -f $prfiles/root && ! -f $prfiles/root_existing ]]; then
@@ -4921,44 +4955,7 @@ extract_new() {
 					echo "$permtype" > $prfiles/permtype
 					grep ^$permtype updater-script | grep -v "/tmp/" > $prfiles/$permtype
 				fi
-				grep ^symlink updater-script > $prfiles/symlinks
-				grep ",$" $prfiles/symlinks > $prfiles/symlinks2
-				if [[ -s $prfiles/symlinks2 ]]; then	
-					line=""
-					cat $prfiles/symlinks2 | while read line; do
-						line2=$(echo "$line" | sed 's/\"/\\"/g; s/ /\\ /g; s:\/:\\/:g; s/\[/\\[/g')
-						sed -n "/$line2/,/;/p" updater-script > $prfiles/mulsym
-						top=$(head -n 1 $prfiles/mulsym | sed 's/\[/\\[/g')
-						top2=$(echo "$top" | gawk '{ print $1}')
-						bottom=$(tail -n 1 $prfiles/mulsym)
-						grep -v "$top" $prfiles/mulsym | grep -v "$bottom" > $prfiles/mulsym2
-						grep -v "$bottom" updater-script > updater-script2
-						mv updater-script2 updater-script
-						echo "$top" | tr ',' '\n' | grep -v ^symlink >> $prfiles/mulsym2
-						if [[ $(echo "$bottom" | tr -cd , | wc -c) -gt "0" ]]; then
-							echo "$bottom" | tr ',' '\n' | sed "s/);//" >> $prfiles/mulsym2
-						else
-							echo "$bottom" | sed "s/);//" >> $prfiles/mulsym2
-						fi
-						cat $prfiles/mulsym2 | tr ',' '\n' | sed 's/^ *//; s/ *$//; /^$/d' | sort > $prfiles/mulsym3
-						rm -rf $prfiles/mulsym2
-						mv $prfiles/mulsym3 $prfiles/mulsym
-						for symbuild in $(cat $prfiles/mulsym); do
-							echo "$symbuild" | sed "s/^/$top2 /; s/$/);/" >> $prfiles/mulsym2
-						done
-						cat $prfiles/mulsym2 >> $prfiles/symlinks
-						rm -rf $prfiles/mulsym2
-						rm -rf $prfiles/mulsym
-					done
-					grep -v ",$" updater-script > updater-script2
-					mv updater-script2 updater-script
-					grep -v ",$" $prfiles/symlinks > $prfiles/symlinks2
-					mv $prfiles/symlinks2 $prfiles/symlinks
-					sed 's:\\\[:\[:g' $prfiles/symlinks > $prfiles/symlinks2
-					mv $prfiles/symlinks2 $prfiles/symlinks
-				fi
-				rm -rf $prfiles/symlinks2
-				cp $prfiles/symlinks $prfiles/symlinks.orig
+				get_symlinks
 				rm -rf $prfiles/debloat_test
 				rm -rf $prfiles/debloat_test_custom
 				update_project
@@ -5150,8 +5147,8 @@ extract_new() {
 			banner
 			echo "${bluet}Preparing project directory ...$normal"
 			if [[ $choice = "y" ]]; then
-				cd $tools/updater
-				cp -r ./META-INF-DAT/* $romdir
+				cp -r $tools/updater/META-INF-DAT/META-INF $romdir/
+				cp -r $tools/updater/META-INF-DAT/install $romdir/
 				permtype="sparse_dat"
 				echo "$permtype" > $prfiles/permtype
 			else
@@ -5586,6 +5583,46 @@ get_sig() {
 		signature=$(cat $prfiles/signature)
 	fi
 }
+get_symlinks() {
+	grep ^symlink updater-script > $prfiles/symlinks
+	grep ",$" $prfiles/symlinks > $prfiles/symlinks2
+	if [[ -s $prfiles/symlinks2 ]]; then	
+		line=""
+		cat $prfiles/symlinks2 | while read line; do
+			line2=$(echo "$line" | sed 's/\"/\\"/g; s/ /\\ /g; s:\/:\\/:g; s/\[/\\[/g')
+			sed -n "/$line2/,/;/p" updater-script > $prfiles/mulsym
+			top=$(head -n 1 $prfiles/mulsym | sed 's/\[/\\[/g')
+			top2=$(echo "$top" | gawk '{ print $1}')
+			bottom=$(tail -n 1 $prfiles/mulsym)
+			grep -v "$top" $prfiles/mulsym | grep -v "$bottom" > $prfiles/mulsym2
+			grep -v "$bottom" updater-script > updater-script2
+			mv updater-script2 updater-script
+			echo "$top" | tr ',' '\n' | grep -v ^symlink >> $prfiles/mulsym2
+			if [[ $(echo "$bottom" | tr -cd , | wc -c) -gt "0" ]]; then
+				echo "$bottom" | tr ',' '\n' | sed "s/);//" >> $prfiles/mulsym2
+			else
+				echo "$bottom" | sed "s/);//" >> $prfiles/mulsym2
+			fi
+			cat $prfiles/mulsym2 | tr ',' '\n' | sed 's/^ *//; s/ *$//; /^$/d' | sort > $prfiles/mulsym3
+			rm -rf $prfiles/mulsym2
+			mv $prfiles/mulsym3 $prfiles/mulsym
+			for symbuild in $(cat $prfiles/mulsym); do
+				echo "$symbuild" | sed "s/^/$top2 /; s/$/);/" >> $prfiles/mulsym2
+			done
+			cat $prfiles/mulsym2 >> $prfiles/symlinks
+			rm -rf $prfiles/mulsym2
+			rm -rf $prfiles/mulsym
+		done
+		grep -v ",$" updater-script > updater-script2
+		mv updater-script2 updater-script
+		grep -v ",$" $prfiles/symlinks > $prfiles/symlinks2
+		mv $prfiles/symlinks2 $prfiles/symlinks
+		sed 's:\\\[:\[:g' $prfiles/symlinks > $prfiles/symlinks2
+		mv $prfiles/symlinks2 $prfiles/symlinks
+	fi
+	rm -rf $prfiles/symlinks2
+	cp $prfiles/symlinks $prfiles/symlinks.orig
+}
 grab_devices() {
 	reply=""
 	timestamp=$(date +%m-%d-%Y-%H:%M:%S)
@@ -5639,7 +5676,7 @@ imgextract() {
 	banner
 	echo "${bluet}Copying files to ${extractimg} directory ...$normal"
 	mkdir ${extractimg}
-	${usesudo2}cp -r ./output/* $romdir/${extractimg}
+	${usesudo2}cp -r output/* ${extractimg}/
 	${usesudo2}umount output/
 	${usesudo2}chown -hR $myuser:$myuser $romdir/${extractimg}
 	rm -rf $romdir/output
@@ -6369,6 +6406,11 @@ rom_tools() {
 		exec ./superr
 		return 1
 	fi
+	if [[ ! -s $prfiles/permtype ]]; then
+		change_permtype
+		rom_tools
+		return 1
+	fi
 	isbusyboxstatus
 	isdataappstatus
 	isodexstatus
@@ -6395,11 +6437,7 @@ rom_tools() {
 		echo "2) Root/Unroot ROM (${bluet}CURRENT: $greent$rootstatus1$normal)"
 		echo "3) Busybox Add/Remove (${bluet}CURRENT: $greent$busyboxstatus1$normal)"
 		echo "4) /data/app support (${bluet}CURRENT: $greent$dataapp1$normal)"
-		if [[ $permtype = "" ]]; then
-			echo "5) Change perm type (sparse_dat/set_perm/set_metadata)"
-		else
-			echo "5) Change perm type (${bluet}CURRENT: $greent$permtype$normal)"
-		fi
+		echo "5) Change perm type (${bluet}CURRENT: $greent$permtype$normal)"
 		echo "${yellowt}6) Asserts Menu$normal (${bluet}CURRENT: $greent$assertdevices$normal)"
 		echo "${yellowt}7) Debloat Menu"
 		echo "8) Build Menu"
@@ -6874,8 +6912,8 @@ update_project() {
 				fi
 				permtype="sparse_dat"
 				rm -rf $romdir/META-INF
-				cd $tools/updater
-				cp -r ./META-INF-DAT/* $romdir
+				cp -r $tools/updater/META-INF-DAT/META-INF $romdir/
+				cp -r $tools/updater/META-INF-DAT/install $romdir/
 				cd $prfiles
 				rm -rf permtype set_metadata set_perm
 				echo "$permtype" > $prfiles/permtype
@@ -6885,7 +6923,7 @@ update_project() {
 			elif [[ $choice = "4" ]]; then
 				rm -rf $romdir/META-INF
 				cd $tools/updater
-				cp -r ./META-INF-IMG/* $romdir
+				cp -r $tools/updater/META-INF-IMG/META-INF $romdir/
 				cp $tools/updater/META-INF/com/google/android/update-binary $romdir/META-INF/com/google/android/
 				cd $prfiles
 				rm -rf permtype set_metadata set_perm
@@ -7158,7 +7196,7 @@ if [[ ! -f $tools/depmet ]]; then
 		fi
 	done
 	if [[ -s depinstall ]]; then
-		debpkg="binutils coreutils cpio e2fsprogs findutils gawk gcc grep gzip libc-bin liblz4-tool lzop make mount ncurses-bin perl-base sed tar util-linux vim-common wget xz-utils"
+		debpkg="binutils coreutils cpio e2fsprogs findutils gawk gcc grep gzip libc-bin liblz4-tool lzop mount ncurses-bin perl-base sed tar util-linux vim-common wget xz-utils"
 		depinstall=$(cat depinstall)
 		banner
 		echo "${redb}${yellowt}${bold}MISSING DEPENDENCY:$normal"
@@ -7216,7 +7254,7 @@ if [[ $cyg = "" ]] && [[ ! -x $tools/mkbootimg || ! -x $tools/unpackbootimg || !
 	( make clean 2>&1 ) >/dev/null
 	if [[ ! -x $tools/mkbootimg || ! -x $tools/unpackbootimg || ! -x $tools/simg2img || ! -x $tools/make_ext4fs ]]; then
 		banner
-		debpkg="bison gperf build-essential zlib1g-dev zlib1g-dev:i386 g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev libsepol1-dev dpkg-dev"
+		debpkg="bison gperf build-essential zlib1g-dev zlib1g-dev:i386 g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev libsepol1-dev dpkg-dev make ccache automake squashfs-tools schedtool"
 		echo "${redb}${yellowt}${bold}ERROR:$normal"
 		echo "${redt}One or more tools could not be built.$normal"
 		echo ""
