@@ -69,7 +69,7 @@ set_metadata("/system/bin/debuggerd", "uid", 0, "gid", 2000, "mode", 0755, "capa
 set_metadata("/system/bin/debuggerd64", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/dex2oat", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/dhcp6c", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
-set_metadata_recursive("/system/bin/dhcpcd", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
+set_metadata("/system/bin/dhcpcd", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/diagexe", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/diag_callback_client", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/diag_dci_sample", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
@@ -101,10 +101,12 @@ set_metadata("/system/bin/exfatck", "uid", 0, "gid", 2000, "mode", 0755, "capabi
 set_metadata("/system/bin/exyrngd", "uid", 0, "gid", 2000, "mode", 0700, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/epdg_wod", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/epmd", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
+set_metadata("/system/bin/epmlogd", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/esdpll", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/factory", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/fingerprintd", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/fp_img_encrypt", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
+set_metadata("/system/bin/fsck.exfat", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/fsck.f2fs", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/fsck_msdos", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/ftmipcd", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
@@ -145,6 +147,7 @@ set_metadata("/system/bin/ip6tables", "uid", 0, "gid", 2000, "mode", 0755, "capa
 set_metadata("/system/bin/ipacm-diag", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/ipacm", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/ipod", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
+set_metadata("/system/bin/IPSecService", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/irsc_util", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/isdbtmmtest", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/iw", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
@@ -162,6 +165,7 @@ set_metadata("/system/bin/logcat", "uid", 0, "gid", 2000, "mode", 0755, "capabil
 set_metadata("/system/bin/logd", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/logwrapper", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/lowi-server", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
+set_metadata("/system/bin/lpm", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/macloader", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/make_ext4fs", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/matv", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
@@ -181,6 +185,7 @@ set_metadata("/system/bin/memsicd3416x", "uid", 0, "gid", 2000, "mode", 0755, "c
 set_metadata("/system/bin/memtest_mode", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/meta_tst", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/mfgloader", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
+set_metadata("/system/bin/mkfs.exfat", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/mksh", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/mm-pp-daemon", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/mm-qcamera-daemon", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
@@ -297,6 +302,7 @@ set_metadata("/system/bin/vcsFPService", "uid", 0, "gid", 2000, "mode", 0755, "c
 set_metadata("/system/bin/vdc", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/vm_bms", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/vold", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
+set_metadata("/system/bin/vpnclientd", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/wcnss_service", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/wifi2agps", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/bin/Wifilogger_app", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
@@ -322,10 +328,10 @@ set_metadata("/system/etc/dhcpcd/dhcpcd-run-hooks", "uid", 1014, "gid", 2000, "m
 set_metadata("/system/etc/install-recovery.sh", "uid", 0, "gid", 0, "mode", 0544, "capabilities", 0x0);
 set_metadata("/system/recovery-from-boot.p", "uid", 0, "gid", 0, "mode", 0644, "capabilities", 0x0);
 set_metadata("/system/etc/event-log-tags", "uid", 0, "gid", 0, "mode", 0644, "capabilities", 0x0, "selabel", "#CONTEXT");
-set_metadata_recursive("/system/etc/firmware", "uid", 0, "gid", 2000, "dmode", 0755, "fmode", 0644, "capabilities", "0x0", "selabel", "#CONTEXT");
-set_metadata_recursive("/system/etc/firmware/wlan", "uid", 0, "gid", 0, "dmode", 0755, "fmode", 0644, "capabilities", "0x0", "selabel", "#CONTEXT");
+set_metadata_recursive("/system/etc/firmware", "uid", 0, "gid", 2000, "dmode", 0755, "fmode", 0644, "capabilities", 0x0, "selabel", "#CONTEXT");
+set_metadata_recursive("/system/etc/firmware/wlan", "uid", 0, "gid", 0, "dmode", 0755, "fmode", 0644, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/etc/firmware/wlan/prima", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
-set_metadata_recursive("/system/etc/hostapd", "uid", 0, "gid", 2000, "dmode", 0755, "fmode", 0644, "capabilities", "0x0", "selabel", "#CONTEXT");
+set_metadata_recursive("/system/etc/hostapd", "uid", 0, "gid", 2000, "dmode", 0755, "fmode", 0644, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/etc/hostapd/hostapd_default.conf", "uid", 0, "gid", 0, "mode", 0644, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/etc/hsml.key", "uid", 0, "gid", 0, "mode", 0400, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/etc/init.goldfish.sh", "uid", 0, "gid", 2000, "mode", 0550, "capabilities", 0x0, "selabel", "#CONTEXT");
@@ -335,11 +341,11 @@ set_metadata("/system/etc/install-recovery.sh", "uid", 0, "gid", 0, "mode", 0755
 set_metadata("/system/etc/nano", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/etc/partition_permission.sh", "uid", 0, "gid", 0, "mode", 0750, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/etc/permissions", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
-set_metadata_recursive("/system/etc/ppp", "uid", 0, "gid", 0, "dmode", 0755, "fmode", 0555, "capabilities", "0x0", "selabel", "#CONTEXT");
+set_metadata_recursive("/system/etc/ppp", "uid", 0, "gid", 0, "dmode", 0755, "fmode", 0555, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/etc/security", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/etc/security/cacerts", "uid", 0, "gid", 2000, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/etc/security/.drm", "uid", 0, "gid", 0, "mode", 0755, "capabilities", 0x0, "selabel", "#CONTEXT");
-set_metadata_recursive("/system/etc/ssh", "uid", 0, "gid", 2000, "dmode", 0755, "fmode", 0644, "capabilities", "0x0", "selabel", "#CONTEXT");
+set_metadata_recursive("/system/etc/ssh", "uid", 0, "gid", 2000, "dmode", 0755, "fmode", 0644, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/etc/ssh/sshd_config", "uid", 0, "gid", 0, "mode", 0644, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata("/system/etc/wide-dhcpv6/dhcp6c.script", "uid", 1014, "gid", 2000, "mode", 0550, "capabilities", 0x0, "selabel", "#CONTEXT");
 set_metadata_recursive("/system/lib", "uid", 0, "gid", 0, "dmode", 0755, "fmode", 0644, "capabilities", 0x0, "selabel", "#CONTEXT");

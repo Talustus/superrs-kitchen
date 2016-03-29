@@ -1562,7 +1562,7 @@ change_permtype() {
 		echo "${bluet}CURRENT PROJECT: $greent$romname$normal"
 		echo "${bluet}ANDROID VERSION: $greent$androidversion$normal"
 		echo ""
-		echo "${yellowb}${redt}Change/Add Perm Menu$normal"
+		echo "${yellowb}${redt}Change/Choose Perm Menu$normal"
 		echo ""
 		if [[ $permtype = "set_metadata" ]]; then
 			echo "1) set_metadata (${bluet}CURRENT$normal)"
@@ -1632,7 +1632,7 @@ change_permtype() {
 	elif [[ ! -f $prfiles/symlinks ]]; then
 		banner
 		echo "${redb}${yellowt}${bold}ERROR:$normal"
-		echo "${redt}The kitchen can't find any symlinks so the ROM will not work correctly.$normal"
+		echo "${redt}The kitchen can't find any symlinks. The ROM will not work correctly.$normal"
 		echo ""
 		read -p "Press ENTER to return to ROM Tools menu"
 		rom_tools
@@ -5976,16 +5976,18 @@ kitchen_update() {
 				echo ""
 				echo ""
 				exit
+			# START View changelog
 			elif [[ $choice = "2" ]]; then
 				banner
 				echo "${greenb}Changelog (last 3 versions):$normal"
 				echo ""
-				vchanges=$(wget -qO- https://bitbucket.org/superr/superrs-kitchen/commits/all | grep flex-content--primary | cut -d'"' -f4 | head -n 3)
+				vchanges=$(wget -qO- https://bitbucket.org/superr/superrs-kitchen/commits/all | grep flex-content--primary | cut -d'"' -f4 | head -n 3 | sed "s/&#39;/\'/g")
 				echo "$yellowt$vchanges$normal"
 				echo ""
 				read -p "Press ENTER to return to Kitchen updater"
 				kitchen_update
 				return 1
+			# START Update now
 			elif [[ $choice = "1" ]]; then	
 				if [[ -d ".git" ]]; then
 					banner
