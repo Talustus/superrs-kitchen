@@ -3,7 +3,7 @@
 /tools/open_bump.py
 /tools/root/bloat_custom
 /tools/root/supersu/*
-!/tools/root/supersu/BETA-SuperSU-v2.68.zip
+!/tools/root/supersu/BETA-SuperSU-v2.71.zip
 /tools/depmet
 /tools/depbuild
 /tools/dependencies2
@@ -37,6 +37,7 @@
 !/tools/devices/msm8916_32
 !/tools/devices/noblelte
 !/tools/devices/nobleltetmo
+!/tools/devices/OnePlus2
 !/tools/devices/p1
 !/tools/devices/P175A20
 !/tools/devices/pplus

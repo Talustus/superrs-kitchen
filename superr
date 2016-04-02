@@ -5627,13 +5627,10 @@ grab_devices() {
 	reply=""
 	timestamp=$(date +%m-%d-%Y-%H:%M:%S)
 	banner
-	echo "${bluet}This option will zip all devices in your kitchen."
+	echo "${bluet}This option will zip new devices in your kitchen."
 	echo "It will create a zip in the following location:"
 	echo ""
-	echo "$yellowt$base"
-	echo ""
-	echo "${bluet}It would be helpful to others if this zip is uploaded so they"
-	echo "can be added to the database$normal"
+	echo "$yellowt$base$normal"
 	echo ""
 	read -n 1 -p "Would you like to continue? y/n " reply
 	if [[ ! $reply = "y" ]]; then
@@ -5642,21 +5639,41 @@ grab_devices() {
 		return 1
 	fi
 	cd $base
-	banner		
-	echo "${bluet}Building devices zip in Kitchen root ...$normal"
-	$p7z a -mx7 DEVICES-$timestamp.zip tools/devices 2>/dev/null >> $logs/zip.log
-	banner
-	echo "${greent}The devices zip has been created:"
-	echo ""
-	echo "$yellowt$base/DEVICES-$timestamp.zip"
-	echo ""
-	echo "${greent}Please upload it to the forum so the new devices"
-	echo "can be added to the database for others to use.$normal"
-	echo ""
-	read -p "Press ENTER to return to Main menu"
-	cd $base
-	exec ./superr
-	return 1
+	mkdir tempdevices
+	find tools/devices -type d | grep -v tools/devices$ | while read line; do
+		if [[ $(grep "$line" .gitignore) = "" ]]; then
+			cp -r $base/$line $base/tempdevices/
+		fi
+	done
+	if [[ ! $(ls tempdevices) = "" ]]; then
+		banner
+		echo "${bluet}Building devices zip ...$normal"
+		cd tempdevices
+		$p7z a -mx7 DEVICES-$timestamp.zip * 2>/dev/null >> $logs/zip.log
+		mv DEVICES-$timestamp.zip $base/
+		cd $base
+		rm -rf tempdevices
+		banner
+		echo "${greent}The devices zip has been created:"
+		echo ""
+		echo "$yellowt$base/DEVICES-$timestamp.zip"
+		echo ""
+		echo "${greent}Please upload it to the forum so the new devices"
+		echo "can be added to the database for others to use.$normal"
+		echo ""
+		read -p "Press ENTER to return to Main menu"
+		exec ./superr
+		return 1
+	else
+		rm -rf tempdevices
+		banner
+		echo "${redb}${yellowt}${bold}INFO:$normal"
+		echo "${redt}There are no new devices in the devices directory.$normal"
+		echo ""
+		read -p "Press ENTER to return to main menu"
+		exec ./superr
+		return 1
+	fi
 }
 imgextract() {
 	myuser=$(echo "$(whoami | gawk '{ print $1 }')")
@@ -6656,6 +6673,21 @@ rom_tools() {
 	fi
 }
 root() {		
+	if [[ $api -ge "23" ]] || [[ $androidversion = "5.1.1" && $(grep "ro.product.brand" $romdir/system/build.prop | cut -d"=" -f2) = "samsung" ]]; then
+		choice=""
+		while [[ ! $choice = "1" && ! $choice = "2" ]]; do
+			banner
+			echo "Which root method would you like?"
+			echo ""
+			echo "1) systemless install"
+			echo "2) system install"
+			echo ""
+			read -n 1 -p "Please make your selection:  " choice
+		done
+	fi
+	if [[ $choice = "2" ]]; then
+		echo "SYSTEMLESS=false" > $romdir/system/.supersu
+	fi
 	cd $romdir/META-INF/com/google/android
 	if [[ ! $(grep -o "#ROOT" updater-script) = "#ROOT" ]]; then
 		if [[ ! $(grep "^set_perm" updater-script) = "" ]]; then
@@ -6698,6 +6730,7 @@ root() {
 rootrem() {
 	cd $prfiles
 	rm -rf $prfiles/root_existing
+	rm -rf $romdir/system/.supersu
 	if [[ -f $prfiles/boot.noroot ]]; then
 		mv $prfiles/boot.noroot $romdir/boot.img
 	fi
@@ -7371,7 +7404,7 @@ while [[ ! $choice = "q" && $choice -lt "1" || $choice -gt "8" ]]; do
 	echo "3) Delete a project"
 	echo "4) Extract for new ROM"
 	echo "5) Check for updates (${bluet}CURRENT: $greent$superrv$normal)"
-	echo "6) Zip all devices to share"
+	echo "6) Zip new devices to share"
 	echo "${yellowt}7) Boot/Recovery Tools"
 	echo "8) ROM Tools$normal"
 	echo "${magentat}q = Quit$normal"
@@ -7401,7 +7434,7 @@ elif [[ $choice = "4" ]]; then
 elif [[ $choice = "5" ]]; then
 	kitchen_update
 	return 1
-# START Zip all devices to share
+# START Zip new devices to share
 elif [[ $choice = "6" ]]; then
 	grab_devices
 	return 1
