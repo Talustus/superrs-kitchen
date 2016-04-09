@@ -6676,7 +6676,7 @@ root() {
 	if [[ $api -ge "23" ]] || [[ $androidversion = "5.1.1" && $(grep "ro.product.brand" $romdir/system/build.prop | cut -d"=" -f2) = "samsung" ]]; then
 		if [[ -d $tools/inject-sepolicy ]]; then
 			choice=""
-			while [[ ! $choice = "1" && ! $choice = "3" ]]; do
+			while [[ $choice -lt "1" && $choice -gt "3" ]]; do
 				banner
 				echo "Which root method would you like?"
 				echo ""
