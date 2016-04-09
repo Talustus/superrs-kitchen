@@ -1,5 +1,6 @@
 /superr_*
 /tools/boot/*.zip
+/tools/inject-sepolicy/
 /tools/open_bump.py
 /tools/root/bloat_custom
 /tools/root/supersu/*

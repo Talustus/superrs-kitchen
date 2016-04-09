@@ -5640,9 +5640,9 @@ grab_devices() {
 	fi
 	cd $base
 	mkdir tempdevices
-	find tools/devices -type d | grep -v tools/devices$ | while read line; do
+	ls tools/devices | sort | while read line; do
 		if [[ $(grep "$line" .gitignore) = "" ]]; then
-			cp -r $base/$line $base/tempdevices/
+			cp -r $base/tools/devices/$line $base/tempdevices/
 		fi
 	done
 	if [[ ! $(ls tempdevices) = "" ]]; then
@@ -6674,19 +6674,45 @@ rom_tools() {
 }
 root() {		
 	if [[ $api -ge "23" ]] || [[ $androidversion = "5.1.1" && $(grep "ro.product.brand" $romdir/system/build.prop | cut -d"=" -f2) = "samsung" ]]; then
-		choice=""
-		while [[ ! $choice = "1" && ! $choice = "2" ]]; do
-			banner
-			echo "Which root method would you like?"
-			echo ""
-			echo "1) systemless install"
-			echo "2) system install"
-			echo ""
-			read -n 1 -p "Please make your selection:  " choice
-		done
+		if [[ -d $tools/inject-sepolicy ]]; then
+			choice=""
+			while [[ ! $choice = "1" && ! $choice = "3" ]]; do
+				banner
+				echo "Which root method would you like?"
+				echo ""
+				echo "1) Let SuperSU decide"
+				echo "2) System install (SYSTEMLESS=false)"
+				echo "3) Inject sepolicy changes and system install"
+				echo ""
+				read -n 1 -p "Please make your selection:  " choice
+			done
+		else
+			choice=""
+			while [[ ! $choice = "1" && ! $choice = "2" ]]; do
+				banner
+				echo "Which root method would you like?"
+				echo ""
+				echo "1) Let SuperSU decide"
+				echo "2) System install (SYSTEMLESS=false)"
+				echo ""
+				read -n 1 -p "Please make your selection:  " choice
+			done
+		fi
 	fi
 	if [[ $choice = "2" ]]; then
 		echo "SYSTEMLESS=false" > $romdir/system/.supersu
+	elif [[ $choice = "3" ]]; then
+		echo "SYSTEMLESS=false" > $romdir/system/.supersu
+		if [[ ! -d $romdir/bootimg ]]; then
+			chosenimg="boot"
+			bootext="1"
+			boot_unpack
+		fi
+		cd $tools/inject-sepolicy
+		./inject
+		chosenimg="boot"
+		bootext="1"
+		boot_repack
 	fi
 	cd $romdir/META-INF/com/google/android
 	if [[ ! $(grep -o "#ROOT" updater-script) = "#ROOT" ]]; then
@@ -7166,7 +7192,7 @@ if [[ ! $(echo $(pwd) | grep " ") = "" ]]; then
 	read -p "Press ENTER to exit"
 	exit
 fi
-base=$(pwd)
+export base=$(pwd)
 tools=$base/tools
 smali=$(ls $tools/smali/current | grep ^smali)
 smalio=$(ls $tools/smali/old | grep ^smali)

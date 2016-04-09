@@ -1,4 +1,4 @@
-#** SuperR's Kitchen v1.0.5.0 **#
+#** SuperR's Kitchen v1.0.5.1 **#
 ##by SuperR##
 
 ##**FEATURES**##
@@ -39,7 +39,7 @@
 
 * Root/unroot  
 * Choose SuperSU zip (add other versions to /tools/root/supersu directory)  
-* Choose system OR systemless root for M and Samsung 5.1.1 roms  
+* Choose system OR systemless root for M+ and Samsung 5.1.1 roms  
 
 **Boot features:**
 
