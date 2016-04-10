@@ -65,4 +65,3 @@ set_perm(0, 0, 0755, "/system/xbin/sugote");
 set_perm(0, 0, 0755, "/system/xbin/sugote-mksh");
 set_perm(0, 0, 0755, "/system/xbin/supolicy");
 set_perm(0, 0, 0644, "/system/etc/.installed_su_daemon");
-symlink("/system/etc/install-recovery.sh", "/system/bin/install-recovery.sh");

@@ -6674,34 +6674,35 @@ rom_tools() {
 }
 root() {		
 	if [[ $api -ge "23" ]] || [[ $androidversion = "5.1.1" && $(grep "ro.product.brand" $romdir/system/build.prop | cut -d"=" -f2) = "samsung" ]]; then
-		if [[ -d $tools/inject-sepolicy ]]; then
-			choice=""
-			while [[ $choice -lt "1" && $choice -gt "3" ]]; do
-				banner
-				echo "Which root method would you like?"
-				echo ""
-				echo "1) Let SuperSU decide"
-				echo "2) System install (SYSTEMLESS=false)"
+		choice=""
+		while [[ $choice -lt "1" || $choice -gt "3" ]]; do
+			banner
+			echo "Which root method would you like?"
+			echo ""
+			echo "1) Let SuperSU decide"
+			echo "2) System install (SYSTEMLESS=false)"
+			if [[ -d $tools/inject-sepolicy ]]; then
 				echo "3) Inject sepolicy changes and system install"
-				echo ""
-				read -n 1 -p "Please make your selection:  " choice
-			done
-		else
-			choice=""
-			while [[ ! $choice = "1" && ! $choice = "2" ]]; do
-				banner
-				echo "Which root method would you like?"
-				echo ""
-				echo "1) Let SuperSU decide"
-				echo "2) System install (SYSTEMLESS=false)"
-				echo ""
-				read -n 1 -p "Please make your selection:  " choice
-			done
-		fi
+			else
+				echo "3) Download/Install inject-sepolicy-addon"
+			fi
+			echo ""
+			read -n 1 -p "Please make your selection:  " choice
+			echo ""
+			echo ""
+		done
 	fi
 	if [[ $choice = "2" ]]; then
 		echo "SYSTEMLESS=false" > $romdir/system/.supersu
 	elif [[ $choice = "3" ]]; then
+		if [[ ! -d $tools/inject-sepolicy ]]; then
+			cd $tools
+			(wget https://bitbucket.org/superr/superrs-kitchen/downloads/inject-sepolicy-addon.zip 2>&1) >> $logs/zip.log
+			$p7z x -y inject-sepolicy-addon.zip 2>&1 >> $logs/zip.log
+			rm -rf inject-sepolicy-addon.zip
+			root
+			return 1
+		fi
 		echo "SYSTEMLESS=false" > $romdir/system/.supersu
 		if [[ ! -d $romdir/bootimg ]]; then
 			chosenimg="boot"
