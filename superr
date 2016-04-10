@@ -2209,11 +2209,11 @@ deodex_l() {
 	echo ""
 	cd $tools/smali/current
 	if [[ ! -d "$framedir/$arch/odex" ]]; then
-		java -jar $oat2dex boot $framedir/$arch/boot.oat >> $logs/deodex.log
+		java -jar $oat2dexo boot $framedir/$arch/boot.oat >> $logs/deodex.log
 	fi
 	if [[ ! $arch2 = "" ]]; then
 		if [[ ! -d "$framedir/$arch2/odex" ]]; then
-			java -jar $oat2dex boot $framedir/$arch2/boot.oat >> $logs/deodex.log
+			java -jar $oat2dexo boot $framedir/$arch2/boot.oat >> $logs/deodex.log
 		fi
 	fi
 	clear
@@ -2289,7 +2289,7 @@ deodex_l() {
 				echo ""
 				echo "... Deodexing $app"
 				echo ""
-				java -jar $oat2dex $appdir/$app/$arch/$app.odex $framedir/$arch/odex >> $logs/deodex.log
+				java -jar $oat2dexo $appdir/$app/$arch/$app.odex $framedir/$arch/odex >> $logs/deodex.log
 				mv $appdir/$app/$arch/$app.dex $appdir/$app/$arch/classes.dex
 				if [[ -f "$appdir/$app/$arch/$app-classes2.dex" ]]; then
 					mv $appdir/$app/$arch/$app-classes2.dex $appdir/$app/$arch/classes2.dex
@@ -2316,7 +2316,7 @@ deodex_l() {
 					echo ""
 					echo "... Deodexing $app"
 					echo ""
-					java -jar $oat2dex $appdir/$app/$arch2/$app.odex $framedir/$arch2/odex >> $logs/deodex.log
+					java -jar $oat2dexo $appdir/$app/$arch2/$app.odex $framedir/$arch2/odex >> $logs/deodex.log
 					mv $appdir/$app/$arch2/$app.dex $appdir/$app/$arch2/classes.dex
 					if [[ -f "$appdir/$app/$arch2/$app-classes2.dex" ]]; then
 						mv $appdir/$app/$arch2/$app-classes2.dex $appdir/$app/$arch2/classes2.dex
@@ -2405,7 +2405,7 @@ deodex_l() {
 				echo ""
 				echo "... Deodexing $privapp"
 				echo ""
-				java -jar $oat2dex $privdir/$privapp/$arch/$privapp.odex $framedir/$arch/odex >> $logs/deodex.log
+				java -jar $oat2dexo $privdir/$privapp/$arch/$privapp.odex $framedir/$arch/odex >> $logs/deodex.log
 				mv $privdir/$privapp/$arch/$privapp.dex $privdir/$privapp/$arch/classes.dex
 				if [[ -f "$privdir/$privapp/$arch/$privapp-classes2.dex" ]]; then
 					mv $privdir/$privapp/$arch/$privapp-classes2.dex $privdir/$privapp/$arch/classes2.dex
@@ -2431,7 +2431,7 @@ deodex_l() {
 					echo ""
 					echo "... Deodexing $privapp"
 					echo ""
-					java -jar $oat2dex $privdir/$privapp/$arch2/$privapp.odex $framedir/$arch2/odex >> $logs/deodex.log
+					java -jar $oat2dexo $privdir/$privapp/$arch2/$privapp.odex $framedir/$arch2/odex >> $logs/deodex.log
 					mv $privdir/$privapp/$arch2/$privapp.dex $privdir/$privapp/$arch2/classes.dex
 					if [[ -f "$privdir/$privapp/$arch2/$privapp-classes2.dex" ]]; then
 						mv $privdir/$privapp/$arch2/$privapp-classes2.dex $privdir/$privapp/$arch2/classes2.dex	
@@ -2486,7 +2486,7 @@ deodex_l() {
 			echo ""
 			echo "... Deodexing $frame"
 			echo ""
-			java -jar $oat2dex $framedir/$arch/$frame.odex $framedir/$arch/odex >> $logs/deodex.log
+			java -jar $oat2dexo $framedir/$arch/$frame.odex $framedir/$arch/odex >> $logs/deodex.log
 			mv $framedir/$arch/$frame.dex $framedir/$arch/classes.dex
 			if [[ -f "$framedir/$arch/$frame-classes2.dex" ]]; then
 				mv $framedir/$arch/$frame-classes2.dex $framedir/$arch/classes2.dex
@@ -2653,11 +2653,11 @@ deodex_m() {
 
 	cd $tools/smali/current
 	if [[ ! -d "$framedir/$arch/odex" ]]; then
-		java -jar $oat2dex boot $framedir/$arch/boot.oat >> $logs/deodex.log
+		java -jar $oat2dexo boot $framedir/$arch/boot.oat >> $logs/deodex.log
 	fi
 	if [[ ! $arch2 = "" ]]; then
 		if [[ ! -d "$framedir/$arch2/odex" ]]; then
-			java -jar $oat2dex boot $framedir/$arch2/boot.oat >> $logs/deodex.log
+			java -jar $oat2dexo boot $framedir/$arch2/boot.oat >> $logs/deodex.log
 		fi
 	fi
 	clear
@@ -2734,7 +2734,7 @@ deodex_m() {
 				echo ""
 				echo "... Deodexing $app"
 				echo ""
-				java -jar $oat2dex $appdir/$app/oat/$arch/$app.odex $framedir/$arch/odex >> $logs/deodex.log
+				java -jar $oat2dexo $appdir/$app/oat/$arch/$app.odex $framedir/$arch/odex >> $logs/deodex.log
 				if [[ $(gawk "/$app\/$app\.apk/{getline; print}" $logs/deodex.log | grep error) = "" ]]; then
 					mv $appdir/$app/oat/$arch/$app.dex $appdir/$app/oat/$arch/classes.dex
 					if [[ -f "$appdir/$app/oat/$arch/$app-classes2.dex" ]]; then
@@ -2791,7 +2791,7 @@ deodex_m() {
 					echo ""
 					echo "... Deodexing $app"
 					echo ""
-					java -jar $oat2dex $appdir/$app/oat/$arch2/$app.odex $framedir/$arch2/odex >> $logs/deodex.log
+					java -jar $oat2dexo $appdir/$app/oat/$arch2/$app.odex $framedir/$arch2/odex >> $logs/deodex.log
 					if [[ $(gawk "/$app\/$app\.apk/{getline; print}" $logs/deodex.log | grep error) = "" ]]; then
 						mv $appdir/$app/oat/$arch2/$app.dex $appdir/$app/oat/$arch2/classes.dex
 						if [[ -f "$appdir/$app/oat/$arch2/$app-classes2.dex" ]]; then
@@ -2910,7 +2910,7 @@ deodex_m() {
 				echo ""
 				echo "... Deodexing $privapp"
 				echo ""
-				java -jar $oat2dex $privdir/$privapp/oat/$arch/$privapp.odex $framedir/$arch/odex >> $logs/deodex.log
+				java -jar $oat2dexo $privdir/$privapp/oat/$arch/$privapp.odex $framedir/$arch/odex >> $logs/deodex.log
 				if [[ $(gawk "/$privapp\/$privapp\.apk/{getline; print}" $logs/deodex.log | grep error) = "" ]]; then
 					mv $privdir/$privapp/oat/$arch/$privapp.dex $privdir/$privapp/oat/$arch/classes.dex
 					if [[ -f "$privdir/$privapp/oat/$arch/$privapp-classes2.dex" ]]; then
@@ -2966,7 +2966,7 @@ deodex_m() {
 					echo ""
 					echo "... Deodexing $privapp"
 					echo ""
-					java -jar $oat2dex $privdir/$privapp/oat/$arch2/$privapp.odex $framedir/$arch2/odex >> $logs/deodex.log
+					java -jar $oat2dexo $privdir/$privapp/oat/$arch2/$privapp.odex $framedir/$arch2/odex >> $logs/deodex.log
 					if [[ $(gawk "/$privapp\/$privapp\.apk/{getline; print}" $logs/deodex.log | grep error) = "" ]]; then
 						mv $privdir/$privapp/oat/$arch2/$privapp.dex $privdir/$privapp/oat/$arch2/classes.dex
 						if [[ -f "$privdir/$privapp/oat/$arch2/$privapp-classes2.dex" ]]; then
@@ -3051,7 +3051,7 @@ deodex_m() {
 			echo ""
 			echo "... Deodexing $frame"
 			echo ""
-			java -jar $oat2dex $framedir/oat/$arch/$frame.odex $framedir/$arch/odex >> $logs/deodex.log
+			java -jar $oat2dexo $framedir/oat/$arch/$frame.odex $framedir/$arch/odex >> $logs/deodex.log
 			if [[ $(gawk "/framework\/$frame\.jar/{getline; print}" $logs/deodex.log | grep error) = "" ]]; then
 				mv $framedir/oat/$arch/$frame.dex $framedir/oat/$arch/classes.dex
 				if [[ -f "$framedir/oat/$arch/$frame-classes2.dex" ]]; then
@@ -7200,6 +7200,7 @@ smalio=$(ls $tools/smali/old | grep ^smali)
 baksmali=$(ls $tools/smali/current | grep baksmali)
 baksmalio=$(ls $tools/smali/old | grep baksmali)
 oat2dex=$(ls $tools/smali/current | grep oat2dex)
+oat2dexo=$(ls $tools/smali/old | grep oat2dex)
 superrv=$(grep "SuperR's Kitchen" README.md | gawk '{ print $4 }')
 if [[ ! $(uname -s | grep "CYGWIN\|cygwin\|Cygwin") = "" ]]; then
 	rm -rf $tools/dependencies2
@@ -7207,19 +7208,32 @@ if [[ ! $(uname -s | grep "CYGWIN\|cygwin\|Cygwin") = "" ]]; then
 	sed -i '/sudo/d; 1i7z' $tools/dependencies2
 	dependencies="dependencies2"
 	cyg=".exe"
+	bashwin=""
 	usesudo2=""
 	adb=$tools/adb.exe
 	zipalign=$tools/zipalign.exe
 	p7z=7z
+elif [[ $(find /mnt/c -name Windows -maxdepth 1 2>/dev/null | grep -m 1 -o Windows) = "Windows" ]]; then
+	rm -rf $tools/dependencies2
+	cp $tools/dependencies $tools/dependencies2
+	sed -i '/sudo/d; 1i7z' $tools/dependencies2
+	dependencies="dependencies2"
+	cyg=""
+	bashwin="1"
+	usesudo2=""
+	adb=$tools/adb
+	zipalign=$tools/zipalign
+	p7z=$tools/7z
 else
 	cyg=""
+	bashwin=""
 	dependencies="dependencies"
 	usesudo2="sudo "
 	adb=$tools/adb
 	zipalign=$tools/zipalign
 	p7z=$tools/7z
 fi
-if [[ $cyg = "" ]]; then
+if [[ $cyg = "" && $bashwin = "" ]]; then
 	if [[ ! $(which id) = "" ]]; then
 		if [[ $(id -u) = "0" ]]; then
 			userid="root"
