@@ -5667,7 +5667,27 @@ imgextract() {
 	echo "${bluet}Mounting ${extractimg}.img ...$normal"
 	mkdir output
 	echo ""
-	${usesudo2}mount -t ext4 -o loop ${extractimg}.img output/
+	if [[ $darwin = "" ]]; then
+		${usesudo2}mount -t ext4 -o loop ${extractimg}.img output/
+	else
+		if [[ ! -e /Library/Filesystems/osxfusefs.fs ]]; then
+			echo "${redt}On Mac OS X, mounting ext4 requires fuse file system$normal"
+			read -n 1 -p "Would you like to install OSXFuse? y/n  " reply
+			if [[ $reply = "y" ]]; then
+				echo ""
+				echo "${bluet}Installing OSXFuse ...$normal"
+				echo ""
+				brew install Caskroom/cask/osxfuse
+			else
+				echo ""
+				read -p "Press ENTER to return to the main menu"
+				cd $base
+				exec ./superr
+				return 1
+		fi
+		$extfuse ${extractimg}.img output/
+		sleep 1
+	fi
 	banner
 	echo "${bluet}Copying files to ${extractimg} directory ...$normal"
 	mkdir ${extractimg}
@@ -7213,6 +7233,7 @@ elif [[ ! $(uname -s | grep "Darwin") = "" ]]; then
 	adb=$tools/darwin/adb
 	zipalign=$tools/darwin/zipalign
 	p7z=$tools/darwin/7z
+	extfuse=$tools/darwin/fuse-ext2
 	if [[ $(which gcc) = "" ]]; then
 		banner
 		echo "${redt}You are using Mac OS X, and XCode Command Line Tools isn't installed$normal"
@@ -7239,7 +7260,7 @@ elif [[ ! $(uname -s | grep "Darwin") = "" ]]; then
 			banner
 			echo "${bluet}Installing Homebrew ...$normal"
 			echo ""
-			#/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+			/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 			cd $base
 			exec ./superr
 		else
