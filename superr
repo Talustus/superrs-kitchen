@@ -5693,7 +5693,11 @@ imgextract() {
 	mkdir ${extractimg}
 	${usesudo2}cp -r output/* ${extractimg}/
 	${usesudo2}umount output/
-	${usesudo2}chown -hR $myuser:$myuser $romdir/${extractimg}
+	if [[ $darwin = "" ]]; then
+		${usesudo2}chown -hR $myuser:$myuser $romdir/${extractimg}
+	else
+		${usesudo2}chown -hR $myuser:admin $romdir/${extractimg}
+	fi
 	rm -rf $romdir/output
 	find $romdir/${extractimg} ! -perm -g+r | grep -v lost+found | sed 's/^\.\///' | while read line; do
 		chmod 400 $line
