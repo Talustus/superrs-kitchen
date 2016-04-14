@@ -8,9 +8,13 @@ else
 EXE = .exe
 RM = del
 endif
-
 CFLAGS = -ffunction-sections -O3
+
+ifeq ($(shell uname -s), Darwin)
+LDFLAGS = -dead_strip
+else
 LDFLAGS = -Wl,--gc-sections
+endif
 
 all:libmincrypt.a mkbootimg$(EXE) unpackbootimg$(EXE)
 

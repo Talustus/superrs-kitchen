@@ -17,7 +17,6 @@ grep
 gunzip
 gzip
 head
-ldd
 ln
 ls
 lz4
