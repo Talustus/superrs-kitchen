@@ -13,6 +13,7 @@
 /tools/mkbootimg
 /tools/unpackbootimg
 /tools/simg2img
+/tools/img2simg
 /tools/make_ext4fs
 /tools/mkbootimg.exe
 /tools/unpackbootimg.exe

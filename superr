@@ -5684,6 +5684,7 @@ imgextract() {
 				cd $base
 				exec ./superr
 				return 1
+			fi
 		fi
 		$extfuse ${extractimg}.img output/
 		sleep 1
@@ -7367,7 +7368,7 @@ if [[ ! -f $tools/depmet ]]; then
 	touch depmet
 	cd $base
 fi
-if [[ $cyg = "" ]] && [[ ! -x $tools/mkbootimg || ! -x $tools/unpackbootimg || ! -x $tools/simg2img || ! -x $tools/make_ext4fs ]]; then
+if [[ $cyg = "" ]] && [[ ! -x $tools/mkbootimg || ! -x $tools/unpackbootimg || ! -x $tools/simg2img || ! -x $tools/img2simg || ! -x $tools/make_ext4fs ]]; then
 	banner
 	echo "${bluet}Preparing tools ...$normal"
 	echo ""
@@ -7377,9 +7378,10 @@ if [[ $cyg = "" ]] && [[ ! -x $tools/mkbootimg || ! -x $tools/unpackbootimg || !
 	( mv mkbootimg/mkbootimg $tools/ 2>&1 ) >/dev/null
 	( mv mkbootimg/unpackbootimg $tools/ 2>&1 ) >/dev/null
 	( mv core/libsparse/simg2img $tools/ 2>&1 ) >/dev/null
+	( mv core/libsparse/img2simg $tools/ 2>&1 ) >/dev/null
 	( mv extras/ext4_utils/make_ext4fs $tools/ 2>&1 ) >/dev/null
 	( make clean 2>&1 ) >/dev/null
-	if [[ ! -x $tools/mkbootimg || ! -x $tools/unpackbootimg || ! -x $tools/simg2img || ! -x $tools/make_ext4fs ]]; then
+	if [[ ! -x $tools/mkbootimg || ! -x $tools/unpackbootimg || ! -x $tools/simg2img || ! -x $tools/img2simg || ! -x $tools/make_ext4fs ]]; then
 		banner
 		debpkg="bison gperf build-essential zlib1g-dev zlib1g-dev:i386 g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev libsepol1-dev dpkg-dev make ccache automake squashfs-tools schedtool"
 		echo "${redb}${yellowt}${bold}ERROR:$normal"
