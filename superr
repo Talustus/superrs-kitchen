@@ -884,31 +884,17 @@ boot_unpack() {
 	fi
 }
 brewinstall() {
-	brew=$(which brew)
-	if [[ $brew = "" ]]; then
-		echo "${redt}You are using Mac OS X, and you don't have Homebrew installed$normal"
-		read -n 1 -p "Would you like to install Homebrew? y/n  " reply
-		if [[ $reply = "y" ]]; then
-			banner
-			echo "${bluet}Installing Homebrew ...$normal"
-			echo ""
-			/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-			cd $base
-			exec ./superr
-		fi
-	else
-		read -n 1 -p "Would you like to install now? y/n  " reply
-		if [[ $reply = "y" ]]; then
-			banner
-			echo "${bluet}Installing dependencies ...$normal"
-			echo ""
-			brew install $brewpkg
-			rm -rf depinstall
-			brewpkg=""
-			cd $base
-			exec ./superr
-			return 1
-		fi
+	read -n 1 -p "Would you like to install now? y/n  " reply
+	if [[ $reply = "y" ]]; then
+		banner
+		echo "${bluet}Installing dependencies ...$normal"
+		echo ""
+		brew install $brewpkg
+		rm -rf depinstall
+		brewpkg=""
+		cd $base
+		exec ./superr
+		return 1
 	fi
 	echo ""
 	echo ""
@@ -7227,6 +7213,42 @@ elif [[ ! $(uname -s | grep "Darwin") = "" ]]; then
 	adb=$tools/darwin/adb
 	zipalign=$tools/darwin/zipalign
 	p7z=$tools/darwin/7z
+	if [[ $(which gcc) = "" ]]; then
+		banner
+		echo "${redt}You are using Mac OS X, and XCode Command Line Tools isn't installed$normal"
+		read -n 1 -p "Would you like to install XCode Command Line Tools? y/n  " reply
+		if [[ $reply = "y" ]]; then
+			banner
+			echo "${bluet}Installing XCode Command Line Tools ...$normal"
+			echo ""
+			xcode-select --install
+			cd $base
+			exec ./superr
+		else
+			echo ""
+			echo ""
+			read -p "Press ENTER to quit"
+			exit
+		fi
+	fi
+	if [[ $(which brew) = "" ]]; then
+		banner
+		echo "${redt}You are using Mac OS X, and Homebrew isn't installed$normal"
+		read -n 1 -p "Would you like to install Homebrew? y/n  " reply
+		if [[ $reply = "y" ]]; then
+			banner
+			echo "${bluet}Installing Homebrew ...$normal"
+			echo ""
+			#/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+			cd $base
+			exec ./superr
+		else
+			echo ""
+			echo ""
+			read -p "Press ENTER to quit"
+			exit
+		fi
+	fi
 else
 	cyg=""
 	bashwin=""
@@ -7306,7 +7328,9 @@ if [[ ! -f $tools/depmet ]]; then
 		echo "${yellowt}$debpkg$normal"
 		echo ""
 		if [[ ! $darwin = "" ]]; then
-			echo "Download Java from http://www.java.com"
+			banner
+			read -p "Download Java from http://www.java.com"
+			exit
 		elif [[ $cyg = "" ]]; then
 			debinstall
 		else
